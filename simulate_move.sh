@@ -8,7 +8,7 @@
 
 
 ##### define option (i:insertion) #####
-while getops "i:" option
+while getopts "i:" option
 do
 case ${option} in
 i)
