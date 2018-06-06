@@ -46,7 +46,7 @@ fi
 mkdir result/${result_name}
 mkdir result/${result_name}/coordinates
 cp src/common.h result/${result_name}/
-cp src/function.h result/${result_name}/
+cp src/func_move.h result/${result_name}/
 
 echo ""
 
