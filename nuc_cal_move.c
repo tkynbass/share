@@ -84,8 +84,6 @@ Particle spb;
 
 Particle nucleolus;
 
-double membrain_radius;
-
 enum label{ X, Y, Z};
 
 void init_particle( int start ){       //初期値設定
@@ -129,8 +127,6 @@ void init_particle( int start ){       //初期値設定
     
     fclose (fpr);
     
-    nucleolus_mass = 4.0 * PI * membrain_radius * membrain_radius * membrain_radius / 3.0;
-    
 }
 
 /*
@@ -169,16 +165,6 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-///// 発現量の高い遺伝子に核中心方向への力を加える
-void high_expression (const const Particle *part_1, double force[DIMENSION]) {
-    
-    
-    force[X] += - k_expression * (part_1->position[X] - 0.0);
-    force[Y] += - k_expression * (part_1->position[Y] - 0.0);
-    force[Z] += - k_expression * (part_1->position[Z] - 0.0);
-    
-}
-
 void nucleolus_myu_cal(void) {
     
     double nucleus_volume = 0.0, nucleolus_volume = 0.0, r, t, origin[] = {0.0, 0.0, 0.0}, per, h_1, h_2, l;
@@ -210,8 +196,6 @@ void spring (const Particle *part_1, const Particle *part_2, double force[DIMENS
     Particle *part_3;
     
     part_3 = &spb;
-    
-    //dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
     
     if (part_1 == part_3) dist_0 = SPB_RADIUS + PARTICLE_RADIUS;
     else dist_0 = INIT_DISTANCE;
@@ -428,14 +412,6 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
         force[X] += - PARTICLE_MYU * part_1->velocity[X];
         force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
         force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
-        
-        /*
-        if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
-            
-            high_expression (part_1, force);
-            
-            gene_counter++;
-        }*/
 
         switch (part[i].particle_type) {
             case Normal:
@@ -1390,7 +1366,7 @@ int main ( int argc, char **argv ) {
     
     //unsigned int *gene_list;
     
-    ptr = (Particle *)malloc(NUMBER * sizeof(Particle));
+    ptr = (Particle *)malloc( (NUMBER +2 ) * sizeof(Particle));
     
     if (ptr == NULL) {
         
@@ -1425,7 +1401,7 @@ int main ( int argc, char **argv ) {
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
     
-    init_particle( start_number );
+    Init_particle( start_number );
     
     nucleolus_mass = PI * membrain_radius * membrain_radius * membrain_radius / 3.0;        //核小体質量（体積）
     nucleolus_myu = 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100;

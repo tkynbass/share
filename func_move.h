@@ -8,8 +8,9 @@
 #ifndef func_move_h
 #define func_move_h
 
-void nucleolus_myu_cal (void);
+#include "common.h"
 
+void nucleolus_myu_cal (void);
 ///初期設定///
 void Init_particle( int start ){       //初期値設定
     
@@ -30,7 +31,7 @@ void Init_particle( int start ){       //初期値設定
         exit (1);
     }
     
-    ptr = (Particle *)malloc( (NUMBER +2 ) * sizeof(Particle));
+    ptr = (Particle *)malloc( (NUMBER + 2 ) * sizeof(Particle));
     if (ptr == NULL) {
         
         printf("\n error : can not secure the memory \n");
@@ -89,7 +90,6 @@ void spb_spring (const Particle *part_1, const Particle *part_2, double force[DI
     
     f = K_BOND * (dist_0 - dist) / dist;
     
-    
     force[X] += f * (part_1->position[X] - part_2->position[X]);
     force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
     force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
@@ -125,7 +125,7 @@ void spb_list (Particle *part_1){        //リスト化
 
 void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
     
-    int i, k, j, m, gene_counter=0;
+    int i, k, j, m, gene_counter = 0 ;
     
     double force[DIMENSION], nucleolus_force[DIMENSION], f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
     double p1, p2, theta, psi;
@@ -558,7 +558,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     nucleolus.position[Z] += DELTA * nucleolus.velocity_2[Z];
 }
 
-void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned int gene_list [CLUSTER_GENE_NUMBER]*/)        //位置と速度の計算 private force dist f part_1 part_2 part_3
+void particle_calculate ( dsfmt_t dsfmt, const unsigned int l)     //位置と速度の計算 private force dist f part_1 part_2 part_3
 {
     int i, k, j, m, gene_counter = 0;
     
@@ -1081,9 +1081,9 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     force[Y] += f * (spb.position[Y]);
     force[Z] += f * (spb.position[Z]);
     
-    spring (&spb, &part[1880], force);       //セントロメアとのバネによる力
-    spring (&spb, &part[3561], force);
-    spring (&spb, &part[5542], force);
+    spb_spring (&spb, &part[1880], force);       //セントロメアとのバネによる力
+    spb_spring (&spb, &part[3561], force);
+    spb_spring (&spb, &part[5542], force);
     
     if ( l%1000 == 0) spb_list (&spb);
     
@@ -1165,7 +1165,7 @@ void renew () {
         part_1->position[Z] = part_1->position_new[Z];
     }
     
-    spb.position_old[X] = spb.position [X];
+    spb.position_old[X] = spb.position[X];
     spb.position_old[Y] = spb.position[Y];
     spb.position_old[Z] = spb.position[Z];
     

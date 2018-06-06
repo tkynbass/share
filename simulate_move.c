@@ -30,7 +30,7 @@ int main (int argc, char **argv) {
     
     for ( time = 1; time < save_max; time++ ) {
         
-        printf(" now time = %d\r", time);
+        printf (" now time = %d\r", time);
         fflush (stdout);
         
         for (loop_count = 1; loop_count <= loop; loop_count++) {
