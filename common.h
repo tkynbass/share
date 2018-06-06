@@ -100,7 +100,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-void Set_result ( int argc, char *argv ) {
+void Set_result ( int argc, char **argv ) {
     
     if (argc < 1 ) {
         
