@@ -8,10 +8,12 @@
 #ifndef func_move_h
 #define func_move_h
 
+void nucleolus_myu_cal (void);
+
 ///初期設定///
 void Init_particle( int start ){       //初期値設定
     
-    int i;
+    int i, i_dummy;
     
     Particle *part_1;
     
@@ -188,7 +190,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
                 //membrain_exclude
                 dist = Euclid_norm (part_1->position, origin);
-                f = MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
                 
                 if ( dist + PARTICLE_RADIUS > membrain_radius) {
                     
@@ -210,7 +212,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
                 //Nucleolus_exclude
                 dist = Euclid_norm (part_1->position, nucleolus.position);
-                f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                 
                 if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                     
@@ -323,7 +325,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
                 //Nucleolus_exclude
                 dist = Euclid_norm (part_1->position, nucleolus.position);
-                f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                 
                 if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                     
@@ -339,7 +341,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
                 //membrain_exclude
                 dist = Euclid_norm (part_1->position, origin);
-                f = MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
                 
                 if ( dist + PARTICLE_RADIUS > membrain_radius) {
                     
@@ -379,7 +381,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                             
                             //Nucleolus_exclude
                             dist = Euclid_norm (part_1->position, nucleolus.position);
-                            f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                            f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                             
                             if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                                 
@@ -440,7 +442,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                             
                             //Nucleolus_exclude
                             dist = Euclid_norm (part_1->position, nucleolus.position);
-                            f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                            f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                             
                             if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                                 
@@ -625,7 +627,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 //membrain_exclude
                 dist = Euclid_norm (part_1->position, origin);
-                f = MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
                 
                 if ( dist + PARTICLE_RADIUS > membrain_radius) {
                     
@@ -647,7 +649,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 //Nucleolus_exclude
                 dist = Euclid_norm (part_1->position, nucleolus.position);
-                f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                 
                 if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                     
@@ -760,7 +762,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 //Nucleolus_exclude
                 dist = Euclid_norm (part_1->position, nucleolus.position);
-                f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                 
                 if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                     
@@ -775,7 +777,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 //membrain_exclude
                 dist = Euclid_norm (part_1->position, origin);
-                f = MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
+                f = K_MEMBRAIN_EXCLUDE * (membrain_radius - dist - PARTICLE_RADIUS ) / dist;
                 
                 if ( dist + PARTICLE_RADIUS > membrain_radius) {
                     
@@ -815,7 +817,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                             
                             //Nucleolus_exclude
                             dist = Euclid_norm (part_1->position, nucleolus.position);
-                            f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                            f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                             
                             if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                                 
@@ -875,7 +877,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                             
                             //Nucleolus_exclude
                             dist = Euclid_norm (part_1->position, nucleolus.position);
-                            f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
+                            f = K_MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius + PARTICLE_RADIUS - dist ) / dist;
                             
                             if ( dist < 4.0 * membrain_radius + PARTICLE_RADIUS) {
                                 
@@ -997,7 +999,7 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     
     double dist = Euclid_norm ( spb.position , origin);
     double p1, p2, theta, psi;
-    double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
+    double f = K_MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
     
     Particle *part_2;
     
@@ -1066,7 +1068,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
     double dist = Euclid_norm ( spb.position , origin);
     double p1, p2, theta, psi;
-    double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
+    double f = K_MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
     
     Particle *part_2;
     
