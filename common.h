@@ -33,7 +33,7 @@
 #define K_MEMBRAIN_EXCLUDE (1.0)     //膜との排除体積効果
 
 #define PARTICLE_RADIUS (1.0)     //粒子の半径
-#define PARTICLE_MASS ( M_A / N_A / 1000)      //染色体粒子の質量
+#define PARTICLE_MASS ( M_A / N_A / 1000.0)      //染色体粒子の質量
 #define PARTICLE_MYU (2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 )    //粘性抵抗の強さ
 
 #define SPB_RADIUS ( 3.0 )      //SPBの半径
@@ -131,6 +131,8 @@ void Load_setting ( int argc, char **argv ) {
     fprintf (fpw, "\n\n #0 : start number \n #1 : save times \n #2 : loop ");
     
     fclose (fpw);
+    
+    printf ("   MASS = %lf \n", PARTICLE_MASS);
     
 }
 

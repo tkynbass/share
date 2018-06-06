@@ -526,10 +526,11 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             }
         }
         
+        /*
         part_1->velocity_2[X] = part_1->velocity[X] + DELTA * ( force[X] - PARTICLE_MYU * part_1->velocity[X] ) / ( 2.0 * PARTICLE_MASS );
         part_1->velocity_2[Y] = part_1->velocity[Y] + DELTA * ( force[Y] - PARTICLE_MYU * part_1->velocity[Y] ) / ( 2.0 * PARTICLE_MASS );
         part_1->velocity_2[Z] = part_1->velocity[Z] + DELTA * ( force[Z] - PARTICLE_MYU * part_1->velocity[Z] ) / ( 2.0 * PARTICLE_MASS );
-        
+        */
     }
     
     nucleolus.velocity_2[X] = nucleolus.velocity[X] + DELTA * ( nucleolus_force[X] - nucleolus_myu * nucleolus.velocity[X] ) / ( 2.0 * nucleolus_mass );
@@ -962,7 +963,7 @@ void particle_calculate ( dsfmt_t dsfmt, const unsigned int l)     //位置と�
             }
         }
         
-        
+        /*
         part_1->velocity[X] = (2.0 * PARTICLE_MASS * part_1->velocity_2[X] + DELTA * force[X]) / (2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
         part_1->velocity[Y] = (2.0 * PARTICLE_MASS * part_1->velocity_2[Y] + DELTA * force[Y]) / (2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
         part_1->velocity[Z] = (2.0 * PARTICLE_MASS * part_1->velocity_2[Z] + DELTA * force[Z]) / (2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
@@ -970,7 +971,7 @@ void particle_calculate ( dsfmt_t dsfmt, const unsigned int l)     //位置と�
         part_1->velocity_2[X] = part_1->velocity[X] + DELTA * ( force[X] - PARTICLE_MYU * part_1->velocity[X] ) / ( 2.0 * PARTICLE_MASS );
         part_1->velocity_2[Y] = part_1->velocity[Y] + DELTA * ( force[Y] - PARTICLE_MYU * part_1->velocity[Y] ) / ( 2.0 * PARTICLE_MASS );
         part_1->velocity_2[Z] = part_1->velocity[Z] + DELTA * ( force[Z] - PARTICLE_MYU * part_1->velocity[Z] ) / ( 2.0 * PARTICLE_MASS );
-        
+        */
         part_1->position_new[X] = part_1->position[X] + DELTA * part_1->velocity_2[X];
         part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->velocity_2[Y];
         part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity_2[Z];
@@ -1043,11 +1044,11 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     force[X] += - SPB_MYU * spb.velocity[X];
     force[Y] += - SPB_MYU * spb.velocity[Y];
     force[Z] += - SPB_MYU * spb.velocity[Z];
-    
+    /*
     spb.velocity_2[X] = spb.velocity[X] + DELTA * ( force[X] - SPB_MYU * spb.velocity[X] ) / ( 2.0 * SPB_MASS );
     spb.velocity_2[Y] = spb.velocity[Y] + DELTA * ( force[Y] - SPB_MYU * spb.velocity[Y] ) / ( 2.0 * SPB_MASS );
     spb.velocity_2[Z] = spb.velocity[Z] + DELTA * ( force[Z] - SPB_MYU * spb.velocity[Z] ) / ( 2.0 * SPB_MASS );
-    
+    */
     spb.position_old[X] = spb.position[X];
     spb.position_old[Y] = spb.position[Y];
     spb.position_old[Z] = spb.position[Z];
@@ -1108,7 +1109,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
         }
     }
     
-    
+    /*
     spb.velocity[X] = (2.0 * SPB_MASS * spb.velocity_2[X] + DELTA * force[X]) / (2.0 * SPB_MASS + SPB_MYU * DELTA);
     spb.velocity[Y] = (2.0 * SPB_MASS * spb.velocity_2[Y] + DELTA * force[Y]) / (2.0 * SPB_MASS + SPB_MYU * DELTA);
     spb.velocity[Z] = (2.0 * SPB_MASS * spb.velocity_2[Z] + DELTA * force[Z]) / (2.0 * SPB_MASS + SPB_MYU * DELTA);
@@ -1116,7 +1117,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     spb.velocity_2[X] = spb.velocity[X] + DELTA * ( force[X] - SPB_MYU * spb.velocity[X] ) / ( 2.0 * SPB_MASS );
     spb.velocity_2[Y] = spb.velocity[Y] + DELTA * ( force[Y] - SPB_MYU * spb.velocity[Y] ) / ( 2.0 * SPB_MASS );
     spb.velocity_2[Z] = spb.velocity[Z] + DELTA * ( force[Z] - SPB_MYU * spb.velocity[Z] ) / ( 2.0 * SPB_MASS );
-    
+    */
     spb.position_new[X] = spb.position[X] + DELTA * spb.velocity_2[X];
     spb.position_new[Y] = spb.position[Y] + DELTA * spb.velocity_2[Y];
     spb.position_new[Z] = spb.position[Z] + DELTA * spb.velocity_2[Z];
