@@ -9,12 +9,14 @@
 #define common_h
 
 #include <stdio.h>
-#include<stdlib.h>
-#include<math.h>
-#include<string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
 #include "dSFMT/dSFMT.h"
 #include <time.h>
+#indef _OPENMP
 #include <omp.h>
+#endif
 
 #define DIMENSION (3) //次元
 #define NANO (4.0e-8)   // 長さの単位
@@ -33,7 +35,7 @@
 #define K_MEMBRAIN_EXCLUDE (1.0)     //膜との排除体積効果
 
 #define PARTICLE_RADIUS (1.0)     //粒子の半径
-#define PARTICLE_MASS ( M_A / N_A / 1000.0)      //染色体粒子の質量
+#define PARTICLE_MASS ( M_A / N_A / 1000.0)     //染色体粒子の質量
 #define PARTICLE_MYU (2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 )    //粘性抵抗の強さ
 
 #define SPB_RADIUS ( 3.0 )      //SPBの半径

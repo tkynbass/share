@@ -5,6 +5,7 @@
 //  Created by tkym on 2018/06/06.
 //
 
+
 #include "common.h"
 #include "func_move.h"
 
@@ -17,7 +18,7 @@ int main (int argc, char **argv) {
     
     //dSFMT seed
     dsfmt_t dsfmt;
-    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
+    dsfmt_init_gen_rand (&dsfmt, (unsigned)time(NULL));
     
     //first calculation
     init_particle_calculate (dsfmt);
