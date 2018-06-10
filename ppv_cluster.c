@@ -85,7 +85,7 @@ void read_coordinate( int time ){       //初期値設定
     
 }
 
-void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom_list[BOTTOM_NUMBER]) {
+void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bottom_list[BOTTOM_NUMBER]) {
     
     FILE *fpr;
     
@@ -198,16 +198,16 @@ int main ( int argc, char **argv) {
     //各クラスターの粒子数
     switch (cluster_no) {
         case 1:
-            const unsigned int cl_number = 86;
+            unsigned int cl_number = 86;
             break;
         case 2:
-            const unsigned int cl_number = 78;
+            unsigned int cl_number = 78;
             break;
         case 3:
-            const unsigned int cl_number = 46;
+            unsigned int cl_number = 46;
             break;
         case 4:
-            const unsigned int cl_number = 146;
+            unsigned int cl_number = 146;
             break;
     }
     
@@ -276,7 +276,7 @@ int main ( int argc, char **argv) {
         //printf ("ran_%d = %d\n", i, ran_list[i]);
     }
     
-    read_expression_data (top_list, bottom_list);
+    read_expression_data (/*top_list,*/ bottom_list);
     read_cluster_data (cluster_no, cl_list);
     
     for (i=0; i<DIV_NUMBER; i++){
@@ -326,7 +326,7 @@ int main ( int argc, char **argv) {
         }
         
         ppv /= cl_number*(cl_number-1)/2.0 - no_counter;
-        ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
+        cl_ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
         ppv = 0.0;
         no_counter = 0;
