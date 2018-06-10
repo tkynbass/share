@@ -89,7 +89,7 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
     
     FILE *fpr;
     
-    int i, i_dummy, state, top_count = 0, bottom_count = 0;
+    int i, i_dummy, bottom_count = 0;
     
     char filename[128], dummy[128];
     
@@ -143,7 +143,7 @@ void read_cluster_data (const unsigned int cluster_number, const unsigned int cl
 
     for (i=0; i<cluster_number; i++) {
         
-        fscanf (fpr, "%d\n", list[i]);
+        fscanf (fpr, "%d\n", &list[i]);
     }
     
     fclose (fpr);
@@ -299,10 +299,6 @@ int main ( int argc, char **argv) {
                 
                 if (dist > 0.1713)  ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
-
-                cl_ppv_hist[ (int)dist] += 1.0;
-                
-                //printf("%d %lf %lf\n", t, top_ppv, top_dist);
             }
         }
         
