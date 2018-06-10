@@ -128,11 +128,11 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
     
 }
 
-void read_cluster_data (const unsigned int cluster_no, unsigned int *list ){
+void read_cluster_data (const unsigned int cluster_number, const unsigned int cluster_no, unsigned int list ){
     
     FILE *fpr;
-    char filename[256], box[256];
-    unsigned int count = 0;
+    char filename[256];
+    int i;
     
     sprintf (filename, "cl%d_num.txt", cluster_no);
     
@@ -140,11 +140,10 @@ void read_cluster_data (const unsigned int cluster_no, unsigned int *list ){
         
         printf ("\n     error : can not read cluster data   \n");
     }
-    
-    while ( fgets (box, 3, fpr) != NULL) {
+
+    for (i=0; i<cluster_number; i++) {
         
-        list[count] = atoi (box);
-        count++;
+        fscanf (filename, "%d\n", list[i]);
     }
     
     fclose (fpr);
@@ -214,7 +213,7 @@ int main ( int argc, char **argv) {
             break;
     }
     
-    Particle *top[TOP_NUMBER], *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[cl_number];
+    Particle /**top[TOP_NUMBER],*/ *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[cl_number];
     unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER], cl_list[cl_number];
     unsigned int top_ppv_hist[DIV_NUMBER], bottom_ppv_hist[DIV_NUMBER], ran_ppv_hist[DIV_NUMBER], cl_ppv_hist[DIV_NUMBER];
     double ppv, dist;
@@ -228,36 +227,6 @@ int main ( int argc, char **argv) {
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
-    
-    /*
-    cluster_list = (unsigned int *)malloc(4 * sizeof(unsigned int *));
-    for (i=1; i<=4; i++) {
-        
-        switch (i) {
-            case 1:
-                cluster_list[1] = (unsigned int)malloc(86 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-            case 2:
-                cluster_list[2] = (unsigned int)malloc(78 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-            case 3:
-                cluster_list[3] = (unsigned int)malloc(46 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-            case 4:
-                cluster_list[4] = (unsigned int)malloc(146 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-        }
-    }
-    
-    if (cluster_list == NULL) {
-        
-        printf ("\n error : can not secure the memory -cluster_list-" \n);
-    }
-    */
      
     init_genrand((unsigned)time(NULL));
     
@@ -280,7 +249,7 @@ int main ( int argc, char **argv) {
     }
     
     read_expression_data (/*top_list,*/ bottom_list);
-    read_cluster_data (cluster_no, cl_list);
+    read_cluster_data (cluster_number, cluster_no, cl_list);
     
     for (i=0; i<DIV_NUMBER; i++){
         
