@@ -307,7 +307,7 @@ int main ( int argc, char **argv) {
         }
         for (i=0; i<cl_number; i++) {
             
-            cl[i] = &part[cl_list];
+            cl[i] = &part[cl_list[i]];
         }
         
         ppv = 0.0;
@@ -346,7 +346,7 @@ int main ( int argc, char **argv) {
         }
         
         ppv /= BOTTOM_NUMBER*(BOTTOM_NUMBER-1)/2.0 - no_counter;
-        ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
+        bottom_ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
         ppv = 0.0;
         no_counter = 0;
