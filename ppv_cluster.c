@@ -63,7 +63,7 @@ void read_coordinate( int time ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.txt", time);
+    sprintf (filename, "/media/gensho/spb/tkym/0_3/fission_result_%d.txt", time);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -276,6 +276,7 @@ int main ( int argc, char **argv) {
     }
     
     read_expression_data (top_list, bottom_list);
+    read_cluster_data (cluster_no, cl_list);
     
     for (i=0; i<DIV_NUMBER; i++){
         
