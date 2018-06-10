@@ -50,6 +50,6 @@ cp src/func_move.h result/${result_name}/
 
 echo ""
 
-icc -O3 -xHost -DHAVE_SSE2=1 -DSFMT_MEXP=19937 -g -o simulate_move src/simulate_move.c src/dSFMT/dSFMT.c -qopenmp -fast
+icc -O3 -xHost -DHAVE_SSE2=1 -DSFMT_MEXP=19937 -o simulate_move src/simulate_move.c src/dSFMT/dSFMT.c -qopenmp -fast
 
 ./src/simulate_move ${result_name}

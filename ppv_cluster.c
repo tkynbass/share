@@ -194,6 +194,7 @@ int main ( int argc, char **argv) {
     int width = atoi (argv[3]);
     int cluster_no = atoi (argv[4]);
     
+    //各クラスターの粒子数
     switch (cluster_no) {
         case 1:
             const unsigned int CL_NUBER = 86;
@@ -361,7 +362,7 @@ int main ( int argc, char **argv) {
         
     }
     
-    write_data (cl_ppv_hist, bottom_ppv_hist, ran_ppv_hist);
+    write_data (cl_ppv_hist, bottom_ppv_hist, ran_ppv_hist. cluster_no);
     
     
     return (0);
