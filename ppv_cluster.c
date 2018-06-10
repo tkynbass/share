@@ -128,7 +128,7 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
     
 }
 
-void read_cluster_data (const unsigned int cluster_number, const unsigned int cluster_no, unsigned int list ){
+void read_cluster_data (const unsigned int cluster_number, const unsigned int cluster_no, unsigned int *list ){
     
     FILE *fpr;
     char filename[256];
@@ -214,11 +214,20 @@ int main ( int argc, char **argv) {
     }
     
     Particle /**top[TOP_NUMBER],*/ *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[cl_number];
-    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER], cl_list[cl_number];
+    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER];
     unsigned int top_ppv_hist[DIV_NUMBER], bottom_ppv_hist[DIV_NUMBER], ran_ppv_hist[DIV_NUMBER], cl_ppv_hist[DIV_NUMBER];
     double ppv, dist;
     
     unsigned int no_counter;
+    
+    unsigned int *cl_list;
+    
+    list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
+    
+    if (list == NULL) {
+        
+        printf ("\n     error : can not secure the memory of cl_list    \n");
+    }
     
     part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
