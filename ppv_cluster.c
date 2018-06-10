@@ -143,7 +143,7 @@ void read_cluster_data (const unsigned int cluster_number, const unsigned int cl
 
     for (i=0; i<cluster_number; i++) {
         
-        fscanf (filename, "%d\n", list[i]);
+        fscanf (fpr, "%d\n", list[i]);
     }
     
     fclose (fpr);
@@ -249,7 +249,7 @@ int main ( int argc, char **argv) {
     }
     
     read_expression_data (/*top_list,*/ bottom_list);
-    read_cluster_data (cluster_number, cluster_no, cl_list);
+    read_cluster_data (cl_number, cluster_no, cl_list);
     
     for (i=0; i<DIV_NUMBER; i++){
         
