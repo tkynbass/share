@@ -93,6 +93,7 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
     
     char filename[128], dummy[128];
     
+    /*
     sprintf (filename, "gene_best100.txt");
 
     if ((fpr = fopen(filename, "r")) == NULL){
@@ -107,7 +108,7 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
         fscanf (fpr,"%d %d\n", &i_dummy, &top_list[i]);
     }
     fclose (fpr);
-    
+    */
     
     sprintf (filename, "gene_worst100.txt");
     
@@ -195,19 +196,21 @@ int main ( int argc, char **argv) {
     int width = atoi (argv[3]);
     int cluster_no = atoi (argv[4]);
     
+    unsigned int cl_number;
+    
     //各クラスターの粒子数
     switch (cluster_no) {
         case 1:
-            unsigned int cl_number = 86;
+            cl_number = 86;
             break;
         case 2:
-            unsigned int cl_number = 78;
+            cl_number = 78;
             break;
         case 3:
-            unsigned int cl_number = 46;
+            cl_number = 46;
             break;
         case 4:
-            unsigned int cl_number = 146;
+            cl_number = 146;
             break;
     }
     
