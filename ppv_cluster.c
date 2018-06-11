@@ -231,7 +231,7 @@ int main ( int argc, char **argv) {
     
     cl_list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
     
-    if (list == NULL) {
+    if (cl_list == NULL) {
         
         printf ("\n     error : can not secure the memory of cl_list    \n");
     }
