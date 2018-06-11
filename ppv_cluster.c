@@ -203,18 +203,20 @@ int main ( int argc, char **argv) {
     int width = atoi (argv[3]);
     int cluster_no = atoi (argv[4]);
     
+    unsigned int cl_number;
+    
     switch (cluster_no) {
         case 1:
-            const unsigned int cl_number = 86;
+            cl_number = 86;
             break;
         case 2:
-            const unsigned int cl_number = 78;
+            cl_number = 78;
             break;
         case 3:
-            const unsigned int cl_number = 46;
+            cl_number = 46;
             break;
         case 4:
-            const unsigned int cl_number = 146;
+            cl_number = 146;
             break;
     }
     
@@ -357,7 +359,7 @@ int main ( int argc, char **argv) {
         }
         
         ppv /= BOTTOM_NUMBER*(BOTTOM_NUMBER-1)/2.0 - no_counter;
-        ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
+        bottom_ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
         ppv = 0.0;
         no_counter = 0;
