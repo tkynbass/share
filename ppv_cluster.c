@@ -1,5 +1,5 @@
 //
-//  dis_hist.c
+//  ppv_cluster.c
 //  
 //
 //  Created by 高山雄揮 on 2018/01/20.
@@ -63,7 +63,7 @@ void read_coordinate( int time ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.txt", time);
+    sprintf (filename, "/media/gensho/spb/tkym/0_3/fission_result_%d.txt", time);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
