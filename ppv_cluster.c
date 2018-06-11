@@ -229,7 +229,7 @@ int main ( int argc, char **argv) {
     
     unsigned int *cl_list;
     
-    list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
+    cl_list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
     
     if (list == NULL) {
         
