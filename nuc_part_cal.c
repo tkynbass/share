@@ -101,7 +101,7 @@ void init_particle( int start ){       //初期値設定
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
-        printf ("error \n");
+        printf ("\n     error : can not read coordinate \n");
         
         exit (1);
     }
@@ -165,6 +165,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
+/*
 ///// 発現量の高い遺伝子に核中心方向への力を加える
 void high_expression (const const Particle *part_1, double force[DIMENSION]) {
     
@@ -174,6 +175,7 @@ void high_expression (const const Particle *part_1, double force[DIMENSION]) {
     force[Z] += - k_expression * (part_1->position[Z] - 0.0);
     
 }
+*/
 void spring (const Particle *part_1, const Particle *part_2, double force[DIMENSION]) {     //ばね
     
     double dist, dist_0;
@@ -1908,11 +1910,11 @@ void write_coordinate (int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "/nucleolus_particle/result_%d.txt", t + start);
+    sprintf (result, "nucleolus_particle/result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
-        printf (" \n error \n");
+        printf (" \n    error : can not write \n");
         
         exit (1);
     }
