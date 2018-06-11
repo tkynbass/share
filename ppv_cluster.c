@@ -85,7 +85,7 @@ void read_coordinate( int time ){       //初期値設定
     
 }
 
-void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom_list[BOTTOM_NUMBER]) {
+void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bottom_list[BOTTOM_NUMBER]) {
     
     FILE *fpr;
     
@@ -93,6 +93,7 @@ void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom
     
     char filename[128], dummy[128];
     
+    /*
     sprintf (filename, "gene_best100.txt");
 
     if ((fpr = fopen(filename, "r")) == NULL){
@@ -107,7 +108,7 @@ void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom
         fscanf (fpr,"%d %d\n", &i_dummy, &top_list[i]);
     }
     fclose (fpr);
-    
+    */
     
     sprintf (filename, "gene_worst100.txt");
     
@@ -127,11 +128,13 @@ void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom
     
 }
 
-void read_cluster_data (const unsigned int cluster_no, unsigned int *list ){
+
+void read_cluster_data (const unsigned int cl_number, const unsigned int cluster_no, unsigned int *list ){
     
     FILE *fpr;
     char filename[256];
     unsigned int count = 0;
+    int i;
     
     sprintf (filename, "cl%d_num.txt", cluster_no);
     
@@ -140,9 +143,15 @@ void read_cluster_data (const unsigned int cluster_no, unsigned int *list ){
         printf ("\n     error : can not read cluster data   \n");
     }
     
+    /*
     while ( fgets (list[count], 3, fpr) != NULL) {
         
         count++;
+    }*/
+    
+    for (i=0; i<cl_number; i++) {
+        
+        fscanf (fpr, "%d\n", &list[i]);
     }
     
     fclose (fpr);
@@ -196,29 +205,38 @@ int main ( int argc, char **argv) {
     
     switch (cluster_no) {
         case 1:
-            const unsigned int CL_NUBER = 86;
+            const unsigned int cl_number = 86;
             break;
         case 2:
-            const unsigned int CL_NUBER = 78;
+            const unsigned int cl_number = 78;
             break;
         case 3:
-            const unsigned int CL_NUBER = 46;
+            const unsigned int cl_number = 46;
             break;
         case 4:
-            const unsigned int CL_NUBER = 146;
+            const unsigned int cl_number = 146;
             break;
     }
     
-    Particle *top[TOP_NUMBER], *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[CL_NUBER];
-    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER], cl_list[CL_NUBER];
+    Particle /**top[TOP_NUMBER],*/ *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[cl_number];
+    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER];
     unsigned int top_ppv_hist[DIV_NUMBER], bottom_ppv_hist[DIV_NUMBER], ran_ppv_hist[DIV_NUMBER], cl_ppv_hist[DIV_NUMBER];
     double ppv, dist;
     
     unsigned int no_counter;
     
+    unsigned int *cl_list;
+    
+    list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
+    
+    if (list == NULL) {
+        
+        printf ("\n     error : can not secure the memory of cl_list    \n");
+    }
+    
     part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
-    if (ptr == NULL) {
+    if (part == NULL) {
         
         printf("\n error : can not secure the memory \n");
         exit(1);
@@ -274,7 +292,8 @@ int main ( int argc, char **argv) {
         //printf ("ran_%d = %d\n", i, ran_list[i]);
     }
     
-    read_expression_data (top_list, bottom_list);
+    read_expression_data (/*top_list,*/ bottom_list);
+    read_cluster_data (cl_number, cluster_no, cl_list);
     
     for (i=0; i<DIV_NUMBER; i++){
         
@@ -299,31 +318,29 @@ int main ( int argc, char **argv) {
             
             ran[i] = &part[ran_list[i]];
         }
-        for (i=0; i<CL_NUBER; i++) {
+        for (i=0; i<cl_number; i++) {
             
-            cl[i] = &part[cl_list];
+            cl[i] = &part[cl_list[i]];
         }
         
         ppv = 0.0;
         no_counter = 0;
       
-        for (i=0; i<CL_NUMBER; i++) {
+        for (i=0; i<cl_number; i++) {
             
-            for (j=i+1; j<CL_NUMBER; j++) {
+            for (j=i+1; j<cl_number; j++) {
                 
                 dist = Euclid_norm (cl[i]->position, cl[j]->position) * 0.04 * 0.71/ 1.28;
                 
-                if (dist > 0.1713)  top_ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
+                if (dist > 0.1713)  ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
-
-                cl_ppv_hist[ (int)dist] += 1.0;
                 
                 //printf("%d %lf %lf\n", t, top_ppv, top_dist);
             }
         }
         
-        ppv /= CL_NUMBER*(CL_NUMBER-1)/2.0 - no_counter;
-        ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
+        ppv /= cl_number*(cl_number-1)/2.0 - no_counter;
+        cl_ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
         ppv = 0.0;
         no_counter = 0;
@@ -334,7 +351,7 @@ int main ( int argc, char **argv) {
                 
                 dist = Euclid_norm (bottom[i]->position, bottom[j]->position) * 0.04 * 0.71/ 1.28;
                 
-                if (dist > 0.1713) ppv += -log((bottom_dist - 0.1713)/1.0965) / 0.6865;
+                if (dist > 0.1713) ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
             }
         }
@@ -351,7 +368,7 @@ int main ( int argc, char **argv) {
                 
                 dist = Euclid_norm (ran[i]->position, ran[j]->position) * 0.04 * 0.71/ 1.28;
                 
-                if (dist > 0.1713) ppv += -log((ran_dist - 0.1713)/1.0965) / 0.6865;
+                if (dist > 0.1713) ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
             }
         }
@@ -361,7 +378,7 @@ int main ( int argc, char **argv) {
         
     }
     
-    write_data (cl_ppv_hist, bottom_ppv_hist, ran_ppv_hist);
+    write_data (cl_ppv_hist, bottom_ppv_hist, ran_ppv_hist, cluster_no);
     
     
     return (0);
