@@ -63,7 +63,7 @@ void read_coordinate( int time ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "/media/gensho/spb/tkym/0_3/fission_result_%d.txt", time);
+    sprintf (filename, "fission_result_%d.txt", time);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -85,15 +85,14 @@ void read_coordinate( int time ){       //初期値設定
     
 }
 
-void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bottom_list[BOTTOM_NUMBER]) {
+void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom_list[BOTTOM_NUMBER]) {
     
     FILE *fpr;
     
-    int i, i_dummy, bottom_count = 0;
+    int i, i_dummy, state, top_count = 0, bottom_count = 0;
     
     char filename[128], dummy[128];
     
-    /*
     sprintf (filename, "gene_best100.txt");
 
     if ((fpr = fopen(filename, "r")) == NULL){
@@ -108,7 +107,7 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
         fscanf (fpr,"%d %d\n", &i_dummy, &top_list[i]);
     }
     fclose (fpr);
-    */
+    
     
     sprintf (filename, "gene_worst100.txt");
     
@@ -128,11 +127,11 @@ void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bo
     
 }
 
-void read_cluster_data (const unsigned int cluster_number, const unsigned int cluster_no, unsigned int *list ){
+void read_cluster_data (const unsigned int cluster_no, unsigned int *list ){
     
     FILE *fpr;
     char filename[256];
-    int i;
+    unsigned int count = 0;
     
     sprintf (filename, "cl%d_num.txt", cluster_no);
     
@@ -140,10 +139,10 @@ void read_cluster_data (const unsigned int cluster_number, const unsigned int cl
         
         printf ("\n     error : can not read cluster data   \n");
     }
-
-    for (i=0; i<cluster_number; i++) {
+    
+    while ( fgets (list[count], 3, fpr) != NULL) {
         
-        fscanf (fpr, "%d\n", &list[i]);
+        count++;
     }
     
     fclose (fpr);
@@ -160,7 +159,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-void write_data (const unsigned int cl_ppv_hist[DIV_NUMBER], const unsigned int bottom_ppv_hist[DIV_NUMBER],
+void write_data (const unsigned int top_ppv_hist[DIV_NUMBER], const unsigned int bottom_ppv_hist[DIV_NUMBER],
                  const unsigned int ran_ppv_hist[DIV_NUMBER], unsigned int cluster_no) {
     
     unsigned int i, j;
@@ -180,7 +179,7 @@ void write_data (const unsigned int cl_ppv_hist[DIV_NUMBER], const unsigned int 
     
     for (i=0; i<DIV_NUMBER; i++) {
         
-        fprintf (fpw, "%3f %d %d %d\n", i*DIV_DELTA + RANGE_MIN, cl_ppv_hist[i], bottom_ppv_hist[i],
+        fprintf (fpw, "%3f %d %d %d\n", i*DIV_DELTA + RANGE_MIN, top_ppv_hist[i], bottom_ppv_hist[i],
                  ran_ppv_hist[i]);
     }
     
@@ -195,47 +194,65 @@ int main ( int argc, char **argv) {
     int width = atoi (argv[3]);
     int cluster_no = atoi (argv[4]);
     
-    unsigned int cl_number;
-    
-    //各クラスターの粒子数
     switch (cluster_no) {
         case 1:
-            cl_number = 86;
+            const unsigned int CL_NUBER = 86;
             break;
         case 2:
-            cl_number = 78;
+            const unsigned int CL_NUBER = 78;
             break;
         case 3:
-            cl_number = 46;
+            const unsigned int CL_NUBER = 46;
             break;
         case 4:
-            cl_number = 146;
+            const unsigned int CL_NUBER = 146;
             break;
     }
     
-    Particle /**top[TOP_NUMBER],*/ *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[cl_number];
-    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER];
+    Particle *top[TOP_NUMBER], *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[CL_NUBER];
+    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER], cl_list[CL_NUBER];
     unsigned int top_ppv_hist[DIV_NUMBER], bottom_ppv_hist[DIV_NUMBER], ran_ppv_hist[DIV_NUMBER], cl_ppv_hist[DIV_NUMBER];
     double ppv, dist;
     
     unsigned int no_counter;
     
-    unsigned int *cl_list;
-    
-    list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
-    
-    if (list == NULL) {
-        
-        printf ("\n     error : can not secure the memory of cl_list    \n");
-    }
-    
     part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
-    if (part == NULL) {
+    if (ptr == NULL) {
         
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
+    
+    /*
+    cluster_list = (unsigned int *)malloc(4 * sizeof(unsigned int *));
+    for (i=1; i<=4; i++) {
+        
+        switch (i) {
+            case 1:
+                cluster_list[1] = (unsigned int)malloc(86 * sizeof(unsigned int));
+                read_cluster_data ( i, cluster_list[i]);
+                break;
+            case 2:
+                cluster_list[2] = (unsigned int)malloc(78 * sizeof(unsigned int));
+                read_cluster_data ( i, cluster_list[i]);
+                break;
+            case 3:
+                cluster_list[3] = (unsigned int)malloc(46 * sizeof(unsigned int));
+                read_cluster_data ( i, cluster_list[i]);
+                break;
+            case 4:
+                cluster_list[4] = (unsigned int)malloc(146 * sizeof(unsigned int));
+                read_cluster_data ( i, cluster_list[i]);
+                break;
+        }
+    }
+    
+    if (cluster_list == NULL) {
+        
+        printf ("\n error : can not secure the memory -cluster_list-" \n);
+    }
+    */
      
     init_genrand((unsigned)time(NULL));
     
@@ -257,8 +274,7 @@ int main ( int argc, char **argv) {
         //printf ("ran_%d = %d\n", i, ran_list[i]);
     }
     
-    read_expression_data (/*top_list,*/ bottom_list);
-    read_cluster_data (cl_number, cluster_no, cl_list);
+    read_expression_data (top_list, bottom_list);
     
     for (i=0; i<DIV_NUMBER; i++){
         
@@ -283,27 +299,31 @@ int main ( int argc, char **argv) {
             
             ran[i] = &part[ran_list[i]];
         }
-        for (i=0; i<cl_number; i++) {
+        for (i=0; i<CL_NUBER; i++) {
             
-            cl[i] = &part[cl_list[i]];
+            cl[i] = &part[cl_list];
         }
         
         ppv = 0.0;
         no_counter = 0;
       
-        for (i=0; i<cl_number; i++) {
+        for (i=0; i<CL_NUMBER; i++) {
             
-            for (j=i+1; j<cl_number; j++) {
+            for (j=i+1; j<CL_NUMBER; j++) {
                 
                 dist = Euclid_norm (cl[i]->position, cl[j]->position) * 0.04 * 0.71/ 1.28;
                 
-                if (dist > 0.1713)  ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
+                if (dist > 0.1713)  top_ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
+
+                cl_ppv_hist[ (int)dist] += 1.0;
+                
+                //printf("%d %lf %lf\n", t, top_ppv, top_dist);
             }
         }
         
-        ppv /= cl_number*(cl_number-1)/2.0 - no_counter;
-        cl_ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
+        ppv /= CL_NUMBER*(CL_NUMBER-1)/2.0 - no_counter;
+        ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
         ppv = 0.0;
         no_counter = 0;
@@ -314,13 +334,13 @@ int main ( int argc, char **argv) {
                 
                 dist = Euclid_norm (bottom[i]->position, bottom[j]->position) * 0.04 * 0.71/ 1.28;
                 
-                if (dist > 0.1713) ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
+                if (dist > 0.1713) ppv += -log((bottom_dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
             }
         }
         
         ppv /= BOTTOM_NUMBER*(BOTTOM_NUMBER-1)/2.0 - no_counter;
-        bottom_ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
+        ppv_hist[(int)((ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
         ppv = 0.0;
         no_counter = 0;
@@ -331,7 +351,7 @@ int main ( int argc, char **argv) {
                 
                 dist = Euclid_norm (ran[i]->position, ran[j]->position) * 0.04 * 0.71/ 1.28;
                 
-                if (dist > 0.1713) ppv += -log((dist - 0.1713)/1.0965) / 0.6865;
+                if (dist > 0.1713) ppv += -log((ran_dist - 0.1713)/1.0965) / 0.6865;
                 else no_counter++;
             }
         }
@@ -341,7 +361,7 @@ int main ( int argc, char **argv) {
         
     }
     
-    write_data (cl_ppv_hist, bottom_ppv_hist, ran_ppv_hist, cluster_no);
+    write_data (cl_ppv_hist, bottom_ppv_hist, ran_ppv_hist);
     
     
     return (0);
