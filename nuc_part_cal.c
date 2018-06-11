@@ -10,7 +10,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include "dSFMT.h"
+#include "dSFMT/dSFMT.h"
 //#include "MT.h"
 #include <time.h>
 #include <omp.h>
@@ -97,7 +97,7 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.txt", start);
+    sprintf (filename, "nucleolus_particle/fission_result_%d.txt", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -1908,7 +1908,7 @@ void write_coordinate (int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "result_%d.txt", t + start);
+    sprintf (result, "/nucleolus_particle/result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
