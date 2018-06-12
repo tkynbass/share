@@ -10,7 +10,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include "dSFMT.h"
+#include "dSFMT/dSFMT.h"
 //#include "MT.h"
 #include <time.h>
 #include <omp.h>
@@ -97,7 +97,7 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.txt", start);
+    sprintf (filename, "nucleolus_particle/fission_result_%d.txt", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -165,6 +165,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
+/*
 ///// 発現量の高い遺伝子に核中心方向への力を加える
 void high_expression (const const Particle *part_1, double force[DIMENSION]) {
     
@@ -174,6 +175,7 @@ void high_expression (const const Particle *part_1, double force[DIMENSION]) {
     force[Z] += - k_expression * (part_1->position[Z] - 0.0);
     
 }
+*/
 void spring (const Particle *part_1, const Particle *part_2, double force[DIMENSION]) {     //ばね
     
     double dist, dist_0;
@@ -376,14 +378,14 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        }
+        }/*
         else {
             
             p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        }
+        }*/
         
         
         
@@ -1074,14 +1076,17 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         part_1 = &part[i];
         
         //noise
-        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-        theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        
-        force[X] = p1 * sin(theta) / sqrt(DELTA);
-        force[Y] = p1 * cos(theta) / sqrt(DELTA);
-        force[Z] = p2 * sin(psi) / sqrt(DELTA);
+        if (part_1->particle_type != rDNA) {
+            
+            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            
+            force[X] = p1 * sin(theta) / sqrt(DELTA);
+            force[Y] = p1 * cos(theta) / sqrt(DELTA);
+            force[Z] = p2 * sin(psi) / sqrt(DELTA);
+        }
         
         
         /*
@@ -1093,7 +1098,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
          }*/
         
         
-        switch (part[i].particle_type) {
+        switch (part_1->particle_type) {
                 case Normal:
                 
                 part_2 = &part[i-1];
@@ -1908,11 +1913,11 @@ void write_coordinate (int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "result_%d.txt", t + start);
+    sprintf (result, "nucleolus_particle/result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
-        printf (" \n error \n");
+        printf (" \n    error : can not write coordinate. \n");
         
         exit (1);
     }
