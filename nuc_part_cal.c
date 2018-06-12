@@ -378,6 +378,14 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            
+            force[X] = p1 * sin(theta) / sqrt(DELTA);
+            force[Y] = p1 * cos(theta) / sqrt(DELTA);
+            force[Z] = p2 * sin(psi) / sqrt(DELTA);
+            
+            force[X] += - PARTICLE_MYU * part_1->velocity[X];
+            force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
+            force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
         }/*
         else {
             
@@ -385,27 +393,15 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        }*/
-        
-        
-        
-        force[X] = p1 * sin(theta) / sqrt(DELTA);
-        force[Y] = p1 * cos(theta) / sqrt(DELTA);
-        force[Z] = p2 * sin(psi) / sqrt(DELTA);
-        
-        if (part_1->particle_type != rDNA ){
-            
-            force[X] += - PARTICLE_MYU * part_1->velocity[X];
-            force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
-            force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
-        }
-        else {
-            
+          
+            force[X] = p1 * sin(theta) / sqrt(DELTA);
+            force[Y] = p1 * cos(theta) / sqrt(DELTA);
+            force[Z] = p2 * sin(psi) / sqrt(DELTA);
+         
             force[X] += - rDNA_MYU * part_1->velocity[X];
             force[Y] += - rDNA_MYU * part_1->velocity[Y];
             force[Z] += - rDNA_MYU * part_1->velocity[Z];
-        }
-        
+        }*/
         
         /*
          if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
@@ -743,7 +739,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         }
                         
                         //spring2
-                        if ( i == 6468 ) part_2 = &part[5011];
+                        if ( i == 6468 ) part_2 = &part[5013];
                         else  part_2 = &part[i-2];
                         
                         part_3 = &part[i+2];
@@ -1086,6 +1082,12 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             force[X] = p1 * sin(theta) / sqrt(DELTA);
             force[Y] = p1 * cos(theta) / sqrt(DELTA);
             force[Z] = p2 * sin(psi) / sqrt(DELTA);
+        }
+        else {
+            
+            force[X] = 0.0;
+            force[Y] = 0.0;
+            force[Z] = 0.0;
         }
         
         
