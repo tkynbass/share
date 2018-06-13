@@ -403,12 +403,12 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             force[Z] += - rDNA_MYU * part_1->velocity[Z];
 	    */
 	    
-	    force[X] = 0.0;
+            force[X] = 0.0;
             force[Y] = 0.0;
             force[Z] = 0.0;
         }
         
-        
+        /*
          if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
          
          high_expression (part_1, force);
@@ -717,6 +717,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
                 switch (i) {
                         
+                        //
                         case 6468:
                         case 6193:
                         
@@ -786,6 +787,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         
                         break;
                         
+                        ///////核膜結合側　　テロメア/////
                         case 6742:
                         case 6467:
                         
