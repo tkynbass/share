@@ -386,9 +386,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             force[X] += - PARTICLE_MYU * part_1->velocity[X];
             force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
             force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
-        }/*
+        }
         else {
-            
+            /*
             p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
@@ -401,9 +401,14 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             force[X] += - rDNA_MYU * part_1->velocity[X];
             force[Y] += - rDNA_MYU * part_1->velocity[Y];
             force[Z] += - rDNA_MYU * part_1->velocity[Z];
-        }*/
+	    */
+	    
+	    force[X] = 0.0;
+            force[Y] = 0.0;
+            force[Z] = 0.0;
+        }
         
-        /*
+        
          if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
          
          high_expression (part_1, force);
