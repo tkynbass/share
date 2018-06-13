@@ -1224,6 +1224,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
     }
     
+    //printf ("force[X] = %lf, force[Y] = %lf, force[Z] = %lf \n", nucleolus_force[X], nucleolus_force[Y], nucleolus_force[Z]);
+    
     nucleolus.velocity[X] = (2.0 * nucleolus_mass * nucleolus.velocity_2[X] + DELTA * force[X]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
     nucleolus.velocity[Y] = (2.0 * nucleolus_mass * nucleolus.velocity_2[Y] + DELTA * force[Y]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
     nucleolus.velocity[Z] = (2.0 * nucleolus_mass * nucleolus.velocity_2[Z] + DELTA * force[Z]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
