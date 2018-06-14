@@ -1910,7 +1910,10 @@ void nucleolus_particle_set (void) {
         part_1->chr_no = 2;
     }
     
-    nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin) / 2.0 + Euclid_norm (part[6743].position, origin) / 2.0;
+    //nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin) / 2.0 + Euclid_norm (part[6742].position, origin) / 2.0;
+    
+    if (Euclid_norm ( part[6467].position, origin) < Euclid_norm ( part[6742].position, origin)) nucleolus_setting_radius = Euclid_norm ( part[6742].position, origin);
+    else nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin);
     
 }
 
