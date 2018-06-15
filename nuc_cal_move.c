@@ -1226,13 +1226,13 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     
     //printf ("force[X] = %lf, force[Y] = %lf, force[Z] = %lf \n", nucleolus_force[X], nucleolus_force[Y], nucleolus_force[Z]);
     
-    nucleolus.velocity[X] = (2.0 * nucleolus_mass * nucleolus.velocity_2[X] + DELTA * force[X]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
-    nucleolus.velocity[Y] = (2.0 * nucleolus_mass * nucleolus.velocity_2[Y] + DELTA * force[Y]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
-    nucleolus.velocity[Z] = (2.0 * nucleolus_mass * nucleolus.velocity_2[Z] + DELTA * force[Z]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
+    nucleolus.velocity[X] = (2.0 * nucleolus_mass * nucleolus.velocity_2[X] + DELTA * nucleolus_force[X]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
+    nucleolus.velocity[Y] = (2.0 * nucleolus_mass * nucleolus.velocity_2[Y] + DELTA * nucleolus_force[Y]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
+    nucleolus.velocity[Z] = (2.0 * nucleolus_mass * nucleolus.velocity_2[Z] + DELTA * nucleolus_force[Z]) / (2.0 * nucleolus_mass + nucleolus_myu * DELTA);
     
-    nucleolus.velocity_2[X] = nucleolus.velocity[X] + DELTA * ( force[X] - nucleolus_myu * nucleolus.velocity[X] ) / ( 2.0 * nucleolus_mass );
-    nucleolus.velocity_2[Y] = nucleolus.velocity[Y] + DELTA * ( force[Y] - nucleolus_myu * nucleolus.velocity[Y] ) / ( 2.0 * nucleolus_mass );
-    nucleolus.velocity_2[Z] = nucleolus.velocity[Z] + DELTA * ( force[X] - nucleolus_myu * nucleolus.velocity[Z] ) / ( 2.0 * nucleolus_mass );
+    nucleolus.velocity_2[X] = nucleolus.velocity[X] + DELTA * ( nucleolus_force[X] - nucleolus_myu * nucleolus.velocity[X] ) / ( 2.0 * nucleolus_mass );
+    nucleolus.velocity_2[Y] = nucleolus.velocity[Y] + DELTA * ( nucleolus_force[Y] - nucleolus_myu * nucleolus.velocity[Y] ) / ( 2.0 * nucleolus_mass );
+    nucleolus.velocity_2[Z] = nucleolus.velocity[Z] + DELTA * ( nucleolus_force[X] - nucleolus_myu * nucleolus.velocity[Z] ) / ( 2.0 * nucleolus_mass );
     
     nucleolus.position_new[X] = nucleolus.position[X] + DELTA * nucleolus.velocity_2[X];
     nucleolus.position_new[Y] = nucleolus.position[Y] + DELTA * nucleolus.velocity_2[Y];
@@ -1403,7 +1403,7 @@ int main ( int argc, char **argv ) {
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
     
-    Init_particle( start_number );
+    init_particle( start_number );
     
     nucleolus_mass = PI * membrain_radius * membrain_radius * membrain_radius / 3.0;        //核小体質量（体積）
     nucleolus_myu = 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100;
