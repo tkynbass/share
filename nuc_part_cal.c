@@ -756,12 +756,12 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         dist = Euclid_norm (part_1->position, part_3->position);
                         f_3 = K_BOND_2 * ( (rDNA_RADIUS + 3.0 * PARTICLE_RADIUS) * 0.8 - dist) / dist;
                         
-                        force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                        + f_3 * (part_1->position[X] - part_3->position[X]);
-                        force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                        + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                        force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                        + f_3 * (part_1->position[Z] - part_3->position[Z]);
+                        force[X] += /*f_2 * (part_1->position[X] - part_2->position[X])
+                        +*/ f_3 * (part_1->position[X] - part_3->position[X]);
+                        force[Y] += /*f_2 * (part_1->position[Y] - part_2->position[Y])
+                        +*/ f_3 * (part_1->position[Y] - part_3->position[Y]);
+                        force[Z] += /*f_2 * (part_1->position[Z] - part_2->position[Z])
+                        +*/ f_3 * (part_1->position[Z] - part_3->position[Z]);
                         
                         /*
                          //核小体領域表面を滑る
@@ -1445,12 +1445,12 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         dist = Euclid_norm (part_1->position, part_3->position);
                         f_3 = K_BOND_2 * ( (rDNA_RADIUS + 3.0 * PARTICLE_RADIUS) * 0.8 - dist) / dist;
                         
-                        force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                        + f_3 * (part_1->position[X] - part_3->position[X]);
-                        force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                        + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                        force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                        + f_3 * (part_1->position[Z] - part_3->position[Z]);
+                        force[X] += /*f_2 * (part_1->position[X] - part_2->position[X])
+                                     +*/ f_3 * (part_1->position[X] - part_3->position[X]);
+                        force[Y] += /*f_2 * (part_1->position[Y] - part_2->position[Y])
+                                     +*/ f_3 * (part_1->position[Y] - part_3->position[Y]);
+                        force[Z] += /*f_2 * (part_1->position[Z] - part_2->position[Z])
+                                     +*/ f_3 * (part_1->position[Z] - part_3->position[Z]);
                         
                         /*
                         //核小体領域表面を滑る
@@ -2030,11 +2030,13 @@ int main ( int argc, char **argv ) {
             SPB_calculate(dsfmt, l);
             
             renew ();
+            
+            if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0e-4;
         }
 
         write_coordinate ( t , start_number);
         
-        if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0;
+        
     }
     
     return ( 0 );
