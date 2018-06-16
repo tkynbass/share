@@ -1594,7 +1594,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                             default:
                                 
                                 part_2 = &part[i-2];
-                                part_3 = &part[i+3];
+                                part_3 = &part[i+2];
                                 
                                 dist = Euclid_norm (part_1->position, part_2->position);
                                 f_2 = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
@@ -1788,6 +1788,8 @@ void renew () {
     
     Particle *part_1;
     
+    //核小体粒子のみ値を更新
+
     for(i = 6193; i < NUMBER; i++){    //値の更新
         
         part_1 = &part[i];
@@ -1912,8 +1914,8 @@ void nucleolus_particle_set (void) {
     
     //nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin) / 2.0 + Euclid_norm (part[6742].position, origin) / 2.0;
     
-    if (Euclid_norm ( part[6467].position, origin) < Euclid_norm ( part[6742].position, origin)) nucleolus_setting_radius = Euclid_norm ( part[6742].position, origin);
-    else nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin);
+    if (Euclid_norm ( part[6467].position, origin) < Euclid_norm ( part[6742].position, origin)) nucleolus_setting_radius = Euclid_norm ( part[6742].position, origin) + rDNA_RADIUS;
+    else nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin) + rDNA_RADIUS;
     
 }
 
