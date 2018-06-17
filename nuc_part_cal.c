@@ -2036,9 +2036,9 @@ int main ( int argc, char **argv ) {
             
             if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0e-4;
             
-            write_coordinate ( l , start_number);
+            //write_coordinate ( l , start_number);
         }
-        
+        write_coordinate ( t , start_number);
         
     }
     
