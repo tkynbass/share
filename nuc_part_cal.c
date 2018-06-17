@@ -805,7 +805,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
                         f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius - rDNA_RADIUS - dist ) / dist;
                         
-                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS) {
+                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS && Euclid_norm ( part_1->position, origin) < membrain_radius) {
                             
                             force[X] += f * (part_1->position[X] - Nucleolus_circle_center[X]);
                             force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
@@ -928,7 +928,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
                         f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius - rDNA_RADIUS - dist ) / dist;
                         
-                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS) {
+                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS && dist > 4.0 * membrain_radius - rDNA_RADIUS && Euclid_norm ( part_1->position, origin) < membrain_radius) {
                             
                             force[X] += f * (part_1->position[X] - Nucleolus_circle_center[X]);
                             force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
@@ -1493,7 +1493,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
                         f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius - rDNA_RADIUS - dist ) / dist;
                         
-                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS) {
+                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS && dist > 4.0 * membrain_radius - rDNA_RADIUS && Euclid_norm ( part_1->position, origin) < membrain_radius) {
                             
                             force[X] += f * (part_1->position[X] - Nucleolus_circle_center[X]);
                             force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
@@ -1618,7 +1618,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
                         f = MEMBRAIN_EXCLUDE * ( 4.0 * membrain_radius - rDNA_RADIUS - dist ) / dist;
                         
-                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS) {
+                        if ( dist > 4.0 * membrain_radius - rDNA_RADIUS && dist > 4.0 * membrain_radius - rDNA_RADIUS && Euclid_norm ( part_1->position, origin) < membrain_radius) {
                             
                             force[X] += f * (part_1->position[X] - Nucleolus_circle_center[X]);
                             force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
