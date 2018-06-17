@@ -1553,7 +1553,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         
                         //ひもの硬さポテンシャル spring2
                         switch (i) {
-                                
+                            
+                            /*
                             case 6469:
                             case 6194:
                                 
@@ -1576,7 +1577,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                                 + f_3 * (part_1->position[Z] - part_3->position[Z]);
                                 
                                 break;
-                            
+                             */
                             case 6741:
                             case 6466:
 
@@ -2034,9 +2035,9 @@ int main ( int argc, char **argv ) {
             renew ();
             
             if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0e-4;
+            
+            write_coordinate ( t , start_number);
         }
-
-        write_coordinate ( t , start_number);
         
         
     }
