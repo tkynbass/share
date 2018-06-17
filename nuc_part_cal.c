@@ -1000,9 +1000,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
                 if ( part_1->particle_type != rDNA && part_2->particle_type != rDNA) {
                     
-                    if (dist < 2.0 * PARTICLE_RADIUS){
+                    if (dist < 2.0 * PARTICLE_RADIUS * 0.8){
                         
-                        f = K_EXCLUDE * (2 * PARTICLE_RADIUS - dist) / dist;
+                        f = K_EXCLUDE * (2 * PARTICLE_RADIUS * 0.8 - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1011,9 +1011,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 }
                 else if (part_1->particle_type == rDNA && part_2->particle_type == rDNA) {
                     
-                    if (dist < 2.0 * rDNA_RADIUS){
+                    if (dist < 2.0 * rDNA_RADIUS * 0.8){
                         
-                        f = K_EXCLUDE * (rDNA_RADIUS - dist) / dist;
+                        f = K_EXCLUDE * ( 2.0 * rDNA_RADIUS * 0.8 - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1022,9 +1022,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 }
                 else {
                         
-                    if (dist < PARTICLE_RADIUS + rDNA_RADIUS){
+                    if (dist < (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8){
                         
-                        f = K_EXCLUDE * ( PARTICLE_RADIUS + rDNA_RADIUS - dist) / dist;
+                        f = K_EXCLUDE * ( (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1720,9 +1720,9 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 if ( part_1->particle_type != rDNA && part_2->particle_type != rDNA) {
                     
-                    if (dist < 2 * PARTICLE_RADIUS){
+                    if (dist < 2.0 * PARTICLE_RADIUS * 0.8){
                         
-                        f = K_EXCLUDE * (2 * PARTICLE_RADIUS - dist) / dist;
+                        f = K_EXCLUDE * (2 * PARTICLE_RADIUS * 0.8 - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1731,9 +1731,9 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 }
                 else if (part_1->particle_type == rDNA && part_2->particle_type == rDNA) {
                     
-                    if (dist < 2 * rDNA_RADIUS){
+                    if (dist < 2.0 * rDNA_RADIUS * 0.8){
                         
-                        f = K_EXCLUDE * (2.0 * rDNA_RADIUS - dist) / dist;
+                        f = K_EXCLUDE * ( 2.0 * rDNA_RADIUS * 0.8 - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1742,9 +1742,9 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 }
                 else {
                     
-                    if (dist < PARTICLE_RADIUS + rDNA_RADIUS){
+                    if (dist < (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8){
                         
-                        f = K_EXCLUDE * ( PARTICLE_RADIUS + rDNA_RADIUS - dist) / dist;
+                        f = K_EXCLUDE * ( (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
