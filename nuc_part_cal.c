@@ -53,7 +53,8 @@
 double nucleolus_setting_radius;
 
 double Nucleolus_circle_center[3], k_expression;
-int centro_no = 5542;
+
+unsigned int simulate_type;
 
 typedef enum chain {
     A, B, C
@@ -97,36 +98,70 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "nucleolus_particle/fission_result_%d.txt", start);
+    printf ("\n     reading data_name : (fission_result / 0) or (result /1) \n");
+    scanf ("%d", &simulate_type);
     
-    if ((fpr = fopen(filename, "r")) == NULL){
+    if (simulate_type == 0) {
         
-        printf ("\n     error : can not read \n");
+        sprintf (filename, "nucleolus_particle/fission_result_%d.txt", start);
         
-        exit (1);
+        if ((fpr = fopen(filename, "r")) == NULL){
+            
+            printf ("\n     error : can not read \n");
+            
+            exit (1);
+        }
+        
+        for (i=0; i<INIT_NUMBER; i++){
+            
+            fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
+                   &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
+                   &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z],
+                   &membrain_radius);
+            //fgets(dummy, 128, fpr);
+            
+            //printf ("%d %lf %lf %lf \n", i, part[i].position[X], part[i].position[Y], part[i].position[Z]);
+            
+        }
+        
+        fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
+                &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
+        fgets(dummy, 128, fpr);
+        
+        fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
     }
-    
-    for (i=0; i<INIT_NUMBER; i++){
+    else {
         
-        fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
-               &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
-               &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z],
-               &membrain_radius);
-        //fgets(dummy, 128, fpr);
+        sprintf (filename, "nucleolus_particle/result_%d.txt", start);
         
-        //printf ("%d %lf %lf %lf \n", i, part[i].position[X], part[i].position[Y], part[i].position[Z]);
+        if ((fpr = fopen(filename, "r")) == NULL){
+            
+            printf ("\n     error : can not read \n");
+            
+            exit (1);
+        }
         
+        for (i=0; i<NUMBER; i++){
+            
+            fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
+                   &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
+                   &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z],
+                   &membrain_radius);
+            //fgets(dummy, 128, fpr);
+            
+            //printf ("%d %lf %lf %lf \n", i, part[i].position[X], part[i].position[Y], part[i].position[Z]);
+            
+        }
+        
+        fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
+                &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
+        fgets(dummy, 128, fpr);
+        
+        fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
     }
-    
-    fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
-            &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
-    fgets(dummy, 128, fpr);
-    
-    fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
     
     fclose (fpr);
-    
-    
+
 }
 
 /*
@@ -388,24 +423,29 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
         }
         else {
-            /*
-            p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-          
-            force[X] = p1 * sin(theta) / sqrt(DELTA);
-            force[Y] = p1 * cos(theta) / sqrt(DELTA);
-            force[Z] = p2 * sin(psi) / sqrt(DELTA);
-         
-            force[X] += - rDNA_MYU * part_1->velocity[X];
-            force[Y] += - rDNA_MYU * part_1->velocity[Y];
-            force[Z] += - rDNA_MYU * part_1->velocity[Z];
-	    */
-	    
-            force[X] = 0.0;
-            force[Y] = 0.0;
-            force[Z] = 0.0;
+            
+            if (simulate_type ==0 ) {
+                
+                force[X] = 0.0;
+                force[Y] = 0.0;
+                force[Z] = 0.0;
+            }
+            else {
+                
+                p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+                p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+                theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+                psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+                
+                force[X] = p1 * sin(theta) / sqrt(DELTA);
+                force[Y] = p1 * cos(theta) / sqrt(DELTA);
+                force[Z] = p2 * sin(psi) / sqrt(DELTA);
+                
+                force[X] += - rDNA_MYU * part_1->velocity[X];
+                force[Y] += - rDNA_MYU * part_1->velocity[Y];
+                force[Z] += - rDNA_MYU * part_1->velocity[Z];
+            }
+        
         }
         
         /*
@@ -1089,12 +1129,35 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             force[X] = p1 * sin(theta) / sqrt(DELTA);
             force[Y] = p1 * cos(theta) / sqrt(DELTA);
             force[Z] = p2 * sin(psi) / sqrt(DELTA);
+            
+            force[X] += - PARTICLE_MYU * part_1->velocity[X];
+            force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
+            force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
         }
         else {
             
-            force[X] = 0.0;
-            force[Y] = 0.0;
-            force[Z] = 0.0;
+            if (simulate_type ==0 ) {
+                
+                force[X] = 0.0;
+                force[Y] = 0.0;
+                force[Z] = 0.0;
+            }
+            else {
+                
+                p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+                p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+                theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+                psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+                
+                force[X] = p1 * sin(theta) / sqrt(DELTA);
+                force[Y] = p1 * cos(theta) / sqrt(DELTA);
+                force[Z] = p2 * sin(psi) / sqrt(DELTA);
+                
+                force[X] += - rDNA_MYU * part_1->velocity[X];
+                force[Y] += - rDNA_MYU * part_1->velocity[Y];
+                force[Z] += - rDNA_MYU * part_1->velocity[Z];
+            }
+            
         }
         
         
@@ -2013,7 +2076,8 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    nucleolus_particle_set();
+    if (simulate_type == 0) nucleolus_particle_set();
+    else nucleolus_setting_radius = membrain_radius;
     
     init_particle_calculate (dsfmt/*, gene_list*/);
     init_SPB_calculate(dsfmt);
@@ -2029,7 +2093,7 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            particle_calculate(dsfmt, l/*, gene_list*/);
+            particle_calculate(dsfmt, l);
             SPB_calculate(dsfmt, l);
             
             renew ();
