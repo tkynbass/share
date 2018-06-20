@@ -799,37 +799,6 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                             force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z]) + f_3 * (part_1->position[Z] - part_3->position[Z]);
                         }
                         
-                        //spring2
-                        if ( i == 6468 ) part_2 = &part[5013];
-                        else  part_2 = &part[i-2];
-                        
-                        part_3 = &part[i+2];
-                        
-                        dist = Euclid_norm (part_1->position, part_2->position);
-                        f_2 = K_BOND_2 * ( (rDNA_RADIUS + 3.0 * PARTICLE_RADIUS) * 0.8 - dist) / dist;
-                        
-                        dist = Euclid_norm (part_1->position, part_3->position);
-                        f_3 = K_BOND_2 * ( 4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                        
-                        force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                        + f_3 * (part_1->position[X] - part_3->position[X]);
-                        force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                        + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                        force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                        + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                        
-                        //membrain_exclude
-                        dist = Euclid_norm (part_1->position, origin);
-                        f = MEMBRAIN_EXCLUDE * (membrain_radius - dist - rDNA_RADIUS ) / dist;
-                        
-                        if ( dist + rDNA_RADIUS > membrain_radius) {
-                            
-                            force[X] += f * (part_1->position[X] );
-                            force[Y] += f * (part_1->position[Y] );
-                            force[Z] += f * (part_1->position[Z] );
-                        }
-                        
-                        break;
                         
                     case 6742:
                     case 6467:
@@ -843,17 +812,6 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         force[X] += f_2 * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y]);
                         force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z]);
-                        
-                        //spring2
-                        part_2 = &part[i-2];
-                        
-                        dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                        
-                        force[X] += f * (part_1->position[X] - part_2->position[X]);
-                        force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-                        force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-                        
                         
                         //telomere
                         dist = Euclid_norm (part_1->position, origin);
@@ -884,67 +842,6 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         + f_3 * (part_1->position[Y] - part_3->position[Y]);
                         force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
                         + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                        
-                        //ひもの硬さポテンシャル spring2
-                        switch (i) {
-                                
-                            case 6469:
-                            case 6194:
-                                
-                                if ( i == 6469 ) part_2 = &part[5012];
-                                else  part_2 = &part[6192];
-                                
-                                part_3 = &part[i+2];
-                                
-                                dist = Euclid_norm (part_1->position, part_2->position);
-                                f_2 = K_BOND_2 * ( (3.0 * rDNA_RADIUS + PARTICLE_RADIUS) * 0.8 - dist) / dist;
-                                
-                                dist = Euclid_norm (part_1->position, part_3->position);
-                                f_3 = K_BOND_2 * ( 2.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                                + f_3 * (part_1->position[X] - part_3->position[X]);
-                                force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                                + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                                force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                                + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                                
-                                break;
-                                
-                            case 6741:
-                            case 6466:
-                                
-                                part_2 = &part[i-2];
-                                
-                                dist = Euclid_norm (part_1->position, part_2->position);
-                                f = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                force[X] += f * (part_1->position[X] - part_2->position[X]);
-                                force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-                                force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-                                
-                                break;
-                                
-                            default:
-                                
-                                part_2 = &part[i-2];
-                                part_3 = &part[i+2];
-                                
-                                dist = Euclid_norm (part_1->position, part_2->position);
-                                f_2 = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                dist = Euclid_norm (part_1->position, part_3->position);
-                                f_3 = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                                + f_3 * (part_1->position[X] - part_3->position[X]);
-                                force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                                + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                                force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                                + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                                
-                                break;
-                        }
                         
                         //membrain_exclude
                         dist = Euclid_norm (part_1->position, origin);
@@ -1457,25 +1354,6 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                             force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z]) + f_3 * (part_1->position[Z] - part_3->position[Z]);
                         }
                         
-                        //spring2
-                        if ( i == 6468 ) part_2 = &part[5013];
-                        else  part_2 = &part[i-2];
-                        
-                        part_3 = &part[i+2];
-                        
-                        dist = Euclid_norm (part_1->position, part_2->position);
-                        f_2 = K_BOND_2 * ( (rDNA_RADIUS + 3.0 * PARTICLE_RADIUS) * 0.8 - dist) / dist;
-                        
-                        dist = Euclid_norm (part_1->position, part_3->position);
-                        f_3 = K_BOND_2 * ( 4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                        
-                        force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                        + f_3 * (part_1->position[X] - part_3->position[X]);
-                        force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                        + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                        force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                        + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                        
                         //membrain_exclude
                         dist = Euclid_norm (part_1->position, origin);
                         f = MEMBRAIN_EXCLUDE * (membrain_radius - dist - rDNA_RADIUS ) / dist;
@@ -1501,17 +1379,6 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         force[X] += f_2 * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y]);
                         force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z]);
-                        
-                        //spring2
-                        part_2 = &part[i-2];
-                        
-                        dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                        
-                        force[X] += f * (part_1->position[X] - part_2->position[X]);
-                        force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-                        force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-                        
                         
                         //telomere
                         dist = Euclid_norm (part_1->position, origin);
@@ -1542,67 +1409,6 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         + f_3 * (part_1->position[Y] - part_3->position[Y]);
                         force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
                         + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                        
-                        //ひもの硬さポテンシャル spring2
-                        switch (i) {
-                                
-                            case 6469:
-                            case 6194:
-                                
-                                if ( i == 6469 ) part_2 = &part[5012];
-                                else  part_2 = &part[6192];
-                                
-                                part_3 = &part[i+2];
-                                
-                                dist = Euclid_norm (part_1->position, part_2->position);
-                                f_2 = K_BOND_2 * ( (3.0 * rDNA_RADIUS + PARTICLE_RADIUS) * 0.8 - dist) / dist;
-                                
-                                dist = Euclid_norm (part_1->position, part_3->position);
-                                f_3 = K_BOND_2 * ( 2.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                                + f_3 * (part_1->position[X] - part_3->position[X]);
-                                force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                                + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                                force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                                + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                                
-                                break;
-                                
-                            case 6741:
-                            case 6466:
-                                
-                                part_2 = &part[i-2];
-                                
-                                dist = Euclid_norm (part_1->position, part_2->position);
-                                f = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                force[X] += f * (part_1->position[X] - part_2->position[X]);
-                                force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-                                force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-                                
-                                break;
-                                
-                            default:
-                                
-                                part_2 = &part[i-2];
-                                part_3 = &part[i+2];
-                                
-                                dist = Euclid_norm (part_1->position, part_2->position);
-                                f_2 = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                dist = Euclid_norm (part_1->position, part_3->position);
-                                f_3 = K_BOND_2 * (4.0 * rDNA_RADIUS * 0.8 - dist) / dist;
-                                
-                                force[X] += f_2 * (part_1->position[X] - part_2->position[X])
-                                + f_3 * (part_1->position[X] - part_3->position[X]);
-                                force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y])
-                                + f_3 * (part_1->position[Y] - part_3->position[Y]);
-                                force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
-                                + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                                
-                                break;
-                        }
                         
                         //membrain_exclude
                         dist = Euclid_norm (part_1->position, origin);
