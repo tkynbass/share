@@ -12,7 +12,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include "dSFMT.h"
+#include "dSFMT/dSFMT.h"
 //#include "MT.h"
 #include <time.h>
 #include <omp.h>
@@ -101,7 +101,7 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "result_0.dat", start);
+    sprintf (filename, "result_%d.dat", start );
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -771,8 +771,8 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         if (i==6468) {
                             
                             part_2 = &part[5012];
-                            part_3 = &part[6469]
-                            ]
+                            part_3 = &part[6469];
+                            
                             dist = Euclid_norm (part_1->position, part_2->position);
                             f_2 = K_BOND * ((PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 - dist) / dist;
                             
@@ -1429,8 +1429,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         if (i==6468) {
                             
                             part_2 = &part[5012];
-                            part_3 = &part[6469]
-                            ]
+                            part_3 = &part[6469];
+                            
                             dist = Euclid_norm (part_1->position, part_2->position);
                             f_2 = K_BOND * ((PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 - dist) / dist;
                             
@@ -1914,7 +1914,7 @@ void write_coordinate (int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "result_%d.txt", t + start);
+    sprintf (result, "newcal/result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
