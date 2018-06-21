@@ -85,7 +85,7 @@ void read_coordinate( int time, int cluster_no ){       //初期値設定
     
 }
 
-void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom_list[BOTTOM_NUMBER]) {
+void read_expression_data(/*unsigned int top_list[TOP_NUMBER],*/ unsigned int bottom_list[BOTTOM_NUMBER]) {
     
     FILE *fpr;
     
@@ -93,21 +93,22 @@ void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom
     
     char filename[128], dummy[128];
     
-    sprintf (filename, "gene_best100.txt");
-
-    if ((fpr = fopen(filename, "r")) == NULL){
-        
-        printf ("\n error \n");
-        
-        exit (1);
-    }
-    
-    for (i=0; i<TOP_NUMBER; i++) {
-        
-        fscanf (fpr,"%d %d\n", &i_dummy, &top_list[i]);
-    }
-    fclose (fpr);
-    
+    /*
+     sprintf (filename, "gene_best100.txt");
+     
+     if ((fpr = fopen(filename, "r")) == NULL){
+     
+     printf ("\n error \n");
+     
+     exit (1);
+     }
+     
+     for (i=0; i<TOP_NUMBER; i++) {
+     
+     fscanf (fpr,"%d %d\n", &i_dummy, &top_list[i]);
+     }
+     fclose (fpr);
+     */
     
     sprintf (filename, "gene_worst100.txt");
     
@@ -124,10 +125,9 @@ void read_expression_data(unsigned int top_list[TOP_NUMBER], unsigned int bottom
     }
     fclose (fpr);
     
-    
 }
 
-void read_cluster_data (const unsigned int cluster_no, unsigned int *list ){
+void read_cluster_data (const unsigned int cl_number, const unsigned int cluster_no, unsigned int *list ){
     
     FILE *fpr;
     char filename[256];
