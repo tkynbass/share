@@ -140,11 +140,12 @@ void read_cluster_data (const unsigned int cl_number, const unsigned int cluster
         printf ("\n     error : can not read cluster data   \n");
     }
     
+    /*
     while ( fgets (list[count], 3, fpr) != NULL) {
         
         count++;
     }
-    
+    */
     fclose (fpr);
 }
 
