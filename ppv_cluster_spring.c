@@ -195,27 +195,38 @@ int main ( int argc, char **argv) {
     int cluster_no = atoi (argv[4]);
     spring_order = atoi (argv[5]);
     
+    unsigned int cl_number;
+    
     switch (cluster_no) {
         case 1:
-            const unsigned int CL_NUBER = 86;
+            cl_number = 86;
             break;
         case 2:
-            const unsigned int CL_NUBER = 78;
+            cl_number = 78;
             break;
         case 3:
-            const unsigned int CL_NUBER = 46;
+            cl_number = 46;
             break;
         case 4:
-            const unsigned int CL_NUBER = 146;
+            cl_number = 146;
             break;
     }
     
-    Particle *top[TOP_NUMBER], *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[CL_NUBER];
-    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER], cl_list[CL_NUBER];
+    Particle /**top[TOP_NUMBER],*/ *bottom[BOTTOM_NUMBER], *ran[RAN_NUMBER], *cl[cl_number];
+    unsigned int bottom_list[BOTTOM_NUMBER], ran_list[RAN_NUMBER], num_list[NUMBER];
     unsigned int top_ppv_hist[DIV_NUMBER], bottom_ppv_hist[DIV_NUMBER], ran_ppv_hist[DIV_NUMBER], cl_ppv_hist[DIV_NUMBER];
     double ppv, dist;
     
     unsigned int no_counter;
+    
+    unsigned int *cl_list;
+    
+    cl_list = (unsigned int *)malloc(cl_number * sizeof(unsigned int));
+    
+    if (cl_list == NULL) {
+        
+        printf ("\n     error : can not secure the memory of cl_list    \n");
+    }
     
     part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
@@ -226,35 +237,35 @@ int main ( int argc, char **argv) {
     }
     
     /*
-    cluster_list = (unsigned int *)malloc(4 * sizeof(unsigned int *));
-    for (i=1; i<=4; i++) {
-        
-        switch (i) {
-            case 1:
-                cluster_list[1] = (unsigned int)malloc(86 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-            case 2:
-                cluster_list[2] = (unsigned int)malloc(78 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-            case 3:
-                cluster_list[3] = (unsigned int)malloc(46 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-            case 4:
-                cluster_list[4] = (unsigned int)malloc(146 * sizeof(unsigned int));
-                read_cluster_data ( i, cluster_list[i]);
-                break;
-        }
-    }
-    
-    if (cluster_list == NULL) {
-        
-        printf ("\n error : can not secure the memory -cluster_list-" \n);
-    }
-    */
+     cluster_list = (unsigned int *)malloc(4 * sizeof(unsigned int *));
+     for (i=1; i<=4; i++) {
      
+         switch (i) {
+             case 1:
+                 cluster_list[1] = (unsigned int)malloc(86 * sizeof(unsigned int));
+                 read_cluster_data ( i, cluster_list[i]);
+                 break;
+             case 2:
+                 cluster_list[2] = (unsigned int)malloc(78 * sizeof(unsigned int));
+                 read_cluster_data ( i, cluster_list[i]);
+                 break;
+             case 3:
+                 cluster_list[3] = (unsigned int)malloc(46 * sizeof(unsigned int));
+                 read_cluster_data ( i, cluster_list[i]);
+                 break;
+             case 4:
+                 cluster_list[4] = (unsigned int)malloc(146 * sizeof(unsigned int));
+                 read_cluster_data ( i, cluster_list[i]);
+                 break;
+         }
+     }
+     
+     if (cluster_list == NULL) {
+     
+     printf ("\n error : can not secure the memory -cluster_list-" \n);
+     }
+     */
+    
     init_genrand((unsigned)time(NULL));
     
     //ランダムにRAN_NUMBER粒子取り出す
@@ -275,7 +286,8 @@ int main ( int argc, char **argv) {
         //printf ("ran_%d = %d\n", i, ran_list[i]);
     }
     
-    read_expression_data (top_list, bottom_list);
+    read_expression_data (/*top_list,*/ bottom_list);
+    read_cluster_data (cl_number, cluster_no, cl_list);
     
     for (i=0; i<DIV_NUMBER; i++){
         
