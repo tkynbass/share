@@ -67,7 +67,7 @@ void read_coordinate( int time, int cluster_no ){       //初期値設定
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
-        printf ("error \n");
+        printf ("\n	error : cannot read coordinate. \n");
         
         exit (1);
     }
@@ -131,7 +131,7 @@ void read_cluster_data (const unsigned int cl_number, const unsigned int cluster
     
     FILE *fpr;
     char filename[256];
-    unsigned int count = 0;
+    unsigned int i, count = 0;
     
     sprintf (filename, "cl%d_num.txt", cluster_no);
     
@@ -175,11 +175,11 @@ void write_data (const unsigned int top_ppv_hist[DIV_NUMBER], const unsigned int
 
     char result[128], str[128];
     
-    sprintf (result, "ppv/cl%d-%d_ppv_hist.txt", spring_order, cluster_no);
+    sprintf (result, "ppv/cl%d-%d_ppv_hist.txt", cluster_no, spring_order);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
-        printf (" \n error \n");
+        printf (" \n	 error : can not write data. Is there the directory 'ppv' ?	 \n");
         
         exit (1);
     }
