@@ -2135,7 +2135,7 @@ int main ( int argc, char **argv ) {
         for (l=1; l<=10000; l++){
             
             particle_calculate(dsfmt, l);
-            //SPB_calculate(dsfmt, l);
+            SPB_calculate(dsfmt, l);
             
             renew ();
             
