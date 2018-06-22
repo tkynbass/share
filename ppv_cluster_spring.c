@@ -146,6 +146,12 @@ void read_cluster_data (const unsigned int cl_number, const unsigned int cluster
         count++;
     }
     */
+    
+    for (i=0; i<cl_number; i++) {
+        
+        fscanf (fpr, "%d\n", &list[i]);
+    }
+    
     fclose (fpr);
 }
 
