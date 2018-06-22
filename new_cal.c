@@ -130,7 +130,8 @@ void init_particle( int start ){       //初期値設定
     
     fclose (fpr);
     
-    
+    part[5012].particle_type = Normal;
+    part[6192].particle_type = Normal;
 }
 
 /*
