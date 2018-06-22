@@ -1148,7 +1148,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     Particle *part_1, *part_2, *part_3;
     
 #pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
-    for (i = 0; i < NUMBER; i++){
+    for (i = 6193; i < NUMBER; i++){
         
         part_1 = &part[i];
         
@@ -1908,6 +1908,7 @@ void renew () {
         part_1->position[Z] = part_1->position_new[Z];
     }
     
+    /*
     spb.position_old[X] = spb.position[X];
     spb.position_old[Y] = spb.position[Y];
     spb.position_old[Z] = spb.position[Z];
@@ -1915,7 +1916,7 @@ void renew () {
     spb.position[X] = spb.position_new[X];
     spb.position[Y] = spb.position_new[Y];
     spb.position[Z] = spb.position_new[Z];
-
+     */
 }
 
 //核小体を作るための球の初期位置決定 第３染色体テロメアの中点方向
@@ -2135,7 +2136,7 @@ int main ( int argc, char **argv ) {
         for (l=1; l<=10000; l++){
             
             particle_calculate(dsfmt, l);
-            SPB_calculate(dsfmt, l);
+            //SPB_calculate(dsfmt, l);
             
             renew ();
             
