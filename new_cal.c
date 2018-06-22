@@ -46,7 +46,7 @@
 #define SPB_MASS ( 27.0 * PARTICLE_MASS)      //SPBの質量
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
-#define rDNA_RADIUS ( 2.4 )     //核小体粒子の半径
+#define rDNA_RADIUS ( 1.8 )     //核小体粒子の半径
 #define rDNA_MASS ( rDNA_RADIUS * rDNA_RADIUS * rDNA_RADIUS * PARTICLE_MASS)
 #define rDNA_MYU (2.0 * DIMENSION * PI * rDNA_RADIUS * NANO * 0.000890 / 100 )     //核小体粒子の粘性
 
@@ -899,7 +899,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                     
                     if (dist < 2.0 * rDNA_RADIUS){
                         
-                        f = K_EXCLUDE * ( 2.0 * rDNA_RADIUS * 0.8 - dist) / dist;
+                        f = K_EXCLUDE * (2.0 * rDNA_RADIUS - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -908,7 +908,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 }
                 else {
                     
-                    if (dist < PARTICLE_RADIUS + rDNA_RADIUS){
+                    if (dist < PARTICLE_RADIUS + rDNA_RADIUS && ( part_1 != &part[5012] || part_2 != &part[6468]) && ( part_2 != &part[5012] || part_1 != &part[6468]) ){
                         
                         f = K_EXCLUDE * ( PARTICLE_RADIUS + rDNA_RADIUS - dist) / dist;
                         
