@@ -960,7 +960,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     
     Particle *part_1, *part_2, *part_3;
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
+#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (16)
     for (i = 0; i < NUMBER; i++){
         
         part_1 = &part[i];
@@ -1687,7 +1687,7 @@ void write_coordinate (int t , int start) {
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z], membrain_radius);
         
-        printf(" t = %d, i = %d R_n = %lf\r", t, i, nucleolus_setting_radius);
+        printf("	 t = %d, i = %d\r", t, i);
         
     }
     
@@ -1782,6 +1782,8 @@ int main ( int argc, char **argv ) {
             SPB_calculate(dsfmt, l);
             
             renew ();
+
+	    //write_coordinate ( l , start_number);
         }
 
         write_coordinate ( t , start_number);
