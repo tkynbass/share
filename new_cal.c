@@ -1450,7 +1450,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 dist = Euclid_norm (part_1->position, part_2->position);
                 
-                if (dist < 6.0 * PARTICLE_RADIUS && abs(i-j) > 1 &&){
+                if (dist < 6.0 * PARTICLE_RADIUS && abs(i-j) > 1){
                     
                     m++;
                     part_1->list_no = m;
@@ -1591,7 +1591,7 @@ void write_coordinate (int t , int start) {
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z], membrain_radius);
         
-        printf("\n      t = %d, i = %d      \r", t, i);
+        printf("      t = %d, i = %d      \r", t, i);
         
     }
     
