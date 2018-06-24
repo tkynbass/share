@@ -50,6 +50,8 @@
 #define rDNA_MASS ( rDNA_RADIUS * rDNA_RADIUS * rDNA_RADIUS * PARTICLE_MASS)
 #define rDNA_MYU (2.0 * DIMENSION * PI * rDNA_RADIUS * NANO * 0.000890 / 100 )     //核小体粒子の粘性
 
+#define LIST_INTERVAL (100)
+
 //#define CLUSTER_GENE_NUMBER (146)
 
 double nucleolus_setting_radius;
@@ -217,7 +219,7 @@ void spb_list (Particle *part_1){        //リスト化
         
         dist = Euclid_norm (part_1->position, part_2->position);
         
-        if (dist < 5.0 * PARTICLE_RADIUS && part_2->particle_type != Centromere){
+        if (dist < 6.0 * PARTICLE_RADIUS && part_2->particle_type != Centromere){
             
             m++;
             part_1->list_no = m;
@@ -338,7 +340,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     spb_spring (&spb, &part[3561], force);
     spb_spring (&spb, &part[5542], force);
     
-    if ( l%1000 == 0) spb_list (&spb);
+    if ( l % LIST_INTERVAL == 0) spb_list (&spb);
     
     //ひも粒子との排除体積
     if (spb.list_no != 0){
@@ -960,7 +962,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     
     Particle *part_1, *part_2, *part_3;
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
+#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (16)
     for (i = 0; i < NUMBER; i++){
         
         part_1 = &part[i];
@@ -984,15 +986,6 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         force[X] = p1 * sin(theta) / sqrt(DELTA);
         force[Y] = p1 * cos(theta) / sqrt(DELTA);
         force[Z] = p2 * sin(psi) / sqrt(DELTA);
-        
-        
-        /*
-         if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
-         
-         high_expression (part_1, force);
-         
-         gene_counter++;
-         }*/
         
         
         switch (part[i].particle_type) {
@@ -1256,6 +1249,18 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         
                         break;
                 }
+                
+                //spb_exclude
+                dist = Euclid_norm (part_1->position, spb.position);
+                f = K_EXCLUDE * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
+                
+                if ( dist < PARTICLE_RADIUS + SPB_RADIUS) {
+                    
+                    force[X] += f * (part_1->position[X] - spb.position[X]);
+                    force[Y] += f * (part_1->position[Y] - spb.position[Y]);
+                    force[Z] += f * (part_1->position[Z] - spb.position[Z]);
+                }
+                
                 break;
                 
             case rDNA:      //核小体粒子の相互作用
@@ -1272,10 +1277,11 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 }
                 
                 switch (i) {
-                        
+                    
                     case 6468:
                     case 6193:
-                        
+                    
+                        //spring//
                         if (i==6468) {
                             
                             part_2 = &part[5012];
@@ -1325,7 +1331,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         
                         part_2 = &part[i-1];
                         
-                        //spring
+                        //spring//
                         dist = Euclid_norm(part_1->position, part_2->position);
                         f_2 = K_BOND * ( 2.0 * rDNA_RADIUS * 0.8 - dist) / dist;
                         
@@ -1434,7 +1440,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             }
         }*/
         
-        if ( l%100 == 0) {
+        if ( l % LIST_INTERVAL == 0) {
             
             m = 0;
             
@@ -1444,7 +1450,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 dist = Euclid_norm (part_1->position, part_2->position);
                 
-                if (dist < 6.0 * PARTICLE_RADIUS && abs(i-j) > 1){
+                if (dist < 6.0 * PARTICLE_RADIUS && abs(i-j) > 1 &&){
                     
                     m++;
                     part_1->list_no = m;
@@ -1562,108 +1568,6 @@ void renew () {
 
 }
 
-//核小体を作るための球の初期位置決定 第３染色体テロメアの中点方向
-void Nucleolus_position_init (void) {
-    
-    double middle_point[DIMENSION], origin[] = { 0.0, 0.0, 0.0 };
-    
-    middle_point[X] = ( part[5012].position[X] + part[6192].position[X] ) / 2.0;
-    middle_point[Y] = ( part[5012].position[Y] + part[6192].position[Y] ) / 2.0;
-    middle_point[Z] = ( part[5012].position[Z] + part[6192].position[Z] ) / 2.0;
-    
-    Nucleolus_circle_center[X] = 5.0 * middle_point[X] * membrain_radius / Euclid_norm( middle_point, origin );
-    Nucleolus_circle_center[Y] = 5.0 * middle_point[Y] * membrain_radius / Euclid_norm( middle_point, origin );
-    Nucleolus_circle_center[Z] = 5.0 * middle_point[Z] * membrain_radius / Euclid_norm( middle_point, origin );
-}
-
-//体積が核の1/4になるまで核小体領域を広げる
-void Nucleolus_position (void) {
-    
-    double V = 0, r, t, origin[] = {0.0, 0.0, 0.0}, per, h_1, h_2, l;
-    
-    r = membrain_radius;
-    
-    t = 5.0 * r - Euclid_norm ( Nucleolus_circle_center, origin );
-    
-    l = ( -10.0 * r * r + 10.0 * r * t - t * t )/ ( 2.0 * ( t - 5.0 * r ) );
-    
-    h_1 = r - l;    //核側の球欠の長さ
-    h_2 = t + l - r;    //半径4rの球に含まれる球欠の長さ
-    
-    /*V = PI * ( r+h ) * ( 3.0*(r*r-h*h) + ( r+h )*( r+h )) / 6.0
-     + PI * ( 4.0 * r-t-h ) * ( 3.0*(r*r-h*h) + ( 4.0*r-t-h )*( 4.0*r-t-h )) / 6.0;*/
-    
-    V = PI * h_1 * h_1 * ( 3.0 * r - h_1) / 3.0   //核に含まれる球欠の体積
-    + PI * h_2 * h_2 * ( 12.0 * r - h_2) / 3.0;
-    
-    if ( V < PI * r * r * r / 3.0 ) {
-        
-        per = ( Euclid_norm ( Nucleolus_circle_center, origin) - 0.1 )/ Euclid_norm ( Nucleolus_circle_center, origin);
-        
-        Nucleolus_circle_center[X] *= per;
-        Nucleolus_circle_center[Y] *= per;
-        Nucleolus_circle_center[Z] *= per;
-    }
-    
-    //printf ( "\n t = %lf , h_1 = %lf. h_2 = %lf \n", t, h_1, h_2);
-}
-
-void nucleolus_particle_set (void) {
-    
-    int i;
-    double origin [] = {0.0, 0.0, 0.0};
-    
-    Particle *part_1, *part_2;
-    
-    for (i=6193; i<6468; i++) {
-        
-        part_1 = &part[i];
-        part_2 = &part[i-1];
-        
-        part_1->particle_type = rDNA;
-        
-        if ( i != 6193) {
-            
-            part_1->position[X] = part_2->position[X] * ( Euclid_norm ( part_2->position, origin ) + 2.0 * rDNA_RADIUS * 0.8 ) / Euclid_norm ( part_2->position, origin);
-            part_1->position[Y] = part_2->position[Y] * ( Euclid_norm ( part_2->position, origin ) + 2.0 * rDNA_RADIUS * 0.8 ) / Euclid_norm ( part_2->position, origin);
-            part_1->position[Z] = part_2->position[Z] * ( Euclid_norm ( part_2->position, origin ) + 2.0 * rDNA_RADIUS * 0.8 ) / Euclid_norm ( part_2->position, origin);
-        }
-        else {
-            
-            part_1->position[X] = part_2->position[X] * ( Euclid_norm ( part_2->position, origin ) + (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 ) / Euclid_norm ( part_2->position, origin);
-            part_1->position[Y] = part_2->position[Y] * ( Euclid_norm ( part_2->position, origin ) + (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 ) / Euclid_norm ( part_2->position, origin);
-            part_1->position[Z] = part_2->position[Z] * ( Euclid_norm ( part_2->position, origin ) + (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 ) / Euclid_norm ( part_2->position, origin);
-        }
-        
-        part_1->chr_no = 2;
-    }
-    
-    for (i=6468; i<6743; i++) {
-        
-        part_1 = &part[i];
-        part_2 = &part[i-1];
-        
-        part_1->particle_type = rDNA;
-        
-        if ( i != 6468) {
-            
-            part_1->position[X] = part_2->position[X] * ( Euclid_norm ( part_2->position, origin ) + 2.0 * rDNA_RADIUS * 0.8 ) / Euclid_norm ( part_2->position, origin);
-            part_1->position[Y] = part_2->position[Y] * ( Euclid_norm ( part_2->position, origin ) + 2.0 * rDNA_RADIUS * 0.8 ) / Euclid_norm ( part_2->position, origin);
-            part_1->position[Z] = part_2->position[Z] * ( Euclid_norm ( part_2->position, origin ) + 2.0 * rDNA_RADIUS * 0.8 ) / Euclid_norm ( part_2->position, origin);
-        }
-        else {
-            
-            part_1->position[X] = part[5012].position[X] * ( Euclid_norm ( part[5012].position, origin ) + (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 ) / Euclid_norm ( part[5012].position, origin);
-            part_1->position[Y] = part[5012].position[Y] * ( Euclid_norm ( part[5012].position, origin ) + (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 ) / Euclid_norm ( part[5012].position, origin);
-            part_1->position[Z] = part[5012].position[Z] * ( Euclid_norm ( part[5012].position, origin ) + (PARTICLE_RADIUS + rDNA_RADIUS) * 0.8 ) / Euclid_norm ( part[5012].position, origin);
-        }
-        
-        part_1->chr_no = 2;
-    }
-    
-    nucleolus_setting_radius = Euclid_norm ( part[6467].position, origin) / 2.0 + Euclid_norm (part[6743].position, origin) / 2.0;
-    
-}
 
 void write_coordinate (int t , int start) {
     
@@ -1687,7 +1591,7 @@ void write_coordinate (int t , int start) {
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z], membrain_radius);
         
-        printf(" t = %d, i = %d R_n = %lf\r", t, i, nucleolus_setting_radius);
+        printf("\n      t = %d, i = %d      \r", t, i);
         
     }
     
@@ -1773,8 +1677,6 @@ int main ( int argc, char **argv ) {
     for (t=1; t < calculate_number; t++) {
         
         //printf ("time = %d \r", t);
-        
-        Nucleolus_position();
         
         for (l=1; l<=10000; l++){
             
