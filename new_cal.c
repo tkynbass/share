@@ -1591,11 +1591,7 @@ void write_coordinate (int t , int start) {
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z], membrain_radius);
         
-<<<<<<< HEAD
         printf("\n      t = %d, i = %d      \r", t, i);
-=======
-        printf("	 t = %d, i = %d\r", t, i);
->>>>>>> master
         
     }
     
@@ -1688,8 +1684,6 @@ int main ( int argc, char **argv ) {
             SPB_calculate(dsfmt, l);
             
             renew ();
-
-	    //write_coordinate ( l , start_number);
         }
 
         write_coordinate ( t , start_number);
