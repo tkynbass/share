@@ -148,7 +148,7 @@ void write_hist (const char *number, const unsigned int time, const unsigned int
         exit (1);
     }
     
-    for (i=0; i<32; i++) {
+    for (i=0; i<64; i++) {
         
         fprintf (fpw, "%d %d\n", i, dis_hist[i]);
     }
