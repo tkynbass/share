@@ -235,7 +235,7 @@ int main ( int argc, char **argv) {
     printf ("group_number : ");
     scanf ("%d", &file_number);
     
-    read_expression_data (gene_list);
+
     
     printf ("type (graph:0 or hist:1 or cluster:2) : ");
     scanf ("%d", &type);
@@ -246,10 +246,9 @@ int main ( int argc, char **argv) {
     for (i=0; i<NUMBER; i++) {
         
         part[i].cluster_state = 0;
-        
-        part[gene_list[i]].cluster_state = 1;
-        
     }
+
+    read_expression_data (gene_list);
     
     for ( t=0; t < calculate_number; t+= width) {
         
