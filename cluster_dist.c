@@ -260,7 +260,7 @@ int main ( int argc, char **argv) {
         printf ("t = %d\r", t);
 
         //座標の読み込み
-        read_coordinate ( directory; argv[1], t + start_number);
+        read_coordinate ( directory, argv[1], t + start_number);
         
         for (i=0; i<GENE_NUMBER; i++) {
             
