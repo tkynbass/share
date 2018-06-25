@@ -62,7 +62,7 @@ void read_coordinate( const char *str, int time ){       //初期値設定
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
-        printf ("error \n");
+        printf ("\n     error : cannot read coordinate. \n");
         
         exit (1);
     }
@@ -98,7 +98,7 @@ void read_expression_data(unsigned int gene_list[200]) {
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
-        printf ("\n error \n");
+        printf ("\n     error : cannot read expression data. \n");
         
         exit (1);
     }
@@ -143,7 +143,7 @@ void write_hist (const char *number, const unsigned int time, const unsigned int
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
-        printf (" \n error \n");
+        printf (" \n    error : cannot write hist. \n");
         
         exit (1);
     }
