@@ -54,11 +54,14 @@ void read_coordinate( const char *str, int time ){       //初期値設定
     
     Particle *part_1;
     
-    char filename[128], dummy[256];
+    char filename[128], dummy[256], directory[256];
     
     FILE *fpr;
     
-    sprintf (filename, "%s/%s_c%d_%d.txt", str, str, file_number, time);
+    printf ("   directory_name : ");
+    scanf ("%s", &directory);
+    
+    sprintf (filename, "%s/%s_c%d_%d.txt", directory, str, file_number, time);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
