@@ -58,7 +58,7 @@ void read_coordinate( const char *str, int time ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "%s_c%d_%d.txt", str, file_number, time);
+    sprintf (filename, "%s/%s_c%d_%d.txt", str, str, file_number, time);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -139,7 +139,7 @@ void write_hist (const char *number, const unsigned int time, const unsigned int
     
     char result[128], str[128];
     
-    sprintf (result, "%s_hist_%d.txt", number, time);
+    sprintf (result, "cluster_hist/%s_hist_%d.txt", number, time);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
