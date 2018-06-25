@@ -46,7 +46,7 @@ double membrain_radius, Nucleolus_circle_center[DIMENSION], k_expression;
 
 Particle part[NUMBER];
 
-void read_coordinate( const char *str, int time ){       //初期値設定
+void read_coordinate( const char *directory, const char *str, int time ){       //初期値設定
     
     int i, i_dummy;
     
@@ -54,12 +54,9 @@ void read_coordinate( const char *str, int time ){       //初期値設定
     
     Particle *part_1;
     
-    char filename[128], dummy[256], directory[256];
+    char filename[128], dummy[256];
     
     FILE *fpr;
-    
-    printf ("   directory_name : ");
-    scanf ("%s", &directory);
     
     sprintf (filename, "%s/%s_c%d_%d.txt", directory, str, file_number, time);
     
@@ -235,6 +232,8 @@ int main ( int argc, char **argv) {
     
     double origin[] = {0.0, 0.0, 0.0}, gene_dist = 0.0, counter = 0.0, ex_counter = 0.0, cluster_average;
     
+    char directory[256];
+    
     printf ("group_number : ");
     scanf ("%d", &file_number);
     
@@ -245,6 +244,9 @@ int main ( int argc, char **argv) {
     
     printf ("width : ");
     scanf ("%d", &width);
+    
+    printf ("   directory_name : ");
+    scanf ("%s", &directory);
     
     for (i=0; i<NUMBER; i++) {
         
@@ -258,7 +260,7 @@ int main ( int argc, char **argv) {
         printf ("t = %d\r", t);
 
         //座標の読み込み
-        read_coordinate ( argv[1], t + start_number);
+        read_coordinate ( directory; argv[1], t + start_number);
         
         for (i=0; i<GENE_NUMBER; i++) {
             
