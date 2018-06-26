@@ -10,7 +10,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include "dSFMT.h"
+#include "dSFMT/dSFMT.h"
 //#include "MT.h"
 #include <time.h>
 #include <omp.h>
@@ -34,7 +34,7 @@
 
 #define K_EXCLUDE (1.0)    //排除体積効果の強さ
 #define K_BOND (1.0)    //ばね定数
-#define K_BOND_2 (1.0e-4)  //ひもの硬さ
+//#define K_BOND_2 (1.0e-4)  //ひもの硬さ
 #define DELTA (1.0e-11)  //刻み幅
 #define PARTICLE_MYU (2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 )    //粘性抵抗の強さ
 #define MEMBRAIN_EXCLUDE (1.0)     //膜との衝突
@@ -45,7 +45,7 @@
 
 #define CLUSTER_GENE_NUMBER (146)
 
-double Nucleolus_circle_center[3], k_expression;
+double Nucleolus_circle_center[3], k_expression, k_2;
 
 typedef enum chain {
     A, B, C
@@ -1280,7 +1280,8 @@ int main ( int argc, char **argv ) {
     init_particle_calculate ( dsfmt, gene_list);
     init_SPB_calculate(dsfmt);
     
-    printf ("\n\n     k_2 = %lf     \n", K_BOND_2 );
+    printf ("\n\n   Input k_2 :     \n");
+    scanf ("%lf", &k_2);
     
     //初期位置の出力
     write_coordinate ( argv[3], 0, start_number );
