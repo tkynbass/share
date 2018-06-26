@@ -10,7 +10,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include "dSFMT.h"
+#include "dSFMT/dSFMT.h"
 //#include "MT.h"
 #include <time.h>
 #include <omp.h>
@@ -90,7 +90,7 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.txt", start);
+    sprintf (filename, "change/fission_result_%d.dat", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -1195,7 +1195,7 @@ void Nucleolus_position (void) {
         Nucleolus_circle_center[Z] *= per;
     }
     
-    printf ( "\n t = %lf , h_1 = %lf. h_2 = %lf \n", t, h_1, h_2);
+    //printf ( "\n t = %lf , h_1 = %lf. h_2 = %lf \n", t, h_1, h_2);
 }
 
 void write_coordinate ( const char *number, int t , int start) {
@@ -1206,7 +1206,7 @@ void write_coordinate ( const char *number, int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "%s_result_%d.txt", number, t + start);
+    sprintf (result, "change/fission_result_%d.txt", number, t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -1220,7 +1220,7 @@ void write_coordinate ( const char *number, int t , int start) {
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z], membrain_radius);
         
-        //printf(" t = %d, i = %d \r", t, i);
+        printf(" t = %d, i = %d \r", t, i);
         
     }
     
@@ -1299,7 +1299,7 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t < calculate_number; t++) {
         
-        printf ("time = %d \r", t);
+        //printf ("time = %d \r", t);
         
         Nucleolus_position();
         
