@@ -80,7 +80,7 @@ enum label{ X, Y, Z};
 
 void init_particle( int start ){       //初期値設定
     
-    int i, i_dummy;
+    int i, i_dummy, j;
     
     Particle *part_1;
     
@@ -118,7 +118,19 @@ void init_particle( int start ){       //初期値設定
     fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
     
     fclose (fpr);
+    
+    for (i=0; i<NUMBER; i++) {
+        
+        for (j=0; j<DIMENSION; j++) {
+            
+            part[i].velocity[j] = 0.0;
+        }
+    }
 
+    for (j=0; j<DIMENSION; j++) {
+        
+        spb.velocity[j] = 0.0;
+    }
     
 }
 
@@ -1073,7 +1085,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 dist = Euclid_norm (part_1->position, part_2->position);
                 
-                if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
+                if (dist < 6.0 * PARTICLE_RADIUS && abs(i-j) > 1){
                     
                     m++;
                     part_1->list_no = m;
