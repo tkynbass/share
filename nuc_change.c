@@ -303,7 +303,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     spring (&spb, &part[3561], force);
     spring (&spb, &part[5542], force);
     
-    if ( l%1000 == 0) spb_list (&spb);
+    if ( l%2000 == 0) spb_list (&spb);
     
     //ひも粒子との排除体積
     if (spb.list_no != 0){
