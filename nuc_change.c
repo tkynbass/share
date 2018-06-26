@@ -1206,7 +1206,7 @@ void write_coordinate ( const char *number, int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "change/fission_result_%d.txt", number, t + start);
+    sprintf (result, "change/fission_result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
