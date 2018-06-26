@@ -45,7 +45,7 @@
 
 #define CLUSTER_GENE_NUMBER (146)
 
-double Nucleolus_circle_center[3], k_expression, k_2;
+double Nucleolus_circle_center[3], k_expression, k_bond_2;
 
 typedef enum chain {
     A, B, C
@@ -441,7 +441,7 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
                         part_2 = &part[i+2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -456,7 +456,7 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
                         part_2 = &part[i-2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -470,10 +470,10 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
                         part_3 = &part[i+2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f_2 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f_2 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         dist = Euclid_norm (part_1->position, part_3->position);
-                        f_3 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f_3 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f_2 * (part_1->position[X] - part_2->position[X])
                         + f_3 * (part_1->position[X] - part_3->position[X]);
@@ -518,10 +518,10 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
                 part_3 = &part[i+2];
                 
                 dist = Euclid_norm (part_1->position, part_2->position);
-                f_2 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                f_2 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                 
                 dist = Euclid_norm (part_1->position, part_3->position);
-                f_3 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                f_3 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                 
                 force[X] += f_2 * (part_1->position[X] - part_2->position[X])
                 + f_3 * (part_1->position[X] - part_3->position[X]);
@@ -607,7 +607,7 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
                         part_2 = &part[i+2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -663,7 +663,7 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
                         part_2 = &part[i-2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -826,7 +826,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                         part_2 = &part[i+2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -841,7 +841,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                         part_2 = &part[i-2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -855,10 +855,10 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                         part_3 = &part[i+2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f_2 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f_2 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         dist = Euclid_norm (part_1->position, part_3->position);
-                        f_3 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f_3 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f_2 * (part_1->position[X] - part_2->position[X])
                         + f_3 * (part_1->position[X] - part_3->position[X]);
@@ -903,10 +903,10 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                 part_3 = &part[i+2];
                 
                 dist = Euclid_norm (part_1->position, part_2->position);
-                f_2 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                f_2 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                 
                 dist = Euclid_norm (part_1->position, part_3->position);
-                f_3 = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                f_3 = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                 
                 force[X] += f_2 * (part_1->position[X] - part_2->position[X])
                 + f_3 * (part_1->position[X] - part_3->position[X]);
@@ -992,7 +992,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                         part_2 = &part[i+2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1048,7 +1048,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                         part_2 = &part[i-2];
                         
                         dist = Euclid_norm (part_1->position, part_2->position);
-                        f = K_BOND_2 * (2.0 * INIT_DISTANCE - dist) / dist;
+                        f = k_bond_2 * (2.0 * INIT_DISTANCE - dist) / dist;
                         
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
@@ -1280,8 +1280,8 @@ int main ( int argc, char **argv ) {
     init_particle_calculate ( dsfmt, gene_list);
     init_SPB_calculate(dsfmt);
     
-    printf ("\n\n   Input k_2 :     \n");
-    scanf ("%lf", &k_2);
+    printf ("\n\n   Input k_bond_2 :     \n");
+    scanf ("%lf", &k_bond_2);
     
     //初期位置の出力
     write_coordinate ( argv[3], 0, start_number );
