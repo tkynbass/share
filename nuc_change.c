@@ -1200,7 +1200,7 @@ void Nucleolus_position (void) {
     
     if ( V < PI * r * r * r / 3.0 ) {
         
-        per = ( Euclid_norm ( Nucleolus_circle_center, origin) - 0.00001 )/ Euclid_norm ( Nucleolus_circle_center, origin);
+        per = ( Euclid_norm ( Nucleolus_circle_center, origin) - 0.000001 )/ Euclid_norm ( Nucleolus_circle_center, origin);
         
         Nucleolus_circle_center[X] *= per;
         Nucleolus_circle_center[Y] *= per;
@@ -1315,12 +1315,14 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            Nucleolus_position();
+            
             
             particle_calculate(dsfmt, l/*, gene_list*/);
             SPB_calculate(dsfmt, l);
             
             renew ();
+            
+            Nucleolus_position();
         }
         
         write_coordinate ( argv[3], t , start_number);
