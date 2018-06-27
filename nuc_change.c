@@ -1177,6 +1177,8 @@ void Nucleolus_position_init (void) {
     Nucleolus_circle_center[X] = 5.0 * middle_point[X] * membrain_radius / Euclid_norm( middle_point, origin );
     Nucleolus_circle_center[Y] = 5.0 * middle_point[Y] * membrain_radius / Euclid_norm( middle_point, origin );
     Nucleolus_circle_center[Z] = 5.0 * middle_point[Z] * membrain_radius / Euclid_norm( middle_point, origin );
+    
+    printf ("\ndist (origin, nucleolus_center) = %lf \n", Euclid_norm (Nucleolus_circle_center, origin));
 }
 
 void Nucleolus_position (void) {
