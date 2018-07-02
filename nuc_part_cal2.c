@@ -101,7 +101,7 @@ void init_particle( int start ){       //初期値設定
     
     if (simulate_type == 0) {
         
-        sprintf (filename, "nucleolus_particle/fission_result_%d.txt", start);
+        sprintf (filename, "nucleolus_particle2/fission_result_%d.txt", start);
         
         if ((fpr = fopen(filename, "r")) == NULL){
             
@@ -1146,7 +1146,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     Particle *part_1, *part_2, *part_3;
     
 #pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
-    for (i = 0; i < NUMBER; i++){
+    for (i = INIT_NUMBER; i < NUMBER; i++){
         
         part_1 = &part[i];
         
@@ -2052,7 +2052,7 @@ void write_coordinate (int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "nucleolus_particle/result_%d.txt", t + start);
+    sprintf (result, "nucleolus_particle2/result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
