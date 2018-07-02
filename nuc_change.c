@@ -1317,14 +1317,12 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            
+            Nucleolus_position();
             
             particle_calculate(dsfmt, l/*, gene_list*/);
             SPB_calculate(dsfmt, l);
             
             renew ();
-            
-            Nucleolus_position();
         }
         
         write_coordinate ( argv[3], t , start_number);
