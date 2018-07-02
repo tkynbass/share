@@ -101,7 +101,7 @@ void init_particle( int start ){       //初期値設定
     
     if (simulate_type == 0) {
         
-        sprintf (filename, "nucleolus_particle2/fission_result_%d.txt", start);
+        sprintf (filename, "nucleolus_particle2/fission_result_%d.dat", start);
         
         if ((fpr = fopen(filename, "r")) == NULL){
             
@@ -130,7 +130,7 @@ void init_particle( int start ){       //初期値設定
     }
     else {
         
-        sprintf (filename, "nucleolus_particle2/result_%d.txt", start);
+        sprintf (filename, "nucleolus_particle2/result_%d.dat", start);
         
         if ((fpr = fopen(filename, "r")) == NULL){
             
@@ -1757,28 +1757,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 break;
         }
         
-        //list
-        
-        m = 0;
-        
-        for(j=0; j<NUMBER; j++){
-            
-            part_2 = &part[j];
-            
-            dist = Euclid_norm (part_1->position, part_2->position);
-            
-            if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
-                
-                m++;
-                part_1->list_no = m;
-                part_1->list[m] = j;
-            }
-        }
-        if (m == 0){
-            
-            part_1->list_no = 0;
-        }
-        
+
         //list
         if ( part_1->particle_type != rDNA) {
             
@@ -1804,7 +1783,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                     part_1->list_no = 0;
                 }
             }
-        }
+        }/*
         else {
             
             if ( l%100 == 0) {
@@ -1829,7 +1808,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                     part_1->list_no = 0;
                 }
             }
-        }
+        }*/
         
         
         //particle_exclude
@@ -2155,7 +2134,7 @@ int main ( int argc, char **argv ) {
         for (l=1; l<=10000; l++){
             
             particle_calculate(dsfmt, l);
-            SPB_calculate(dsfmt, l);
+            //SPB_calculate(dsfmt, l);
             
             renew ();
             
