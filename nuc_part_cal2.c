@@ -1759,7 +1759,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
 
         //list
-        if ( part_1->particle_type != rDNA) {
+        //if ( part_1->particle_type != rDNA) {
             
             if ( l%2000 == 0) {
                 
@@ -1783,10 +1783,10 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                     part_1->list_no = 0;
                 }
             }
-        }/*
+        /*}
         else {
             
-            if ( l%100 == 0) {
+            if ( l%2000 == 0) {
                 
                 m = 0;
                 
