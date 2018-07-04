@@ -1759,7 +1759,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
 
         //list
-        if ( l%2000 == 0) {
+        if ( l%100 == 0) {
             
             m = 0;
             
@@ -1769,7 +1769,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
                 dist = Euclid_norm (part_1->position, part_2->position);
                 
-                if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
+                if (dist < 6.0 * PARTICLE_RADIUS && abs(i-j) > 1){
                     
                     m++;
                     part_1->list_no = m;
@@ -1878,6 +1878,7 @@ void renew () {
         part_1->position[Z] = part_1->position_new[Z];
     }
     
+    /*
     spb.position_old[X] = spb.position[X];
     spb.position_old[Y] = spb.position[Y];
     spb.position_old[Z] = spb.position[Z];
@@ -1885,7 +1886,7 @@ void renew () {
     spb.position[X] = spb.position_new[X];
     spb.position[Y] = spb.position_new[Y];
     spb.position[Z] = spb.position_new[Z];
-
+    */
 }
 
 //核小体を作るための球の初期位置決定 第３染色体テロメアの中点方向
