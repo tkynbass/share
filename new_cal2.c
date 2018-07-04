@@ -181,6 +181,7 @@ void high_expression (const const Particle *part_1, double force[DIMENSION]) {
     force[Z] += - k_expression * (part_1->position[Z] - 0.0);
     
 }
+
 void spb_spring (const Particle *part_1, const Particle *part_2, double force[DIMENSION]) {     //ばね
     
     double dist, dist_0;
@@ -390,40 +391,6 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     spb.position_new[Y] = spb.position[Y] + DELTA * spb.velocity_2[Y];
     spb.position_new[Z] = spb.position[Z] + DELTA * spb.velocity_2[Z];
 }
-
-/*
-void part_spring (const Particle *part_1, const Particle *part_2, double force[DIMENSION]) {
-    
-    double dist, dist_0;
-    
-    double f;
-    
-    switch (part_1->particle_type) {
-            case normal:
-            
-            
-            break;
-            
-        default:
-            break;
-    }
-    
-    part_3 = &spb;
-    
-    //dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
-    
-    if (part_1 == part_3) dist_0 = SPB_RADIUS + PARTICLE_RADIUS;
-    else dist_0 = INIT_DISTANCE;
-    
-    dist = Euclid_norm (part_1->position, part_2->position);
-    
-    f = K_BOND * (dist_0 - dist) / dist;
-    
-    
-    force[X] += f * (part_1->position[X] - part_2->position[X]);
-    force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-    force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-}*/
 
 void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
     
@@ -962,7 +929,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     
     Particle *part_1, *part_2, *part_3;
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (16)
+#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (12)
     for (i = 0; i < NUMBER; i++){
         
         part_1 = &part[i];
@@ -1100,7 +1067,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
                         
                         break;
-                    
+                        
                     default:
                         
                         part_2 = &part[i-2];
@@ -1277,10 +1244,10 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 }
                 
                 switch (i) {
-                    
+                        
                     case 6468:
                     case 6193:
-                    
+                        
                         //spring//
                         if (i==6468) {
                             
@@ -1389,56 +1356,56 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
         //list
         /*
-        if ( part_1->particle_type != rDNA) {
-            
-            if ( l%2000 == 0) {
-                
-                m = 0;
-                
-                for(j=0; j<NUMBER; j++){
-                    
-                    part_2 = &part[j];
-                    
-                    dist = Euclid_norm (part_1->position, part_2->position);
-                    
-                    if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
-                        
-                        m++;
-                        part_1->list_no = m;
-                        part_1->list[m] = j;
-                    }
-                }
-                if (m == 0){
-                    
-                    part_1->list_no = 0;
-                }
-            }
-        }
-        else {
-            
-            if ( l%100 == 0) {
-                
-                m = 0;
-                
-                for(j=0; j<NUMBER; j++){
-                    
-                    part_2 = &part[j];
-                    
-                    dist = Euclid_norm (part_1->position, part_2->position);
-                    
-                    if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
-                        
-                        m++;
-                        part_1->list_no = m;
-                        part_1->list[m] = j;
-                    }
-                }
-                if (m == 0){
-                    
-                    part_1->list_no = 0;
-                }
-            }
-        }*/
+         if ( part_1->particle_type != rDNA) {
+         
+         if ( l%2000 == 0) {
+         
+         m = 0;
+         
+         for(j=0; j<NUMBER; j++){
+         
+         part_2 = &part[j];
+         
+         dist = Euclid_norm (part_1->position, part_2->position);
+         
+         if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
+         
+         m++;
+         part_1->list_no = m;
+         part_1->list[m] = j;
+         }
+         }
+         if (m == 0){
+         
+         part_1->list_no = 0;
+         }
+         }
+         }
+         else {
+         
+         if ( l%100 == 0) {
+         
+         m = 0;
+         
+         for(j=0; j<NUMBER; j++){
+         
+         part_2 = &part[j];
+         
+         dist = Euclid_norm (part_1->position, part_2->position);
+         
+         if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
+         
+         m++;
+         part_1->list_no = m;
+         part_1->list[m] = j;
+         }
+         }
+         if (m == 0){
+         
+         part_1->list_no = 0;
+         }
+         }
+         }*/
         
         if ( l % LIST_INTERVAL == 0) {
             
@@ -1565,7 +1532,7 @@ void renew () {
     spb.position[X] = spb.position_new[X];
     spb.position[Y] = spb.position_new[Y];
     spb.position[Z] = spb.position_new[Z];
-
+    
 }
 
 
