@@ -1649,9 +1649,11 @@ int main ( int argc, char **argv ) {
             SPB_calculate(dsfmt, l);
             
             renew ();
+            
+            write_coordinate ( l , start_number);
         }
 
-        write_coordinate ( t , start_number);
+        //write_coordinate ( t , start_number);
         
         //if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0;
     }
