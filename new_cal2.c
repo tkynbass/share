@@ -81,9 +81,7 @@ typedef struct particle {           //構造体の型宣言
     
 } Particle;
 
-Particle *ptr;
-
-Particle part[NUMBER];
+Particle *part;
 
 Particle spb;
 
@@ -1587,7 +1585,7 @@ int main ( int argc, char **argv ) {
     
     //unsigned int *gene_list;
     
-    ptr = (Particle *)malloc(NUMBER * sizeof(Particle));
+    part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
     if (ptr == NULL) {
         
