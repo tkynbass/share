@@ -57,7 +57,6 @@
 double nucleolus_setting_radius;
 
 double Nucleolus_circle_center[3], k_expression;
-int centro_no = 5542;
 
 typedef enum chain {
     A, B, C
@@ -91,7 +90,7 @@ enum label{ X, Y, Z};
 
 void init_particle( int start ){       //初期値設定
     
-    int i, i_dummy;
+    int i, i_dummy, reset_flag;
     
     Particle *part_1;
     
@@ -132,6 +131,19 @@ void init_particle( int start ){       //初期値設定
     
     part[5012].particle_type = Normal;
     part[6192].particle_type = Normal;
+    
+    printf ("\n     Reset all velocities??(y/1 or n/0)  :   ");
+    scanf ("%d", &reset_flag);
+    
+    if (reset_flag == 1) {
+        
+        for (i=0; i<NUMBER; i++){
+            
+            part[i].velocity[X] = 0.0;
+            part[i].velocity[Y] = 0.0;
+            part[i].velocity[Z] = 0.0;
+        }
+    }
 }
 
 /*
