@@ -1587,7 +1587,7 @@ int main ( int argc, char **argv ) {
     
     part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
-    if (ptr == NULL) {
+    if (part == NULL) {
         
         printf("\n error : can not secure the memory \n");
         exit(1);
