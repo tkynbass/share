@@ -440,28 +440,11 @@ void init_particle_calculate(){
         
         part_1 = &part[i];
         
-        //noise dsfmt
-        /*
-         if (part_1->particle_type != rDNA) {
-         
-         p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-         p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-         theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-         psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-         }
-         else {
-         
-         p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-         p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-         theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-         psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-         }*/
-        
         //noise mt
         if (part_1->particle_type != rDNA) {
             
-            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         }
@@ -981,7 +964,7 @@ void particle_calculate(const unsigned int l)        //位置と速度の計算 
     
     Particle *part_1, *part_2, *part_3;
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (12)
+#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
     for (i = 0; i < NUMBER; i++){
         
         part_1 = &part[i];
@@ -1006,8 +989,8 @@ void particle_calculate(const unsigned int l)        //位置と速度の計算 
         //noise mt
         if (part_1->particle_type != rDNA) {
             
-            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         }
