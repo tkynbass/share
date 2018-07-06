@@ -939,7 +939,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     
     Particle *part_1, *part_2, *part_3;
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (12)
+#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3, dsfmt) num_threads (12)
     for (i = 0; i < NUMBER; i++){
         
         part_1 = &part[i];
@@ -1662,10 +1662,10 @@ int main ( int argc, char **argv ) {
             
             renew ();
             
-            write_coordinate ( l , start_number);
+            //write_coordinate ( l , start_number);
         }
 
-        //write_coordinate ( t , start_number);
+        write_coordinate ( t , start_number);
         
         //if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0;
     }
