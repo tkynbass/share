@@ -13,7 +13,7 @@
 #include<math.h>
 #include<string.h>
 #include "dSFMT/dSFMT.h"
-//#include "MT.h"
+#include "MT.h"
 #include <time.h>
 #include <omp.h>
 
@@ -100,7 +100,7 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "newcal2/result2_%d.dat", start );
+    sprintf (filename, "newcal2/result_%d.dat", start );
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -256,10 +256,23 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     
     Particle *part_2;
     
-    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-    psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    //noise dsfmt
+    /*
+     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+     */
+    
+    //noise mt
+    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+    theta = 2.0 * PI * genrand_real3();
+    psi = 2.0 * PI * genrand_real3();
+    
+    force[X] = p1 * sin(theta) / sqrt(DELTA);
+    force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
@@ -338,10 +351,23 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
     Particle *part_2;
     
+    //noise dsfmt
+    /*
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    */
+    
+    //noise mt
+    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+    theta = 2.0 * PI * genrand_real3();
+    psi = 2.0 * PI * genrand_real3();
+    
+    force[X] = p1 * sin(theta) / sqrt(DELTA);
+    force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
@@ -415,7 +441,24 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
         
         part_1 = &part[i];
         
-        //noise
+        //noise dsfmt
+        /*
+         if (part_1->particle_type != rDNA) {
+         
+         p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+         p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+         theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+         psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+         }
+         else {
+         
+         p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+         p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+         theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+         psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+         }*/
+        
+        //noise mt
         if (part_1->particle_type != rDNA) {
             
             p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
@@ -425,10 +468,10 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
         }
         else {
             
-            p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+            p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+            theta = 2.0 * PI * genrand_real3();
+            psi = 2.0 * PI * genrand_real3();
         }
         
         force[X] = p1 * sin(theta) / sqrt(DELTA);
@@ -944,7 +987,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
         part_1 = &part[i];
         
-        //noise
+        //noise dsfmt
+        /*
         if (part_1->particle_type != rDNA) {
             
             p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
@@ -958,8 +1002,24 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        }
+        }*/
         
+        //noise mt
+        if (part_1->particle_type != rDNA) {
+            
+            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+        }
+        else {
+            
+            p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+            p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+            theta = 2.0 * PI * genrand_real3();
+            psi = 2.0 * PI * genrand_real3();
+        }
+
         force[X] = p1 * sin(theta) / sqrt(DELTA);
         force[Y] = p1 * cos(theta) / sqrt(DELTA);
         force[Z] = p2 * sin(psi) / sqrt(DELTA);
@@ -1554,7 +1614,7 @@ void write_coordinate (int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "newcal2/result2_%d.txt", t + start);
+    sprintf (result, "newcal2/result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -1627,6 +1687,8 @@ int main ( int argc, char **argv ) {
      }
      */
     
+    //mt
+    init_genrand((unsigned)time(NULL));
     
     //dSFMT
     dsfmt_t dsfmt;
