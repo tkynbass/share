@@ -255,14 +255,6 @@ void init_SPB_calculate () {
     
     Particle *part_2;
     
-    //noise dsfmt
-    /*
-     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-     */
-    
     //noise mt
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
@@ -349,14 +341,6 @@ void SPB_calculate (const unsigned int l){
     double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
     
     Particle *part_2;
-    
-    //noise dsfmt
-    /*
-    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-    psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-    */
     
     //noise mt
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
@@ -445,8 +429,8 @@ void init_particle_calculate(){
             
             p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
             p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
-            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            theta = 2.0 * PI * genrand_real3();
+            psi = 2.0 * PI * genrand_real3();
         }
         else {
             
@@ -969,30 +953,13 @@ void particle_calculate(const unsigned int l)        //位置と速度の計算 
         
         part_1 = &part[i];
         
-        //noise dsfmt
-        /*
-        if (part_1->particle_type != rDNA) {
-            
-            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        }
-        else {
-            
-            p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        }*/
-        
         //noise mt
         if (part_1->particle_type != rDNA) {
             
             p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
             p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
-            theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+            theta = 2.0 * PI * genrand_real3();
+            psi = 2.0 * PI * genrand_real3();
         }
         else {
             
