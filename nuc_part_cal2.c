@@ -1167,6 +1167,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
             part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
             part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
+        }
     }
     
 #pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
