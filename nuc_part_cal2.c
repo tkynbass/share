@@ -1161,11 +1161,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             force[X] = p1 * sin(theta) / sqrt(DELTA);
             force[Y] = p1 * cos(theta) / sqrt(DELTA);
             force[Z] = p2 * sin(psi) / sqrt(DELTA);
-            
-            force[X] += - PARTICLE_MYU * part_1->velocity[X];
-            force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
-            force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
-        }
+        }/*
         else {
             
             if (simulate_type ==0 ) {
@@ -1181,16 +1177,13 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
                 psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
                 
+                
                 force[X] = p1 * sin(theta) / sqrt(DELTA);
                 force[Y] = p1 * cos(theta) / sqrt(DELTA);
                 force[Z] = p2 * sin(psi) / sqrt(DELTA);
-                
-                force[X] += - rDNA_MYU * part_1->velocity[X];
-                force[Y] += - rDNA_MYU * part_1->velocity[Y];
-                force[Z] += - rDNA_MYU * part_1->velocity[Z];
             }
             
-        }
+        }*/
         
         
         /*
