@@ -162,31 +162,6 @@ void init_particle( int start ){       //初期値設定
 
 }
 
-/*
- void read_gene_list (unsigned int gene_list[CLUSTER_GENE_NUMBER]) {     //発現量変化遺伝子の読み取り
- 
- FILE *fpr;
- char filename[128];
- 
- int i;
- 
- sprintf (filename, "cl4_num.txt");
- 
- if ( (fpr = fopen (filename, "r")) == NULL) {
- 
- printf (" \n cannot read gene list \n ");
- 
- exit (1);
- }
- 
- for (i=0; i<CLUSTER_GENE_NUMBER; i++) {
- 
- fscanf (fpr, "%d\n", &gene_list[i]);
- }
- 
- fclose(fpr);
- }*/
-
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
     double dist = 0.0;
@@ -198,17 +173,6 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-/*
-///// 発現量の高い遺伝子に核中心方向への力を加える
-void high_expression (const const Particle *part_1, double force[DIMENSION]) {
-    
-    
-    force[X] += - k_expression * (part_1->position[X] - 0.0);
-    force[Y] += - k_expression * (part_1->position[Y] - 0.0);
-    force[Z] += - k_expression * (part_1->position[Z] - 0.0);
-    
-}
-*/
 void spring (const Particle *part_1, const Particle *part_2, double force[DIMENSION]) {     //ばね
     
     double dist, dist_0;
@@ -368,7 +332,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     spring (&spb, &part[3561], spb.force);
     spring (&spb, &part[5542], spb.force);
     
-    if ( l%1000 == 0) spb_list (&spb);
+    if ( l%100 == 0) spb_list (&spb);
     
     //ひも粒子との排除体積
     if (spb.list_no != 0){
@@ -428,15 +392,21 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     
     Particle *part_1, *part_2, *part_3;
     
-    for (i = 0; i < NUMBER; i++){
+    for (i = INIT_NUMBER; i < NUMBER; i++){
         
         part_1 = &part[i];
         
         //noise
-        if (part_1->particle_type != rDNA) {
+        if (simulate_type ==0 ) {
             
-            p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-            p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            part_1->force[X] = 0.0;
+            part_1->force[Y] = 0.0;
+            part_1->force[Z] = 0.0;
+        }
+        else {
+            
+            p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+            p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             
@@ -444,34 +414,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
             part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
             part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
             
-            part_1->force[X] += - PARTICLE_MYU * part_1->velocity[X];
-            part_1->force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
-            part_1->force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
-        }
-        else {
-            
-            if (simulate_type ==0 ) {
-                
-                part_1->force[X] = 0.0;
-                part_1->force[Y] = 0.0;
-                part_1->force[Z] = 0.0;
-            }
-            else {
-                
-                p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-                p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-                theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-                psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-                
-                part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
-                part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
-                part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
-                
-                part_1->force[X] += - rDNA_MYU * part_1->velocity[X];
-                part_1->force[Y] += - rDNA_MYU * part_1->velocity[Y];
-                part_1->force[Z] += - rDNA_MYU * part_1->velocity[Z];
-            }
-        
+            part_1->force[X] += - rDNA_MYU * part_1->velocity[X];
+            part_1->force[Y] += - rDNA_MYU * part_1->velocity[Y];
+            part_1->force[Z] += - rDNA_MYU * part_1->velocity[Z];
         }
         
         /*
@@ -1149,14 +1094,17 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
         part_1 = &part[i];
         
+        part_1->force[X] = 0.0;
+        part_1->force[Y] = 0.0;
+        part_1->force[Z] = 0.0;
+    }
+    
+    for (i=INIT_NUMBER; i<NUMBER; i++) {
+        
+        part_1 = &part[i];
+        
         //noise  核小体粒子のみ
-        if (simulate_type ==0 ) {
-            
-            part_1->force[X] = 0.0;
-            part_1->force[Y] = 0.0;
-            part_1->force[Z] = 0.0;
-        }
-        else {
+        if (simulate_type == 1 ) {
             
             p1 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
@@ -1174,15 +1122,6 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     for (i = INIT_NUMBER; i < NUMBER; i++){
         
         part_1 = &part[i];
-        
-        /*
-         if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
-         
-         high_expression (part_1, part_1->force);
-         
-         gene_counter++;
-         }*/
-        
         
         switch (part[i].particle_type) {
             case Normal:
