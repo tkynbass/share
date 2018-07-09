@@ -1937,10 +1937,10 @@ void write_coordinate (int t , int start) {
         
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z], membrain_radius);
-        
-        printf(" t = %d, i = %d R_n = %lf\r", t, i, nucleolus_setting_radius);
-        
     }
+    
+    if (simulate_type == 0) printf(" t = %d, R_n = %lf\r", t, nucleolus_setting_radius);
+    else printf(" t = %d, force = {%lf, %lf, %lf} \r", t, part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
     
     sprintf (str, "SPB");
     
