@@ -44,7 +44,7 @@
 #define SPB_MASS ( 27.0 * PARTICLE_MASS)      //SPBの質量
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
-#define rDNA_RADIUS ( 2.0 )     //核小体粒子の半径
+#define rDNA_RADIUS ( 2.2 )     //核小体粒子の半径
 #define rDNA_MASS ( rDNA_RADIUS * rDNA_RADIUS * rDNA_RADIUS * PARTICLE_MASS)
 #define rDNA_MYU (2.0 * DIMENSION * PI * rDNA_RADIUS * NANO * 0.000890 / 100 )     //核小体粒子の粘性
 
@@ -1110,15 +1110,14 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             p2 = sqrt(2.0 * 3.0 * rDNA_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
             theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
             psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-            
-            
+
             part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
             part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
             part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
         }
     }
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
+#pragma omp parallel for private ( j, k, m, p1, p2, theta, psi, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
     for (i = INIT_NUMBER; i < NUMBER; i++){
         
         part_1 = &part[i];
@@ -1941,6 +1940,8 @@ void write_coordinate (int t , int start) {
     
     if (simulate_type == 0) printf(" t = %d, R_n = %lf\r", t, nucleolus_setting_radius);
     else printf(" t = %d, force = {%lf, %lf, %lf} \r", t, part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
+    
+    fflush (stdout);
     
     sprintf (str, "SPB");
     
