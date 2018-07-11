@@ -1778,7 +1778,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
     }
     
-    if (l%10000 == 0 && i == 6741) printf ("force = {%8f, %8f, %8f} \n", part_1->force[X], part_1->force[Y], part_1->force[Z]);
+    if (l%10000 == 0) printf ("force = {%8f, %8f, %8f} \n", part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
+    
 }
 
 void renew () {
