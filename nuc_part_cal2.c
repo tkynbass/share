@@ -1115,7 +1115,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
             part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
             
-            if (l%10000 == 0) printf ("noise = {%8f, %8f, %8f \n", part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
+            if (l%10000 == 0 && i == 6741) printf ("noise = {%8f, %8f, %8f \n", part_1->force[X], part_1->force[Y], part_1->force[Z]);
         }
     }
     
