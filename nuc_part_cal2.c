@@ -1115,7 +1115,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
             part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
             
-            if (l%10000 == 0 && i == 6741) printf ("noise = {%8f, %8f, %8f \n", part_1->force[X], part_1->force[Y], part_1->force[Z]);
+            if (l%10000 == 0 && i == 6741) printf ("noise = {%8f, %8f, %8f}", part_1->force[X], part_1->force[Y], part_1->force[Z]);
         }
     }
     
@@ -1777,6 +1777,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity_2[Z];
         
     }
+    
+    if (l%10000 == 0 && i == 6741) printf ("force = {%8f, %8f, %8f} \n", part_1->force[X], part_1->force[Y], part_1->force[Z]);
 }
 
 void renew () {
@@ -1941,7 +1943,7 @@ void write_coordinate (int t , int start) {
     }
     
     if (simulate_type == 0) printf(" t = %d, R_n = %lf\r", t, nucleolus_setting_radius);
-    else printf(" t = %d, force = {%lf, %lf, %lf} \r", t, part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
+    //else printf(" t = %d, force = {%lf, %lf, %lf} \r", t, part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
     
     fflush (stdout);
     
