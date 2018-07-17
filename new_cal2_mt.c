@@ -249,7 +249,7 @@ void init_SPB_calculate () {
     
     double origin[] = { 0.0, 0.0, 0.0};
     
-    double dist = Euclid_norm ( spb.position , origin);
+    double force[DIMENSION], dist = Euclid_norm ( spb.position , origin);
     double p1, p2, theta, psi;
     double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
     
@@ -935,7 +935,7 @@ void particle_calculate(const unsigned int l)        //位置と速度の計算 
 {
     int i, k, j, m, gene_counter = 0;
     
-    double part_1->force[DIMENSION], f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
+    double f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
     double p1, p2, theta, psi;
     
     Particle *part_1, *part_2, *part_3;
