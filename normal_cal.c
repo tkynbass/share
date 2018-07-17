@@ -1275,13 +1275,14 @@ int main ( int argc, char **argv ) {
     init_particle( argv[3], start_number );
     //Nucleolus_position_init();
     
-    read_gene_list (gene_list);
+    //read_gene_list (gene_list);
     
     init_particle_calculate ( dsfmt, gene_list);
     init_SPB_calculate(dsfmt);
     
-    printf ("\n\n   Input k_bond_2 :     \n");
+    printf ("\n\n   Input k_bond_2 : ");
     scanf ("%lf", &k_bond_2);
+    printf("\n       k_bond_2 = %lf \n", k_bond_2);
     
     //初期位置の出力
     write_coordinate ( argv[3], 0, start_number );
