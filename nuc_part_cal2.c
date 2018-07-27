@@ -44,7 +44,7 @@
 #define SPB_MASS ( 27.0 * PARTICLE_MASS)      //SPBの質量
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
-#define rDNA_RADIUS ( 2.2 )     //核小体粒子の半径
+#define rDNA_RADIUS ( 2.0 )     //核小体粒子の半径
 #define rDNA_MASS ( rDNA_RADIUS * rDNA_RADIUS * rDNA_RADIUS * PARTICLE_MASS)
 #define rDNA_MYU (2.0 * DIMENSION * PI * rDNA_RADIUS * NANO * 0.000890 / 100 )     //核小体粒子の粘性
 
@@ -1778,7 +1778,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         
     }
     
-    if (l%10000 == 0) printf ("force = {%8f, %8f, %8f} \n", part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
+    //if (l%10000 == 0) printf ("force = {%8f, %8f, %8f} \n", part[6741].force[X], part[6741].force[Y], part[6741].force[Z]);
     
 }
 
