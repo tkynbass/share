@@ -1955,7 +1955,7 @@ void write_coordinate (int t , int start) {
     
     sprintf (str, "rDNA_RADIUS");
     
-    fprintf ("%s %lf\n", str, rDNA_RADIUS);
+    fprintf (fpw, "%s %lf\n", str, rDNA_RADIUS);
     
     sprintf(str, "Nucleolus");
     
