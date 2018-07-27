@@ -1115,7 +1115,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
             part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
             part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
             
-            if (l%10000 == 0 && i == 6741) printf ("noise = {%8f, %8f, %8f}", part_1->force[X], part_1->force[Y], part_1->force[Z]);
+            if (l%10000 == 0) printf ("noise = {%8f, %8f, %8f}", part_1->force[X], part_1->force[Y], part_1->force[Z]);
         }
     }
     
@@ -1952,6 +1952,10 @@ void write_coordinate (int t , int start) {
     
     fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z],  membrain_radius);
+    
+    sprintf (str, "rDNA_RADIUS");
+    
+    fprintf ("%s %lf\n", str, rDNA_RADIUS);
     
     sprintf(str, "Nucleolus");
     
