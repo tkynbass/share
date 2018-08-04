@@ -1758,29 +1758,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 }
                 break;
         }
-        
-        //list
-        
-        m = 0;
-        
-        for(j=0; j<NUMBER; j++){
-            
-            part_2 = &part[j];
-            
-            dist = Euclid_norm (part_1->position, part_2->position);
-            
-            if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
-                
-                m++;
-                part_1->list_no = m;
-                part_1->list[m] = j;
-            }
-        }
-        if (m == 0){
-            
-            part_1->list_no = 0;
-        }
-        
+
         //list
         if ( part_1->particle_type != rDNA) {
             
