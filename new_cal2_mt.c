@@ -45,7 +45,7 @@
 #define SPB_MASS ( 27.0 * PARTICLE_MASS)      //SPBの質量
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
-#define rDNA_RADIUS ( 1.8 )     //核小体粒子の半径
+#define rDNA_RADIUS ( 2.0 )     //核小体粒子の半径
 #define rDNA_MASS ( rDNA_RADIUS * rDNA_RADIUS * rDNA_RADIUS * PARTICLE_MASS)
 #define rDNA_MYU (2.0 * DIMENSION * PI * rDNA_RADIUS * NANO * 0.000890 / 100 )     //核小体粒子の粘性
 
@@ -124,7 +124,7 @@ void init_particle( int start ){       //初期値設定
             &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
     fgets(dummy, 128, fpr);
     
-    fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
+    //fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
     
     fclose (fpr);
     
@@ -1530,6 +1530,9 @@ void write_coordinate (int t , int start) {
     fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z],  membrain_radius);
     
+    sprintf (str, "rDNA_RADIUS");
+
+    fprintf (fpw, "%s %lf\n", str, rDNA_RADIUS);
     /*
     sprintf(str, "Nucleolus");
     
