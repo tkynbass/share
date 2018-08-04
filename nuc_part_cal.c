@@ -430,7 +430,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     
     Particle *part_1, *part_2, *part_3;
     
-    for (i = 0; i < NUMBER; i++){
+    for (i = INIT_NUMBER; i < NUMBER; i++){
         
         part_1 = &part[i];
         
@@ -1148,7 +1148,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     Particle *part_1, *part_2, *part_3;
     
 #pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
-    for (i = 6193; i < NUMBER; i++){
+    for (i = INIT_NUMBER; i < NUMBER; i++){
         
         part_1 = &part[i];
         
@@ -1760,6 +1760,28 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         }
         
         //list
+        
+        m = 0;
+        
+        for(j=0; j<NUMBER; j++){
+            
+            part_2 = &part[j];
+            
+            dist = Euclid_norm (part_1->position, part_2->position);
+            
+            if (dist < 5.0 * PARTICLE_RADIUS && abs(i-j) > 1){
+                
+                m++;
+                part_1->list_no = m;
+                part_1->list[m] = j;
+            }
+        }
+        if (m == 0){
+            
+            part_1->list_no = 0;
+        }
+        
+        //list
         if ( part_1->particle_type != rDNA) {
             
             if ( l%2000 == 0) {
@@ -1787,7 +1809,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         }
         else {
             
-            if ( l%5000 == 0) {
+            if ( l%100 == 0) {
                 
                 m = 0;
                 
@@ -1908,7 +1930,6 @@ void renew () {
         part_1->position[Z] = part_1->position_new[Z];
     }
     
-    /*
     spb.position_old[X] = spb.position[X];
     spb.position_old[Y] = spb.position[Y];
     spb.position_old[Z] = spb.position[Z];
@@ -1916,7 +1937,7 @@ void renew () {
     spb.position[X] = spb.position_new[X];
     spb.position[Y] = spb.position_new[Y];
     spb.position[Z] = spb.position_new[Z];
-     */
+
 }
 
 //核小体を作るための球の初期位置決定 第３染色体テロメアの中点方向
@@ -2122,7 +2143,7 @@ int main ( int argc, char **argv ) {
     else nucleolus_setting_radius = membrain_radius;
     
     init_particle_calculate (dsfmt/*, gene_list*/);
-    init_SPB_calculate(dsfmt);
+    //init_SPB_calculate(dsfmt);
     
     //初期位置の出力
     write_coordinate ( 0, start_number );
@@ -2140,7 +2161,7 @@ int main ( int argc, char **argv ) {
             
             renew ();
             
-            if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0e-4;
+            if (nucleolus_setting_radius > membrain_radius) nucleolus_setting_radius -= 1.0e-8;
             
             //write_coordinate ( l , start_number);
         }
