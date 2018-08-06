@@ -63,7 +63,7 @@ typedef struct particle {           //構造体の型宣言
     double position_old[DIMENSION];
     double velocity[DIMENSION];
     double velocity_2[DIMENSION];
-    double part_1->force[DIMENSION];
+    double force[DIMENSION];
     int list_no;
     int *list;
     
