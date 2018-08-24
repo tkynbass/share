@@ -19,8 +19,8 @@
 #define PI (M_PI)
 #define MEMBRAIN_RADIUS_MINIMUM  (32.0) //膜の半径の最小値
 #define INIT_DISTANCE ((PARTICLE_RADIUS + PARTICLE_RADIUS) * 0.8 )
-#define DIV_NUMBER (100)
-#define DIV_DELTA (23.7)
+#define DIV_NUMBER (118)   //118+1
+#define DIV_DELTA (20)
 #define RANGE_MIN (5880) //グラフに表示させる最小値
 
 #define TOP_NUMBER (100)
