@@ -139,7 +139,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
 }
 
 void write_data (const unsigned int top_ppv_hist[DIV_NUMBER], const unsigned int bottom_ppv_hist[DIV_NUMBER],
-                 const unsigned int ran_ppv_hist[DIV_NUMBER]) {
+                 const unsigned int ran_ppv_hist[DIV_NUMBER], const char *output_file) {
     
     unsigned int i, j;
     
@@ -147,7 +147,7 @@ void write_data (const unsigned int top_ppv_hist[DIV_NUMBER], const unsigned int
 
     char result[128], str[128];
     
-    sprintf (result, "tppv_hist.txt");
+    sprintf (result, "%s", output_file);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -158,7 +158,7 @@ void write_data (const unsigned int top_ppv_hist[DIV_NUMBER], const unsigned int
     
     for (i=0; i<DIV_NUMBER; i++) {
         
-        fprintf (fpw, "%3f %d %d %d\n", i*DIV_DELTA + RANGE_MIN, top_ppv_hist[i], bottom_ppv_hist[i],
+        fprintf (fpw, "%d %d %d %d\n", i*DIV_DELTA + RANGE_MIN, top_ppv_hist[i], bottom_ppv_hist[i],
                  ran_ppv_hist[i]);
     }
     
@@ -296,7 +296,7 @@ int main ( int argc, char **argv) {
         
     }
     
-    write_data (top_ppv_hist, bottom_ppv_hist, ran_ppv_hist);
+    write_data (top_ppv_hist, bottom_ppv_hist, ran_ppv_hist, argv[4]);
     
     
     return (0);
