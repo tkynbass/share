@@ -1233,7 +1233,7 @@ void Nucleolus_position (void) {
     //printf ( "\n t = %lf , h_1 = %lf. h_2 = %lf \n", t, h_1, h_2);
 }
 
-void write_coordinate ( const char *number, int t , int start) {
+void write_coordinate ( int t , int start) {
     
     int i;
     
@@ -1368,7 +1368,7 @@ int main ( int argc, char **argv ) {
             renew ();
         }
         
-        write_coordinate ( argv[3], t , start_number);
+        write_coordinate (t , start_number);
     }
     
     return ( 0 );
