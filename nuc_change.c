@@ -47,6 +47,8 @@
 
 double Nucleolus_circle_center[3], k_expression;
 
+void write_force (const double force[3], const char *name, const int count);
+
 typedef enum chain {
     A, B, C
 } CHAIN;
