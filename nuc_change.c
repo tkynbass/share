@@ -232,7 +232,9 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     double dist = Euclid_norm ( spb.position , origin);
     double p1, p2, theta, psi;
     double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
-    
+ 
+    char force_file[] = "spb";
+   
     Particle *part_2;
     
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
@@ -243,15 +245,21 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     force[X] = p1 * sin(theta) / sqrt(DELTA);
     force[Y] = p1 * cos(theta) / sqrt(DELTA);
     force[Z] = p2 * sin(psi) / sqrt(DELTA);
-    
+
+    write_force (force, force_file, 1); 
+   
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
     force[Z] += f * (spb.position[Z]);
     
+    write_force (force, force_file, 2);
+
     spring (&spb, &part[1880], force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], force);
     spring (&spb, &part[5542], force);
     
+    write_force (force, force_file, 3);
+
     spb_list (&spb);
     
     //ひも粒子との排除体積
@@ -273,7 +281,9 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
                 force[Z] += f * (spb.position[Z] - part_2->position[Z]);
             }
         }
-    }
+    } 
+
+    write_force (force, force_file, 4);
     
     //粘性抵抗
     force[X] += - SPB_MYU * spb.velocity[X];
@@ -305,9 +315,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     double p1, p2, theta, psi;
     double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
     
-    char *force_file;
-    
-    sprintf (force_file, "spb");
+    char force_file[] = "spb";
     
     Particle *part_2;
     
@@ -1350,9 +1358,11 @@ int main ( int argc, char **argv ) {
     
     init_particle_calculate (dsfmt/*, gene_list*/);
     init_SPB_calculate(dsfmt);
-    
+ 	
+    printf("\npass\n"); 
+   
     //初期位置の出力
-    write_coordinate ( argv[3], 0, start_number );
+    write_coordinate ( 0, start_number );
     
     for (t=1; t < calculate_number; t++) {
         
