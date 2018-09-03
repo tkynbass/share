@@ -320,19 +320,19 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     force[Y] = p1 * cos(theta) / sqrt(DELTA);
     force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
-    write_force (force, force_file, 1);
+    if (l % 2000 ==0) write_force (force, force_file, 1);
     
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
     force[Z] += f * (spb.position[Z]);
     
-    write_force (force, force_file, 2);
+    if (l % 2000 ==0) write_force (force, force_file, 2);
     
     spring (&spb, &part[1880], force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], force);
     spring (&spb, &part[5542], force);
     
-    write_force (force, force_file, 3);
+    if (l % 2000 ==0) write_force (force, force_file, 3);
     
     if ( l%2000 == 0) spb_list (&spb);
     
@@ -357,7 +357,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
         }
     }
     
-    write_force (force, force_file, 4);
+    if (l % 2000 ==0) write_force (force, force_file, 4);
     
     
     spb.velocity[X] = (2.0 * SPB_MASS * spb.velocity_2[X] + DELTA * force[X]) / (2.0 * SPB_MASS + SPB_MYU * DELTA);
