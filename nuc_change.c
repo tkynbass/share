@@ -1273,23 +1273,23 @@ void write_coordinate ( const char *number, int t , int start) {
 
 void write_force (const double force[3], const char *name, const int count ) {
     
-    FILE *fpw;
+    FILE *fpw_1;
     char result[128], str[128];
     
     sprintf (result, "change_test/force_%s.txt", name);
     
-    if ((fpw = fopen (result, "a")) == NULL) {
+    if ((fpw_1 = fopen (result, "a")) == NULL) {
         
         printf (" \n error \n");
         
         exit (1);
     }
     
-    fprintf (fpw, "%d  X:%lf Y:%lf Z:%lf\n", count, force[X], force[Y], force[Z]);
+    fprintf (fpw_1, "%d  X:%lf Y:%lf Z:%lf\n", count, force[X], force[Y], force[Z]);
     
-    if (count==4) fprintf (fpw, "\n");
+    if (count==4) fprintf (fpw_1, "\n");
     
-    fclose(fpw);
+    fclose(fpw_1);
     
 }
 
