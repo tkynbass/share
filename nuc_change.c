@@ -63,7 +63,6 @@ typedef struct particle {           //構造体の型宣言
     double position_old[DIMENSION];
     double velocity[DIMENSION];
     double velocity_2[DIMENSION];
-    double velocity_new[DIMENSION];
     int list_no;
     int *list;
     
@@ -115,7 +114,7 @@ void init_particle( int start ){       //初期値設定
            &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
     fgets(dummy, 128, fpr);
     
-    fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
+    //fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
     
     fclose (fpr);
     
@@ -239,6 +238,10 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
+    force[X] = p1 * sin(theta) / sqrt(DELTA);
+    force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    force[Z] = p2 * sin(psi) / sqrt(DELTA);
+    
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
     force[Z] += f * (spb.position[Z]);
@@ -300,6 +303,10 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     double p1, p2, theta, psi;
     double f = MEMBRAIN_EXCLUDE * (membrain_radius - dist ) / dist;
     
+    char *force_file;
+    
+    sprintf (force_file, "spb");
+    
     Particle *part_2;
     
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
@@ -307,13 +314,23 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
+    force[X] = p1 * sin(theta) / sqrt(DELTA);
+    force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    force[Z] = p2 * sin(psi) / sqrt(DELTA);
+    
+    write_force (force, force_file, 1);
+    
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
     force[Z] += f * (spb.position[Z]);
     
+    write_force (force, force_file, 2);
+    
     spring (&spb, &part[1880], force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], force);
     spring (&spb, &part[5542], force);
+    
+    write_force (force, force_file, 3);
     
     if ( l%2000 == 0) spb_list (&spb);
     
@@ -337,6 +354,8 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
             }
         }
     }
+    
+    write_force (force, force_file, 4);
     
     
     spb.velocity[X] = (2.0 * SPB_MASS * spb.velocity_2[X] + DELTA * force[X]) / (2.0 * SPB_MASS + SPB_MYU * DELTA);
@@ -1220,7 +1239,7 @@ void write_coordinate ( const char *number, int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "change/fission_result_%d.txt", t + start);
+    sprintf (result, "change_test/fission_result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -1248,6 +1267,28 @@ void write_coordinate ( const char *number, int t , int start) {
     fprintf(fpw, "%s %s %lf %lf %lf\n", str, str, Nucleolus_circle_center[X], Nucleolus_circle_center[Y], Nucleolus_circle_center[Z]);
     
     fclose (fpw);
+}
+
+void write_force (const double force[3], const char *name, const int count ) {
+    
+    FILE *fpw;
+    char result[128], str[128];
+    
+    sprintf (result, "change_test/force_%s.txt", name);
+    
+    if ((fpw = fopen (result, "a")) == NULL) {
+        
+        printf (" \n error \n");
+        
+        exit (1);
+    }
+    
+    fprintf (fpw, "%d  X:%lf Y:%lf Z:%lf\n", count, force[X], force[Y], force[Z]);
+    
+    if (count==4) fprintf (fpw, "\n");
+    
+    fclose(fpw);
+    
 }
 
 int main ( int argc, char **argv ) {
