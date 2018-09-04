@@ -390,7 +390,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     double force[DIMENSION], f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
     double p1, p2, theta, psi;
     
-    char force_file[] = "Telo1"
+    char force_file[] = "Telo1";
     
     Particle *part_1, *part_2, *part_3;
     
@@ -1311,8 +1311,8 @@ void write_force (const double force[3], const char *name, const int count ) {
     
     fprintf (fpw_1, "%d  X:%lf Y:%lf Z:%lf\n", count, force[X], force[Y], force[Z]);
     
-    if (count==4 && strcmp (force_file, "spb") == 0 ) fprintf (fpw_1, "\n");
-    else if (count==6 && strcmp (force_file, "Telo1") == 0) fprintf (fpw_1, "\n");
+    if (count==4 && strcmp (name, "spb") == 0 ) fprintf (fpw_1, "\n");
+    else if (count==6 && strcmp (name, "Telo1") == 0) fprintf (fpw_1, "\n");
     
     fclose(fpw_1);
     
