@@ -390,7 +390,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     double force[DIMENSION], f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
     double p1, p2, theta, psi;
     
-    char *force_file;
+    char force_file[] = "Telo1";
     
     Particle *part_1, *part_2, *part_3;
     
@@ -408,13 +408,13 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
         force[Y] = p1 * cos(theta) / sqrt(DELTA);
         force[Z] = p2 * sin(psi) / sqrt(DELTA);
         
-        if (i==0) write_force (force, force_file, 0);
+        if (i==0) write_force (force, force_file, 1);
         
         force[X] += - PARTICLE_MYU * part_1->velocity[X];
         force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
         force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
 
-        if (i==0) write_force (force, force_file, 1);
+        //if (i==0) write_force (force, force_file, 1);
         
         switch (part[i].particle_type) {
             case Normal:
@@ -798,6 +798,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
     
     Particle *part_1, *part_2, *part_3;
     
+    char force_file[] = "Telo1";
+    
     #pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, force, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
     for (i = 0; i < NUMBER; i++){
         
@@ -813,6 +815,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         force[Y] = p1 * cos(theta) / sqrt(DELTA);
         force[Z] = p2 * sin(psi) / sqrt(DELTA);
         
+        if (i==0) write_force (force, force_file, 1);
         
         /*
         if (i == gene_list [gene_counter]) {    //発現量が上がる遺伝子に核中心方向の力を加える
@@ -1016,6 +1019,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y]);
                         force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z]);
                         
+                        if (i==0) write_force (force, force_file, 2);
+                        
                         if (i != 5012) { //telomere
                             
                             dist = Euclid_norm (part_1->position, origin);
@@ -1025,6 +1030,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                             force[X] += f * (part_1->position[X] - origin[X]);
                             force[Y] += f * (part_1->position[Y] - origin[Y]);
                             force[Z] += f * (part_1->position[Z] - origin[Z]);
+                            
+                            if (i==0) write_force (force, force_file, 3);
                             
                             //Nucleolus_exclude
                             dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
@@ -1036,6 +1043,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                                 force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
                                 force[Z] += f * (part_1->position[Z] - Nucleolus_circle_center[Z]);
                             }
+                            
+                            if (i==0) write_force (force, force_file, 4);
                         }
                         else { //telomere_3     核小体との結合
                             
@@ -1057,6 +1066,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
                         force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+                        
+                        if (i==0) write_force (force, force_file, 5);
                         
                         break;
                         
@@ -1164,7 +1175,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
                 
             }
         }
-
+        
+        if (i==0) write_force (force, force_file, 6);
         
         part_1->velocity[X] = (2.0 * PARTICLE_MASS * part_1->velocity_2[X] + DELTA * force[X]) / (2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
         part_1->velocity[Y] = (2.0 * PARTICLE_MASS * part_1->velocity_2[Y] + DELTA * force[Y]) / (2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
