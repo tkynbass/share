@@ -390,6 +390,8 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     double force[DIMENSION], f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
     double p1, p2, theta, psi;
     
+    char force_file[] = "Telo1"
+    
     Particle *part_1, *part_2, *part_3;
     
     for (i = 0; i < NUMBER; i++){
@@ -406,10 +408,14 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
         force[Y] = p1 * cos(theta) / sqrt(DELTA);
         force[Z] = p2 * sin(psi) / sqrt(DELTA);
         
+        if (i==0) write_force (force, force_file, 0);
+        
         force[X] += - PARTICLE_MYU * part_1->velocity[X];
         force[Y] += - PARTICLE_MYU * part_1->velocity[Y];
         force[Z] += - PARTICLE_MYU * part_1->velocity[Z];
 
+        if (i==0) write_force (force, force_file, 1);
+        
         switch (part[i].particle_type) {
             case Normal:
                 
@@ -593,9 +599,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                     case 0:
                     case 2771:
                     case 5012:
-                        
+                    
                         part_2 = &part[i+1];
-                        
+                
                         //spring
                         dist = Euclid_norm(part_1->position, part_2->position);
                         f_2 = K_BOND * (INIT_DISTANCE - dist) / dist;
@@ -603,7 +609,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         force[X] += f_2 * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f_2 * (part_1->position[Y] - part_2->position[Y]);
                         force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z]);
-                        
+                    
+                        if (i==0) write_force (force, force_file, 2);
+                    
                         if (i != 5012) { //telomere
                             
                             dist = Euclid_norm (part_1->position, origin);
@@ -613,6 +621,8 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                             force[X] += f * (part_1->position[X] - origin[X]);
                             force[Y] += f * (part_1->position[Y] - origin[Y]);
                             force[Z] += f * (part_1->position[Z] - origin[Z]);
+                            
+                            if (i==0) write_force (force, force_file, 3);
                             
                             //Nucleolus_exclude
                             dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
@@ -624,6 +634,8 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                                 force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
                                 force[Z] += f * (part_1->position[Z] - Nucleolus_circle_center[Z]);
                             }
+                            
+                            if (i==0) write_force (force, force_file, 4);
 
                         }
                         else { //telomere_3 核小体との結合
@@ -646,7 +658,9 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                         force[X] += f * (part_1->position[X] - part_2->position[X]);
                         force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
                         force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-                        
+                    
+                        if (i==0) write_force (force, force_file, 5);
+                    
                         break;
                         
                     default:
@@ -752,6 +766,8 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
                 
             }
         }
+        
+        if (i==0) write_force (force, force_file, 6);
         
         part_1->velocity_2[X] = part_1->velocity[X] + DELTA * ( force[X] - PARTICLE_MYU * part_1->velocity[X] ) / ( 2.0 * PARTICLE_MASS );
         part_1->velocity_2[Y] = part_1->velocity[Y] + DELTA * ( force[Y] - PARTICLE_MYU * part_1->velocity[Y] ) / ( 2.0 * PARTICLE_MASS );
@@ -1295,7 +1311,8 @@ void write_force (const double force[3], const char *name, const int count ) {
     
     fprintf (fpw_1, "%d  X:%lf Y:%lf Z:%lf\n", count, force[X], force[Y], force[Z]);
     
-    if (count==4) fprintf (fpw_1, "\n");
+    if (count==4 && strcmp (force_file, "spb") == 0 ) fprintf (fpw_1, "\n");
+    else if (count==6 && strcmp (force_file, "Telo1") == 0) fprintf (fpw_1, "\n");
     
     fclose(fpw_1);
     
