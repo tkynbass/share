@@ -26,10 +26,8 @@
 #define NUMBER (6193)      //粒子数
 #define PARTICLE_MASS (M_A / N_A / 1000)      //染色体粒子の質量
 #define SPB_MASS ( 9.0 * PARTICLE_MASS)      //SPBの質量
-#define SPHERE_DIVISION (20)     //膜の分割数
 #define PARTICLE_RADIUS (1.0)     //粒子の半径
 #define PI (M_PI)
-#define MEMBRAIN_RADIUS_MINIMUM  (32.0) //膜の半径の最小値
 #define INIT_DISTANCE ((PARTICLE_RADIUS + PARTICLE_RADIUS) * 0.8 )
 
 #define K_EXCLUDE (1.0)    //排除体積効果の強さ
@@ -42,6 +40,8 @@
 
 #define SPB_RADIUS ( 3.0 )      //SPBの半径
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
+
+#define LIST_INTERVAL ( 100 )
 
 //#define CLUSTER_GENE_NUMBER (146)
 
@@ -342,7 +342,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
     if (l % 2000 ==0) write_force (force, force_file, 3);
     
-    if ( l%2000 == 0) spb_list (&spb);
+    if ( l % LIST_INTERVAL == 0) spb_list (&spb);
     
     //ひも粒子との排除体積
     if (spb.list_no != 0){
@@ -390,7 +390,7 @@ void init_particle_calculate( dsfmt_t dsfmt/*, const unsigned int gene_list [CLU
     double force[DIMENSION], f, f_2, f_3, dist, origin[] = {0.0, 0.0, 0.0};
     double p1, p2, theta, psi;
     
-    char force_file[] = "Telo1";
+    char *force_file;
     
     Particle *part_1, *part_2, *part_3;
     
@@ -1120,7 +1120,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l/*, const unsigned i
         }
         
         //list
-        if ( l%2000 == 0) {
+        if ( l % LIST_INTERVAL == 0) {
             
             m = 0;
             
