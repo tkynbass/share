@@ -178,9 +178,7 @@ int main ( int argc, char **argv) {
     double top_ppv, bottom_ppv, ran_ppv;
     
     double top_dist, bottom_dist, ran_dist;
-    
-    unsigned int no_counter;
-    
+
     //printf ("%d %d\n", start_number, calculate_number);
     
     ptr = (Particle *)malloc(NUMBER * sizeof(Particle));
@@ -245,8 +243,6 @@ int main ( int argc, char **argv) {
         bottom_ppv = 0.0;
         ran_ppv = 0.0;
         
-        no_counter = 0;
-        
         for (i=0; i<TOP_NUMBER; i++) {
             
             for (j=i+1; j<TOP_NUMBER; j++) {
@@ -254,15 +250,11 @@ int main ( int argc, char **argv) {
                 top_dist = Euclid_norm (top[i]->position, top[j]->position) * 0.04 * 0.71/ 1.28;
                 
                 if (top_dist > 0.1713)  top_ppv += -log((top_dist - 0.1713)/1.0965) / 0.6865;
-                else no_counter++;
 
             }
         }
         
-        //top_ppv /= TOP_NUMBER*(TOP_NUMBER-1)/2.0 - no_counter;
         top_ppv_hist[(int)((top_ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
-        
-        no_counter = 0;
         
         for (i=0; i<BOTTOM_NUMBER; i++) {
             
@@ -271,15 +263,11 @@ int main ( int argc, char **argv) {
                 bottom_dist = Euclid_norm (bottom[i]->position, bottom[j]->position) * 0.04 * 0.71/ 1.28;
                 
                 if (bottom_dist > 0.1713) bottom_ppv += -log((bottom_dist - 0.1713)/1.0965) / 0.6865;
-                else no_counter++;
             }
         }
         
-        //bottom_ppv /= BOTTOM_NUMBER*(BOTTOM_NUMBER-1)/2.0 - no_counter;
         bottom_ppv_hist[(int)((bottom_ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
-        
-        no_counter = 0;
-        
+
         for (i=0; i<RAN_NUMBER; i++) {
             
             for (j=i+1; j<RAN_NUMBER; j++) {
@@ -287,11 +275,9 @@ int main ( int argc, char **argv) {
                 ran_dist = Euclid_norm (ran[i]->position, ran[j]->position) * 0.04 * 0.71/ 1.28;
                 
                 if (ran_dist > 0.1713) ran_ppv += -log((ran_dist - 0.1713)/1.0965) / 0.6865;
-                else no_counter++;
             }
         }
         
-        //ran_ppv /= RAN_NUMBER * (RAN_NUMBER-1)/2.0 - no_counter;
         ran_ppv_hist[(int)((ran_ppv - RANGE_MIN)/ DIV_DELTA)] += 1;
         
     }
