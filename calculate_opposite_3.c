@@ -93,7 +93,7 @@ void init_particle( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.txt", start);
+    sprintf (filename, "opposite_3/fission_result_%d.dat", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -1195,7 +1195,7 @@ void write_coordinate ( int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "fission_result_%d.txt", t + start);
+    sprintf (result, "opposite_3/fission_result_%d.txt", t + start);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
