@@ -1120,7 +1120,7 @@ void particle_calculate(const unsigned int l)        //位置と速度の計算 
     }
 }
 
-void renew () {
+void renew_particle () {
     
     int i;
     
@@ -1139,6 +1139,10 @@ void renew () {
         part_1->position[Z] = part_1->position_new[Z];
     }
     
+}
+
+void renew_spb () {
+    
     spb.position_old[X] = spb.position [X];
     spb.position_old[Y] = spb.position[Y];
     spb.position_old[Z] = spb.position[Z];
@@ -1146,7 +1150,6 @@ void renew () {
     spb.position[X] = spb.position_new[X];
     spb.position[Y] = spb.position_new[Y];
     spb.position[Z] = spb.position_new[Z];
-    
 }
 
 void Nucleolus_position_init (void) {
@@ -1274,9 +1277,13 @@ int main ( int argc, char **argv ) {
             
             particle_calculate(l);
             
-            if (l%10000==0) SPB_calculate(l);
+            if (l%10000==0) {
+                
+                SPB_calculate(l);
+                renew_spb();
+            }
             
-            renew ();
+            renew_particle ();
         }
         
         write_coordinate ( t , start_number);
