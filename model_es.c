@@ -49,7 +49,7 @@ typedef enum type {
     Normal, Centromere, Telomere
 }TYPE;
 
-const origin[] = { 0.0, 0.0, 0.0};
+const double origin[] = { 0.0, 0.0, 0.0};
 
 typedef struct particle {           //構造体の型宣言
     CHAIN chr_no;
@@ -81,7 +81,7 @@ Ellipsoid nuc;
 
 enum label{ X, Y, Z};
 
-void read_coordinate_init ( const char *str,  int start ){       //初期値設定
+void read_coordinate_init ( int start ){       //初期値設定
     
     int i, i_dummy;
     
@@ -104,7 +104,7 @@ void read_coordinate_init ( const char *str,  int start ){       //初期値設�
     
     for (i=0; i<NUMBER; i++){
         
-        fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
+        fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
                &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
                &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z]);
         fgets(dummy, 128, fpr);
@@ -194,7 +194,7 @@ void membrane_excude ( Particle *part_1 ) {
                             + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
                             + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
     
-    f = ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
+    double f = ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
     
     if ( ellipsoid_dist - 1 > 0 ) {
         
@@ -212,7 +212,7 @@ void membrane_fix ( Particle *part_1 ) {
     + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
     + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
     
-    f = ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
+    double f = ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
     
     part_1->force[X] += f * ( part_1->position[X] );
     part_1->force[Y] += f * ( part_1->position[Y] );
@@ -247,7 +247,7 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
-    membrane_fix (spb);
+    membrane_fix ( &spb );
     
     spring (&spb, &part[1880], spb.force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], spb.force);
@@ -308,7 +308,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
-    membrane_fix (spb);
+    membrane_fix ( &spb );
     
     spring (&spb, &part[1880], spb.force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], spb.force);
@@ -1015,18 +1015,14 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     for (i=0; i<NUMBER; i++) {
         
-        fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
+        fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
                  part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z]);
     }
     
     sprintf (str, "SPB");
     
-    fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
+    fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z]);
-    
-    sprintf(str, "Nucleolus");
-    
-    fprintf(fpw, "%s %s %lf %lf %lf\n", str, str, Nucleolus_circle_center[X], Nucleolus_circle_center[Y], Nucleolus_circle_center[Z]);
     
     fclose (fpw);
 }
@@ -1049,26 +1045,19 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     
-    for (i = 0;i < NUMBER;i++) {
-        part[i].list = (int *)malloc(NUMBER * sizeof(int));
-        
-        if (part[i].list == NULL) {
-            printf("\n error : can not secure the memory \n");
-            exit(1);
-        }
-    }
-    
     spb.list = (int *)malloc(NUMBER * sizeof(int));
     if (spb.list == NULL) {
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
     
+    /*
     gene_list = malloc (sizeof (int) * CLUSTER_GENE_NUMBER);
     if (gene_list == NULL) {
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
+    */
     
     //init_genrand((unsigned)time(NULL));
     
@@ -1076,7 +1065,7 @@ int main ( int argc, char **argv ) {
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
     
-    read_coordinate_init ( argv[3], start_number );
+    read_coordinate_init (start_number );
     //Nucleolus_position_init();
     
     //read_gene_list (gene_list);
@@ -1090,7 +1079,7 @@ int main ( int argc, char **argv ) {
     init_SPB_calculate(dsfmt);
     
     //初期位置の出力
-    write_coordinate ( argv[3], 0, start_number );
+    write_coordinate (/* argv[3],*/ 0, start_number );
     
     for (t=1; t < calculate_number; t++) {
         
