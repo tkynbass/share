@@ -1103,6 +1103,7 @@ int main ( int argc, char **argv ) {
         }
         
         printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
+        fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t , start_number);
     }
