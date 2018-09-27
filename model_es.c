@@ -1045,6 +1045,15 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     
+    for (i = 0;i < NUMBER;i++) {
+        part[i].list = (int *)malloc(NUMBER * sizeof(int));
+        
+        if (part[i].list == NULL) {
+            printf("\n error : can not secure the memory \n");
+            exit(1);
+        }
+    }
+    
     spb.list = (int *)malloc(NUMBER * sizeof(int));
     if (spb.list == NULL) {
         printf("\n error : can not secure the memory \n");
