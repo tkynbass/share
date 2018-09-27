@@ -186,7 +186,7 @@ void spb_list (Particle *part_1){        //リスト化
     }
 }
 
-void membrane_excude ( Particle *part_1 ) {
+void membrane_exclude ( Particle *part_1 ) {
     
     double dist = Euclid_norm (part_1->position, origin);
     
@@ -238,7 +238,7 @@ void nucleolus_exclude ( Particle *part_1 ){
 void init_SPB_calculate (dsfmt_t dsfmt) {
     
     int k, j;
-    double p1, p2, theta, psi;
+    double p1, p2, theta, psi, dist, f;
     
     Particle *part_2;
     
@@ -299,7 +299,7 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
 void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
     int k, j;
-    double p1, p2, theta, psi;
+    double p1, p2, theta, psi, dist, f;
 
     Particle *part_2;
     
@@ -353,7 +353,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
 }
 
-void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUSTER_GENE_NUMBER] ){
+void init_particle_calculate( dsfmt_t dsfmt /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
     
     int i, k, j, m, gene_counter=0;
     
@@ -658,7 +658,8 @@ void init_particle_calculate( dsfmt_t dsfmt, const unsigned int gene_list [CLUST
     }
 }
 
-void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int gene_list [CLUSTER_GENE_NUMBER])        //位置と速度の計算 private part_1->force dist f part_1 part_2 part_3
+void particle_calculate( dsfmt_t dsfmt, const unsigned int l /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */)
+//位置と速度の計算 private part_1->force dist f part_1 part_2 part_3
 {
     int i, k, j, m, gene_counter = 0;
     
@@ -814,8 +815,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l, const unsigned int
                 + f_3 * (part_1->position[Y] - part_3->position[Y]);
                 part_1->force[Z] += f_2 * (part_1->position[Z] - part_2->position[Z])
                 + f_3 * (part_1->position[Z] - part_3->position[Z]);
-                
-                
+ 
                 membrane_exclude ( part_1 );
                 
                 break;
