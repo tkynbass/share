@@ -1075,7 +1075,7 @@ int main ( int argc, char **argv ) {
     mem.al_2 = 31.815;
     mem.al_3 = 31.815;
     
-    init_particle_calculate ( dsfmt, gene_list);
+    init_particle_calculate ( dsfmt /*, gene_list*/);
     init_SPB_calculate(dsfmt);
     
     //初期位置の出力
@@ -1087,7 +1087,7 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            particle_calculate(dsfmt, l, gene_list);
+            particle_calculate(dsfmt, l /*, gene_list*/);
             SPB_calculate(dsfmt, l);
             
             renew ();
