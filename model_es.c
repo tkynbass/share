@@ -194,7 +194,7 @@ void membrane_exclude ( Particle *part_1 ) {
                             + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
                             + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
     
-    double f = ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
+    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
     
     if ( ellipsoid_dist - 1 > 0 ) {
         
@@ -212,7 +212,7 @@ void membrane_fix ( Particle *part_1 ) {
     + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
     + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
     
-    double f = ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
+    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
     
     part_1->force[X] += f * ( part_1->position[X] );
     part_1->force[Y] += f * ( part_1->position[Y] );
@@ -246,6 +246,10 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    
+    spb.force[X] = p1 * sin(theta) / sqrt(DELTA);
+    spb.force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    spb.force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     membrane_fix ( &spb );
     
@@ -308,13 +312,17 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
+    spb.force[X] = p1 * sin(theta) / sqrt(DELTA);
+    spb.force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    spb.force[Z] = p2 * sin(psi) / sqrt(DELTA);
+    
     membrane_fix ( &spb );
     
     spring (&spb, &part[1880], spb.force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], spb.force);
     spring (&spb, &part[5542], spb.force);
     
-    if ( l%2000 == 0) spb_list (&spb);
+    if ( l%500 == 0) spb_list (&spb);
     
     //ひも粒子との排除体積
     if (spb.list_no != 0){
@@ -895,7 +903,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l /*, const unsigned 
         }
         
         //list
-        if ( l%2000 == 0) {
+        if ( l%500 == 0) {
             
             m = 0;
             
