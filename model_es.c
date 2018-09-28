@@ -1092,8 +1092,6 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t < calculate_number; t++) {
         
-        membrane_to_ellipsoid ();
-        
         for (l=1; l<=10000; l++){
             
             particle_calculate(dsfmt, l /*, gene_list*/);
@@ -1101,6 +1099,7 @@ int main ( int argc, char **argv ) {
             
             renew ();
         }
+        membrane_to_ellipsoid ();
         
         printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
         fflush (stdout);
