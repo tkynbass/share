@@ -235,7 +235,7 @@ void nucleolus_exclude ( Particle *part_1 ){
 }
 */
 
-void init_SPB_calculate (dsfmt_t dsfmt) {
+void init_SPB_calculate () {
     
     int k, j;
     double p1, p2, theta, psi, dist, f;
@@ -300,7 +300,7 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     
 }
 
-void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
+void SPB_calculate (const unsigned int l){
     
     int k, j;
     double p1, p2, theta, psi, dist, f;
@@ -361,7 +361,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
 }
 
-void init_particle_calculate( dsfmt_t dsfmt /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
+void init_particle_calculate(/*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
     
     int i, k, j, m, gene_counter=0;
     
@@ -666,7 +666,7 @@ void init_particle_calculate( dsfmt_t dsfmt /*, const unsigned int gene_list [CL
     }
 }
 
-void particle_calculate( dsfmt_t dsfmt, const unsigned int l /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */)
+void particle_calculate( const unsigned int l /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */)
 //位置と速度の計算 private part_1->force dist f part_1 part_2 part_3
 {
     int i, k, j, m, gene_counter = 0;
@@ -1093,8 +1093,8 @@ int main ( int argc, char **argv ) {
     mem.al_2 = 31.815;
     mem.al_3 = 31.815;
     
-    init_particle_calculate ( dsfmt /*, gene_list*/);
-    init_SPB_calculate(dsfmt);
+    init_particle_calculate (/*, gene_list*/);
+    init_SPB_calculate();
     
     //初期位置の出力
     write_coordinate (/* argv[3],*/ 0, start_number );
@@ -1103,8 +1103,8 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            particle_calculate(dsfmt, l /*, gene_list*/);
-            SPB_calculate(dsfmt, l);
+            particle_calculate(l /*, gene_list*/);
+            SPB_calculate(l);
             
             renew ();
         }
