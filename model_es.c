@@ -9,8 +9,8 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include "dSFMT/dSFMT.h"
-//#include "MT.h"
+//#include "dSFMT/dSFMT.h"
+#include "MT.h"
 #include <time.h>
 #include <omp.h>
 
@@ -242,8 +242,8 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     
     Particle *part_2;
     
-    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
@@ -307,8 +307,8 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
 
     Particle *part_2;
     
-    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
@@ -376,8 +376,8 @@ void init_particle_calculate( dsfmt_t dsfmt /*, const unsigned int gene_list [CL
         
         
         //noise
-        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
         theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         
@@ -480,7 +480,7 @@ void init_particle_calculate( dsfmt_t dsfmt /*, const unsigned int gene_list [CL
                 
             case Centromere:
                 
-                //centromere
+                //centromere    spb とのバネ
                 dist = Euclid_norm( part_1->position , spb.position);
                 f = K_BOND * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
                 part_1->force[X] += f * (part_1->position[X] - spb.position[X]);
@@ -682,8 +682,8 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l /*, const unsigned 
         part_1 = &part[i];
         
         //noise
-        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
+        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
         theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         
@@ -1076,11 +1076,12 @@ int main ( int argc, char **argv ) {
     }
     */
     
-    //init_genrand((unsigned)time(NULL));
+    init_genrand((unsigned)time(NULL));
     
     //dSFMT
-    dsfmt_t dsfmt;
+    /*dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
+    */
     
     read_coordinate_init (start_number );
     //Nucleolus_position_init();
