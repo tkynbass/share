@@ -244,8 +244,8 @@ void init_SPB_calculate () {
     
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
-    theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-    psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    theta = 2.0 * PI * genrand_real3();
+    psi = 2.0 * PI * genrand_real3();
     
     spb.force[X] = p1 * sin(theta) / sqrt(DELTA);
     spb.force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -309,8 +309,8 @@ void SPB_calculate (const unsigned int l){
     
     p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
-    theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-    psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    theta = 2.0 * PI * genrand_real3();
+    psi = 2.0 * PI * genrand_real3();
     
     spb.force[X] = p1 * sin(theta) / sqrt(DELTA);
     spb.force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -378,8 +378,8 @@ void init_particle_calculate(/*, const unsigned int gene_list [CLUSTER_GENE_NUMB
         //noise
         p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
         p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
-        theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+        theta = 2.0 * PI * genrand_real3();
+        psi = 2.0 * PI * genrand_real3();
         
         part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
         part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -684,8 +684,8 @@ void particle_calculate( const unsigned int l /*, const unsigned int gene_list [
         //noise
         p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
         p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
-        theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-        psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+        theta = 2.0 * PI * genrand_real3() ;
+        psi = 2.0 * PI * genrand_real3();
         
         part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
         part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
