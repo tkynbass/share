@@ -26,10 +26,8 @@
 #define NUMBER (6193)      //粒子数
 #define PARTICLE_MASS (M_A / N_A / 1000)      //染色体粒子の質量
 #define SPB_MASS ( 9.0 * PARTICLE_MASS)      //SPBの質量
-#define SPHERE_DIVISION (20)     //膜の分割数
 #define PARTICLE_RADIUS (1.0)     //粒子の半径
 #define PI (M_PI)
-#define MEMBRAIN_RADIUS_MINIMUM  (32.0) //膜の半径の最小値
 #define INIT_DISTANCE ((PARTICLE_RADIUS + PARTICLE_RADIUS) * 0.8 )
 
 #define K_EXCLUDE (1.0)    //排除体積効果の強さ
@@ -69,9 +67,7 @@ typedef struct particle {           //構造体の型宣言
     
 } Particle;
 
-Particle *ptr;
-
-Particle part[NUMBER];
+Particle *part;
 
 Particle spb;
 
@@ -237,6 +233,10 @@ void init_SPB_calculate (dsfmt_t dsfmt) {
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
+    force[X] = p1 * sin(theta) / sqrt(DELTA);
+    force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    force[Z] = p2 * sin(psi) / sqrt(DELTA);
+    
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
     force[Z] += f * (spb.position[Z]);
@@ -304,6 +304,10 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
     theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    
+    force[X] = p1 * sin(theta) / sqrt(DELTA);
+    force[Y] = p1 * cos(theta) / sqrt(DELTA);
+    force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     force[X] += f * (spb.position[X]);        //膜とのバネ
     force[Y] += f * (spb.position[Y]);
@@ -1237,9 +1241,9 @@ int main ( int argc, char **argv ) {
     
     unsigned int *gene_list;
     
-    ptr = (Particle *)malloc(NUMBER * sizeof(Particle));
+    part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
-    if (ptr == NULL) {
+    if (part == NULL) {
         
         printf("\n error : can not secure the memory \n");
         exit(1);
