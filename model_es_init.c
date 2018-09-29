@@ -93,7 +93,7 @@ void read_coordinate_init ( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "es_result_%d.dat", start);
+    sprintf (filename, "fission_result_%d.dat", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -994,6 +994,16 @@ void renew () {
     
 }
 
+void membrane_to_ellipsoid (void) {
+    
+    // al_1 31.815 → 25, al_2 31.815 → 21.25, al_3 31.815 → 17.5
+    const double delta = 1000;
+    
+    mem.al_1 -= ( 31.815 - 25 ) / delta;
+    mem.al_2 -= ( 31.815 - 21.25 ) / delta;
+    mem.al_3 -= ( 31.815 - 17.5 ) / delta;
+}
+
 void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     int i;
@@ -1078,10 +1088,10 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    //核膜主成分
-    mem.al_1 = 25;
-    mem.al_2 = 21.25;
-    mem.al_3 = 17.5;
+    //核膜主成分の初期化
+    mem.al_1 = 31.815;
+    mem.al_2 = 31.815;
+    mem.al_3 = 31.815;
     
     init_particle_calculate (/*, gene_list*/);
     init_SPB_calculate();
@@ -1098,6 +1108,7 @@ int main ( int argc, char **argv ) {
             
             renew ();
         }
+        membrane_to_ellipsoid ();
         
         printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
         fflush (stdout);
