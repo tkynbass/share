@@ -107,8 +107,6 @@ void read_coordinate_init ( int start ){       //初期値設定
         fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
                &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
                &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z]);
-        //fgets(dummy, 128, fpr);
-        
         //printf ("%d %lf %lf %lf \n", i, part[i].position[X], part[i].position[Y], part[i].position[Z]);
         
     }
@@ -676,8 +674,7 @@ void particle_calculate( const unsigned int l /*, const unsigned int gene_list [
     
     Particle *part_1, *part_2, *part_3;
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
-    for (i = 0; i < NUMBER; i++){
+    for ( i=0; i<NUMBER; i++) {
         
         part_1 = &part[i];
         
@@ -690,7 +687,12 @@ void particle_calculate( const unsigned int l /*, const unsigned int gene_list [
         part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
         part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
         part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
+    }
+    
+#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
+    for (i = 0; i < NUMBER; i++){
         
+        part_1 = &part[i];
         
         switch (part[i].particle_type) {
             case Normal:
