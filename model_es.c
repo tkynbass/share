@@ -672,13 +672,15 @@ void particle_calculate( const unsigned int l /*, const unsigned int gene_list [
     double f, f_2, f_3, dist;
     double p1, p2, theta, psi;
     
+    static double noise[3]
+    
     Particle *part_1, *part_2, *part_3;
     
+    ////// noise /////
     for ( i=0; i<NUMBER; i++) {
         
         part_1 = &part[i];
         
-        //noise
         p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
         p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( genrand_real3() ));
         theta = 2.0 * PI * genrand_real3() ;
@@ -687,9 +689,24 @@ void particle_calculate( const unsigned int l /*, const unsigned int gene_list [
         part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
         part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
         part_1->force[Z] = p2 * sin(psi) / sqrt(DELTA);
+        
     }
     
-#pragma omp parallel for private ( j, k, m, gene_counter, p1, p2, theta, psi, dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
+    if ( l==1 ) {
+        
+        noise[X] = part[3097].force[X];
+        /*noise[Y] = part[3097].force[Y];
+        noise[Z] = part[3097].force[Z];*/
+    }
+    else {
+        
+        if (noise[X] == part[3097].force[X]) {
+            
+            printf ("   warning    \n");
+        }
+    }
+    
+#pragma omp parallel for private ( j, k, m, gene_counter,dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
     for (i = 0; i < NUMBER; i++){
         
         part_1 = &part[i];
