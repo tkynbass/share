@@ -40,6 +40,7 @@
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
 //k_bond2 k_expression
+double set_al_1;
 
 typedef enum chain {
     A, B, C
@@ -999,9 +1000,9 @@ void membrane_to_ellipsoid (void) {
     // al_1 31.815 → 25, al_2 31.815 → 21.25, al_3 31.815 → 17.5
     const double delta = 1000;
     
-    mem.al_1 -= ( 31.815 - 25 ) / delta;
-    mem.al_2 -= ( 31.815 - 21.25 ) / delta;
-    mem.al_3 -= ( 31.815 - 17.5 ) / delta;
+    mem.al_1 -= ( 31.815 - set_al_1 ) / delta;
+    mem.al_2 -= ( 31.815 - 0.85 * set_al_1 ) / delta;
+    mem.al_3 -= ( 31.815 - 0.7 * set_al_1 ) / delta;
 }
 
 void write_coordinate ( /*const char *number,*/ int t , int start) {
@@ -1031,6 +1032,10 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z]);
+    
+    sprintf (str, "Axis_length");
+    
+    fprintf (fpw, "%s %lf %lf %lf\n", str, set_al_1, 0.85 * set_al_1, 0.7 * set_al_1);
     
     fclose (fpw);
 }
@@ -1087,6 +1092,9 @@ int main ( int argc, char **argv ) {
     //Nucleolus_position_init();
     
     //read_gene_list (gene_list);
+    
+    printf ("\n     Input length of axis_1 :  ");
+    scanf ("%lf", &set_al_1);
     
     //核膜主成分の初期化
     mem.al_1 = 31.815;
