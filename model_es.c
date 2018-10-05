@@ -24,20 +24,20 @@
 #define NUMBER ( 6193 )    //粒子数
 #define PARTICLE_MASS ( M_A / N_A / 1000 )    //染色体粒子の質量
 #define SPB_MASS (  9.0 * PARTICLE_MASS )     //SPBの質量
-#define PARTICLE_RADIUS ( 1.0 );     //粒子の半径
-#define PI ( M_PI );
+#define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
+#define PI ( M_PI )
 #define INIT_DISTANCE ( (PARTICLE_RADIUS + PARTICLE_RADIUS) * 0.8  )
 
 #define K_EXCLUDE ( 1.0 )    //排除体積効果の強さ
 #define K_BOND ( 1.0 )    //ばね定数
 #define K_BOND_2 ( 1.0e-4 )  //ひもの硬さ
-#define DELTA ( 1.0e-11 );  //刻み幅
+#define DELTA ( 1.0e-11 )  //刻み幅
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 ) //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
-#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100  )  //SPBの粘性
+#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100)  //SPBの粘性
 
 //k_bond2 k_expression
 
