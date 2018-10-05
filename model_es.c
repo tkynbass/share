@@ -14,30 +14,30 @@
 #include <time.h>
 #include <omp.h>
 
-#define DIMENSION (3) //次元
-#define NANO (4.0e-8)   // 長さの単位
-#define KBT (1.38064852e-23 / NANO / NANO) //ボルツマン
-#define TEMPARTURE (300)
-#define M_A (1.82527596e+6)
-#define N_A (6.022140857e+23)
+const unsigned int DIMENSION = 3; //次元
+const double NANO = 4.0e-8;   // 長さの単位
+const double KBT = 1.38064852e-23 / NANO / NANO; //ボルツマン
+const unsigned int TEMPARTURE = 300;
+const double M_A = 1.82527596e+6;
+const double N_A = 6.022140857e+23;
 
-#define NUMBER (6193)      //粒子数
-#define PARTICLE_MASS (M_A / N_A / 1000)      //染色体粒子の質量
-#define SPB_MASS ( 9.0 * PARTICLE_MASS)      //SPBの質量
-#define PARTICLE_RADIUS (1.0)     //粒子の半径
-#define PI (M_PI)
-#define INIT_DISTANCE ((PARTICLE_RADIUS + PARTICLE_RADIUS) * 0.8 )
+const unsigned int NUMBER = 6193;      //粒子数
+const double PARTICLE_MASS = M_A / N_A / 1000;      //染色体粒子の質量
+const double SPB_MASS =  9.0 * PARTICLE_MASS;      //SPBの質量
+const double PARTICLE_RADIUS = 1.0;     //粒子の半径
+const double PI = M_PI;
+const double INIT_DISTANCE = (PARTICLE_RADIUS + PARTICLE_RADIUS) * 0.8 ;
 
-#define K_EXCLUDE (1.0)    //排除体積効果の強さ
-#define K_BOND (1.0)    //ばね定数
-#define K_BOND_2 (1.0e-4)  //ひもの硬さ
-#define DELTA (1.0e-11)  //刻み幅
-#define PARTICLE_MYU (2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 )    //粘性抵抗の強さ
-#define MEMBRANE_EXCLUDE (1.0)     //膜との衝突
-#define MEMBRANE_EXCLUDE_SPB (1.0) //SPBとの衝突
+const double K_EXCLUDE = 1.0;    //排除体積効果の強さ
+const double K_BOND = 1.0;    //ばね定数
+const double K_BOND_2 = 1.0e-4;  //ひもの硬さ
+const double DELTA = 1.0e-11;  //刻み幅
+const double PARTICLE_MYU = 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 ;    //粘性抵抗の強さ
+const double MEMBRANE_EXCLUDE = 1.0;     //膜との衝突
+const double MEMBRANE_EXCLUDE_SPB = 1.0; //SPBとの衝突
 
-#define SPB_RADIUS ( 3.0 )      //SPBの半径
-#define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
+const double SPB_RADIUS =  3.0 ;      //SPBの半径
+const double SPB_MYU = 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 ;  //SPBの粘性
 
 //k_bond2 k_expression
 
@@ -115,7 +115,13 @@ void read_coordinate_init ( int start ){       //初期値設定
             &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
     fgets(dummy, 128, fpr);
     
-    //fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
+    fscanf (fpr, "%s %lf %lf %lf", dummy, &mem.al_1, &mem.al_2, &mem.al_3);
+    
+    if (mem.al_1 == 0) {
+        
+        printf ("\n     error : cannot axis length      \n");
+        exit(1);
+    }
     
     fclose (fpr);
     
@@ -1114,11 +1120,13 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    //核膜主成分
+    /*
+    //核膜主成分//
     mem.al_1 = 25;
     mem.al_2 = 21.25;
     mem.al_3 = 17.5;
-    
+    */
+     
     init_particle_calculate (/*, gene_list*/);
     init_SPB_calculate();
     
