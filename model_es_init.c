@@ -192,16 +192,25 @@ void membrane_exclude ( Particle *part_1 ) {
     double dist = Euclid_norm (part_1->position, origin);
     
     double ellipsoid_dist = part_1->position[X] * part_1->position[X] / ( mem.al_1 * mem.al_1 )
-                            + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
-                            + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
+    + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
+    + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
     
-    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
+    // 法線ベクトル
+    double normal_vector[] = { 2.0 * part_1->position[X] / ( mem.al_1 * mem.al_1),
+        2.0 * part_1->position[Y] / ( mem.al_2 * mem.al_2),
+        2.0 * part_1->position[Z] / ( mem.al_3 * mem.al_3) };
+    
+    double normal_vector_norm = Euclid_norm (normal_vector, origin);
+    
+    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
+                                                              + part_1->position[Y] * normal_vector[Y]
+                                                              + part_1->position[Z] * normal_vector[Z]);
     
     if ( ellipsoid_dist - 1 > 0 ) {
         
-        part_1->force[X] += f * ( part_1->position[X] );
-        part_1->force[Y] += f * ( part_1->position[Y] );
-        part_1->force[Z] += f * ( part_1->position[Z] );
+        part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+        part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+        part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
     }
 }
 
@@ -213,11 +222,20 @@ void membrane_fix ( Particle *part_1 ) {
     + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
     + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
     
-    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE / dist;
+    // 法線ベクトル
+    double normal_vector[] = { 2.0 * part_1->position[X] / ( mem.al_1 * mem.al_1),
+        2.0 * part_1->position[Y] / ( mem.al_2 * mem.al_2),
+        2.0 * part_1->position[Z] / ( mem.al_3 * mem.al_3) };
     
-    part_1->force[X] += f * ( part_1->position[X] );
-    part_1->force[Y] += f * ( part_1->position[Y] );
-    part_1->force[Z] += f * ( part_1->position[Z] );
+    double normal_vector_norm = Euclid_norm (normal_vector, origin);
+    
+    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
+                                                              + part_1->position[Y] * normal_vector[Y]
+                                                              + part_1->position[Z] * normal_vector[Z]);
+    
+    part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+    part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+    part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
 }
 /*
 void nucleolus_exclude ( Particle *part_1 ){
@@ -1003,6 +1021,8 @@ void membrane_to_ellipsoid (void) {
     mem.al_1 -= ( 31.815 - set_al_1 ) / delta;
     mem.al_2 -= ( 31.815 - 0.85 * set_al_1 ) / delta;
     mem.al_3 -= ( 31.815 - 0.7 * set_al_1 ) / delta;
+    
+    if ( mem.al_3 < 0.7 * set_al_1) return (0);
 }
 
 void write_coordinate ( /*const char *number,*/ int t , int start) {
