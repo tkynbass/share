@@ -715,11 +715,12 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
         
     }
     
+    /*
     if ( l==1 ) {
         
         noise[X] = part[3097].force[X];
-        /*noise[Y] = part[3097].force[Y];
-        noise[Z] = part[3097].force[Z];*/
+        noise[Y] = part[3097].force[Y];
+        noise[Z] = part[3097].force[Z];
     }
     else {
         
@@ -727,7 +728,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
             
             printf ("   warning  l = %d    \n", l);
         }
-    }
+    }*/
     
 #pragma omp parallel for private ( j, k, m, gene_counter,dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
     for (i = 0; i < NUMBER; i++){
@@ -1063,6 +1064,9 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z]);
     
+    sprintf (str, "Axis_length");
+    
+    fprintf (fpw, "%s %lf %lf %lf\n", str, set_al_1, 0.85 * set_al_1, 0.7 * set_al_1);
     
     
     fclose (fpw);
