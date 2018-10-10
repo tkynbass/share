@@ -382,7 +382,7 @@ void SPB_calculate (dsfmt_t dsfmt, const unsigned int l){
     
 }
 
-void init_particle_calculate( dsfmt_t dsfmt, /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
+void init_particle_calculate( dsfmt_t dsfmt /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
     
     int i, k, j, m, gene_counter=0;
     
