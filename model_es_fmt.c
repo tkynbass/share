@@ -263,10 +263,10 @@ void init_SPB_calculate (dsfmt_t *dsfmt) {
     
     Particle *part_2;
     
-    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-    theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-    psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
     spb.force[X] = p1 * sin(theta) / sqrt(DELTA);
     spb.force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -328,10 +328,10 @@ void SPB_calculate (dsfmt_t *dsfmt, const unsigned int l){
 
     Particle *part_2;
     
-    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-    theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-    psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
     
     spb.force[X] = p1 * sin(theta) / sqrt(DELTA);
     spb.force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -397,10 +397,10 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
         
         
         //noise
-        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-        theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-        psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+        theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+        psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         
         part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
         part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -704,10 +704,10 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
         
         part_1 = &part[i];
         
-        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-        theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt) ;
-        psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+        p1 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+        p2 = sqrt(2.0 * 3.0 * PARTICLE_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+        theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt) ;
+        psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
         
         part_1->force[X] = p1 * sin(theta) / sqrt(DELTA);
         part_1->force[Y] = p1 * cos(theta) / sqrt(DELTA);
@@ -1110,8 +1110,8 @@ int main ( int argc, char **argv ) {
     */
 
     //dSFMT
-    dsfmt_t *dsfmt;
-    dsfmt_init_gen_rand(dsfmt, (unsigned)time(NULL));
+    dsfmt_t dsfmt;
+    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
     
     
     read_coordinate_init (start_number );
@@ -1126,8 +1126,8 @@ int main ( int argc, char **argv ) {
     mem.al_3 = 17.5;
     */
      
-    init_particle_calculate ( dsfmt /*, gene_list*/);
-    init_SPB_calculate ( dsfmt );
+    init_particle_calculate ( &dsfmt /*, gene_list*/);
+    init_SPB_calculate ( &dsfmt );
     
     //初期位置の出力
     write_coordinate (/* argv[3],*/ 0, start_number );
@@ -1136,8 +1136,8 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            particle_calculate (dsfmt, l /*, gene_list*/);
-            SPB_calculate (dsfmt, l);
+            particle_calculate (&dsfmt, l /*, gene_list*/);
+            SPB_calculate (&dsfmt, l);
             
             renew ();
         }
