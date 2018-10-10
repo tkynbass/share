@@ -1106,13 +1106,11 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     */
-    
-    init_genrand((unsigned)time(NULL));
-    
+
     //dSFMT
-    /*dsfmt_t dsfmt;
+    dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
-    */
+    
     
     read_coordinate_init (start_number );
     //Nucleolus_position_init();
@@ -1126,8 +1124,8 @@ int main ( int argc, char **argv ) {
     mem.al_3 = 17.5;
     */
      
-    init_particle_calculate ( dsfmt/*, gene_list*/);
-    init_SPB_calculate (dsfmt);
+    init_particle_calculate ( dsfmt /*, gene_list*/);
+    init_SPB_calculate ( dsfmt );
     
     //初期位置の出力
     write_coordinate (/* argv[3],*/ 0, start_number );
