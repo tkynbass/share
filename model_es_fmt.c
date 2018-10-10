@@ -725,7 +725,7 @@ void particle_calculate( dsfmt_t dsfmt, const unsigned int l /*, const unsigned 
         
         if (noise[X] == part[3097].force[X]) {
             
-            printf ("   warning    \n");
+            printf ("   warning  l = %d    \n", l);
         }
     }
     
@@ -1062,6 +1062,8 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z]);
+    
+    
     
     fclose (fpw);
 }
