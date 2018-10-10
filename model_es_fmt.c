@@ -1066,7 +1066,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     sprintf (str, "Axis_length");
     
-    fprintf (fpw, "%s %lf %lf %lf\n", str, set_al_1, 0.85 * set_al_1, 0.7 * set_al_1);
+    fprintf (fpw, "%s %lf %lf %lf\n", str, mem.al_1, mem.al_2, mem.al_3);
     
     
     fclose (fpw);
