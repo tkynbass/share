@@ -34,6 +34,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 ) //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
+#define NUCLEOLUS_FIX (0.1)     //第３染色体末端と核小体の結合強度
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100)  //SPBの粘性
@@ -281,7 +282,7 @@ void nucleolus_fix ( Particle *part_1 ) {
     
     double normal_vector_norm = Euclid_norm (normal_vector, origin);
     
-    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector);
+    double f = - ( ellipsoid_dist - 1 ) * NUCLEOLUS_FIX * Inner_product (nuc_to_pos, normal_vector);
     
     rotate_position_z (normal_vector, PI / 6.0);
     
@@ -1256,6 +1257,8 @@ int main ( int argc, char **argv ) {
             SPB_calculate (&dsfmt, l);
             
             renew ();
+            
+            //write_coordinate (/* argv[3],*/ t , start_number);
         }
         
         printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
