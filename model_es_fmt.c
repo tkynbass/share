@@ -259,7 +259,7 @@ void rotate_position_z ( double pos[DIMENSION], const double theta ) {
 
 void nucleolus_fix ( Particle *part_1 ) {
     
-    static double nuc_pos[] = { 0.0, -0.6 * mem.al_1, 0.0 };
+    double nuc_pos[] = { -0.6 * mem.al_1, 0.0, 0.0 };
     
     //位置座標をz軸まわりに-30度回転
     rotate_position_z (part_1->position, - PI / 6);
@@ -294,7 +294,7 @@ void nucleolus_fix ( Particle *part_1 ) {
 
 void nucleolus_exclude ( Particle *part_1 ) {
     
-    static double nuc_pos[] = { 0.0, -0.6 * mem.al_1, 0.0 };
+    double nuc_pos[] = { -0.6 * mem.al_1, 0.0, 0.0 };
     
     //位置座標をz軸まわりに-30度回転
     rotate_position_z (part_1->position, - PI / 6);
@@ -646,7 +646,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         if (i != 5012) { //telomere
                             
                             membrane_fix ( part_1 );
-                            nucleolus_exclude (part_1)
+                            nucleolus_exclude (part_1);
                             
                         }
                         else { //telomere_3
