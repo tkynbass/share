@@ -653,7 +653,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         else { //telomere_3
                             
                             membrane_exclude (part_1);
-                            nucleolus_fix ( part_1 );
+                            //nucleolus_fix ( part_1 );
                         }
                         
                         //spring2
@@ -984,7 +984,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         else { //telomere_3
                             
                             membrane_exclude ( part_1 );
-                            nucleolus_fix (part_1);
+                            //nucleolus_fix (part_1);
                         }
                         
                         //spring2
@@ -1014,10 +1014,12 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         if (i != 6192) {//telomere
                             
                             membrane_fix ( part_1 );
+                            nucleolus_exclude ( part_1);
                         }
                         else { //telomere_3
                             
-                            membrane_fix ( part_1 );
+                            membrane_exclude ( part_1 );
+                            //nucleolus_fix (part_1);
                         }
                         
                         //spring2
