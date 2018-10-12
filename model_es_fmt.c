@@ -137,6 +137,12 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
+//  内積計算    //
+double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
+    
+    return ( pos_1[X] * pos_2[X] + pos_1[Y] * pos_2[Y] + pos_1[Z] * pos_2[Z]);
+}
+
 void spring (const Particle *part_1, const Particle *part_2, double force[DIMENSION]) {     //ばね
     
     double dist, dist_0;
@@ -196,19 +202,19 @@ void membrane_exclude ( Particle *part_1 ) {
     double ellipsoid_dist = part_1->position[X] * part_1->position[X] / ( mem.al_1 * mem.al_1 )
                             + part_1->position[Y] * part_1->position[Y] / ( mem.al_2 * mem.al_2 )
                             + part_1->position[Z] * part_1->position[Z] / ( mem.al_3 * mem.al_3 );
-    
-    // 法線ベクトル
-    double normal_vector[] = { 2.0 * part_1->position[X] / ( mem.al_1 * mem.al_1),
-                                2.0 * part_1->position[Y] / ( mem.al_2 * mem.al_2),
-                                2.0 * part_1->position[Z] / ( mem.al_3 * mem.al_3) };
-    
-    double normal_vector_norm = Euclid_norm (normal_vector, origin);
-    
-    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
-                                                              + part_1->position[Y] * normal_vector[Y]
-                                                              + part_1->position[Z] * normal_vector[Z]);
-    
+
     if ( ellipsoid_dist - 1 > 0 ) {
+        
+        // 法線ベクトル
+        double normal_vector[] = { 2.0 * part_1->position[X] / ( mem.al_1 * mem.al_1),
+            2.0 * part_1->position[Y] / ( mem.al_2 * mem.al_2),
+            2.0 * part_1->position[Z] / ( mem.al_3 * mem.al_3) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, origin);
+        
+        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
+                                                                  + part_1->position[Y] * normal_vector[Y]
+                                                                  + part_1->position[Z] * normal_vector[Z]);
         
         part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
         part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
@@ -239,22 +245,90 @@ void membrane_fix ( Particle *part_1 ) {
     part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
     part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
 }
-/*
-void nucleolus_exclude ( Particle *part_1 ){
+
+void rotate_position_z ( double pos[DIMENSION], const double theta ) {
     
-    //Nucleolus_exclude
+    double pos_new[DIMENSION];
     
-    dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
-    f = MEMBRANE_EXCLUDE * ( 4.0 * membrane_radius - dist - PARTICLE_RADIUS ) / dist;
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
+    pos_new[X] = sin (theta) * pos[X] + cos (theta) * pos[Y];
     
-    if ( dist + PARTICLE_RADIUS > 4.0 * membrane_radius) {
-        
-        part_1->force[X] += f * (part_1->position[X] - Nucleolus_circle_center[X]);
-        part_1->force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
-        part_1->force[Z] += f * (part_1->position[Z] - Nucleolus_circle_center[Z]);
-     }
+    pos[X] = pos_new[X];
+    pos[Y] = pos_new[Y];
 }
-*/
+
+void nucleolus_fix ( Particle *part_1 ) {
+    
+    static double nuc_pos[] = { 0.0, -0.6 * mem.al_1, 0.0 };
+    
+    //位置座標をz軸まわりに-30度回転
+    rotate_position_z (part_1->position, - PI / 6);
+    
+    //核小体中心から粒子へのベクトル
+    double nuc_to_pos[] = { part_1->position[X] - nuc_pos[X],
+                            part_1->position[Y] - nuc_pos[Y],
+                            part_1->position[Z] - nuc_pos[Z]};
+    
+    
+    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( nuc.al_3 * mem.al_3 )
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( nuc.al_1 * nuc.al_1 )
+    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( nuc.al_2 * nuc.al_2 );
+    
+    // 法線ベクトル
+    double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( nuc.al_3 * nuc.al_3),
+        2.0 * nuc_to_pos[Y] / ( nuc.al_1 * nuc.al_1),
+        2.0 * nuc_to_pos[Z] / ( nuc.al_2 * nuc.al_2) };
+    
+    double normal_vector_norm = Euclid_norm (normal_vector, origin);
+    
+    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector);
+    
+    rotate_position_z (normal_vector, PI / 6.0);
+    
+    part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+    part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+    part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
+    
+    rotate_position_z (part_1->position, PI / 6.0);
+}
+
+void nucleolus_exclude ( Particle *part_1 ) {
+    
+    static double nuc_pos[] = { 0.0, -0.6 * mem.al_1, 0.0 };
+    
+    //位置座標をz軸まわりに-30度回転
+    rotate_position_z (part_1->position, - PI / 6);
+    
+    //核小体中心から粒子へのベクトル
+    double nuc_to_pos[] = { part_1->position[X] - nuc_pos[X],
+        part_1->position[Y] - nuc_pos[Y],
+        part_1->position[Z] - nuc_pos[Z]};
+    
+    
+    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( nuc.al_3 * mem.al_3 )
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( nuc.al_1 * nuc.al_1 )
+    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( nuc.al_2 * nuc.al_2 );
+    
+    if ( ellipsoid_dist < 1.0 ) {
+        
+        // 法線ベクトル
+        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( nuc.al_3 * nuc.al_3),
+            2.0 * nuc_to_pos[Y] / ( nuc.al_1 * nuc.al_1),
+            2.0 * nuc_to_pos[Z] / ( nuc.al_2 * nuc.al_2) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, origin);
+        
+        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector);
+        
+        rotate_position_z (normal_vector, PI / 6.0);
+        
+        part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+        part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+        part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
+    }
+    
+    rotate_position_z (part_1->position, PI / 6.0);
+}
 
 void init_SPB_calculate (dsfmt_t *dsfmt) {
     
@@ -433,6 +507,8 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                 //membrane_exclude
                 membrane_exclude (part_1);
                 
+                nucleolus_exclude (part_1);
+                
                 //spb_exclude
                 dist = Euclid_norm (part_1->position, spb.position);
                 f = K_EXCLUDE * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
@@ -545,6 +621,9 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                 //membrane_exclude
                 membrane_exclude ( part_1 );
                 
+                //nucleolus_exclude
+                nucleolus_exclude (part_1);
+                
                 break;
                 
             case Telomere:
@@ -567,11 +646,13 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         if (i != 5012) { //telomere
                             
                             membrane_fix ( part_1 );
+                            nucleolus_exclude (part_1)
                             
                         }
                         else { //telomere_3
                             
-                            membrane_fix ( part_1 );
+                            membrane_exclude (part_1);
+                            nucleolus_fix ( part_1 );
                         }
                         
                         //spring2
@@ -601,10 +682,12 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         if (i != 6192) {//telomere
                             
                             membrane_fix ( part_1 );
+                            nucleolus_exclude (part_1);
                         }
                         else { //telomere_3
                             
                             membrane_fix ( part_1 );
+                            nucleolus_fix (part_1);
                         }
                         
                         //spring2
@@ -758,6 +841,8 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                 
                 membrane_exclude ( part_1 );
                 
+                nucleolus_exclude (part_1);
+                
                 //spb_exclude
                 dist = Euclid_norm (part_1->position, spb.position);
                 f = K_EXCLUDE * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
@@ -869,6 +954,8 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
  
                 membrane_exclude ( part_1 );
                 
+                nucleolus_exclude (part_1);
+                
                 break;
                 
             case Telomere:
@@ -891,10 +978,12 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         if (i != 5012) { //telomere
                             
                             membrane_fix ( part_1 );
+                            nucleolus_exclude (part_1);
                         }
                         else { //telomere_3
                             
-                            membrane_fix ( part_1 );
+                            membrane_exclude ( part_1 );
+                            nucleolus_fix (part_1);
                         }
                         
                         //spring2
@@ -1036,6 +1125,16 @@ void renew () {
     spb.position[Z] = spb.position_new[Z];
     
 }
+
+void make_nucleolus () {
+    
+    const double delta = 1000;
+    
+    nuc.al_1 += 0.5 * mem.al_1 / delta;
+    nuc.al_2 += 0.425 * mem.al_1 / delta;
+    nuc.al_3 += 0.35 * mem.al_1 / delta;
+}
+
 void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     int i;
@@ -1074,7 +1173,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l;
+    int i, t = 0, l, nucleolus_flag;
     
     int start_number = atoi(argv[1]);
     int calculate_number = atoi(argv[2]);
@@ -1119,16 +1218,24 @@ int main ( int argc, char **argv ) {
     
     
     read_coordinate_init (start_number );
-    //Nucleolus_position_init();
     
     //read_gene_list (gene_list);
     
-    /*
-    //核膜主成分//
-    mem.al_1 = 25;
-    mem.al_2 = 21.25;
-    mem.al_3 = 17.5;
-    */
+    printf ("\n     Make nucleolus? (y:1 or n:0) : ");
+    scanf ("%d", &nucleolus_flag);
+    
+    if (nucleolus_flag == 1){
+        
+        nuc.al_1 = 0.0;
+        nuc.al_2 = 0.0;
+        nuc.al_3 = 0.0;
+    }
+    else {
+        
+        nuc.al_1 = 0.5 * mem.al_1;
+        nuc.al_2 = 0.425 * mem.al_1;
+        nuc.al_3 = 0.35 * mem.al_1;
+    }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
     init_SPB_calculate ( &dsfmt );
@@ -1137,6 +1244,8 @@ int main ( int argc, char **argv ) {
     write_coordinate (/* argv[3],*/ 0, start_number );
     
     for (t=1; t < calculate_number; t++) {
+        
+        if (nucleolus_flag == 1) make_nucleolus();
         
         for (l=1; l<=10000; l++){
             
