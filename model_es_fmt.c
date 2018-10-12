@@ -1130,9 +1130,12 @@ void make_nucleolus () {
     
     const double delta = 1000;
     
-    nuc.al_1 += 0.5 * mem.al_1 / delta;
-    nuc.al_2 += 0.425 * mem.al_1 / delta;
-    nuc.al_3 += 0.35 * mem.al_1 / delta;
+    if (nuc.al_1 < 0.5 * mem.al_1) {
+        
+        nuc.al_1 += 0.5 * mem.al_1 / delta;
+        nuc.al_2 += 0.425 * mem.al_1 / delta;
+        nuc.al_3 += 0.35 * mem.al_1 / delta;
+    }
 }
 
 void write_coordinate ( /*const char *number,*/ int t , int start) {
