@@ -34,7 +34,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 ) //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
-#define NUCLEOLUS_FIX (0.1)     //第３染色体末端と核小体の結合強度
+#define NUCLEOLUS_FIX ( 1.0e-3)     //第３染色体末端と核小体の結合強度
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100)  //SPBの粘性
