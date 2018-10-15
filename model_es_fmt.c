@@ -712,12 +712,12 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         if (i != 6192) {//telomere
                             
                             membrane_fix ( part_1 );
-                            nucleolus_exclude (part_1);
+                            nucleolus_exclude_prot (part_1);
                         }
                         else { //telomere_3
                             
                             membrane_fix ( part_1 );
-                            nucleolus_fix (part_1);
+                            nucleolus_fix_prot (part_1);
                         }
                         
                         //spring2
@@ -1304,7 +1304,7 @@ int main ( int argc, char **argv ) {
             
             renew ();
             
-            //write_coordinate (/* argv[3],*/ t , start_number);
+            //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
         printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, nuc.al_1, nuc.al_2, nuc.al_3);
