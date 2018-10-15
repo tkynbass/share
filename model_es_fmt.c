@@ -34,7 +34,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 ) //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
-#define NUCLEOLUS_FIX ( 1.0e-3)     //第３染色体末端と核小体の結合強度
+#define NUCLEOLUS_FIX ( 1.0e-2)     //第３染色体末端と核小体の結合強度
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100)  //SPBの粘性
@@ -331,6 +331,35 @@ void nucleolus_exclude ( Particle *part_1 ) {
     rotate_position_z (part_1->position, PI / 6.0);
 }
 
+void nucleolus_fix_prot ( Particle * part_1) {
+    
+    double nuc_pos[] = { -0.6 * mem.al_1, 0.0, 0.0 };
+    double dist = Euclid_norm (part_1->position, nuc_pos);
+    double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
+    
+    f = - (dist - dist_0) * NUCLEOLUS_FIX / dist;
+    
+    part_1->force[X] += f * (part_1->position[X] - nuc_pos[X]);
+    part_1->force[Y] += f * (part_1->position[Y] - nuc_pos[Y]);
+    part_1->force[Z] += f * (part_1->position[Z] - nuc_pos[Z]);
+}
+
+void nucleolus_exclude_prot ( Particle *part_1) {
+    
+    double nuc_pos[] = { -0.6 * mem.al_1, 0.0, 0.0 };
+    double dist = Euclid_norm (part_1->position, nuc_pos);
+    double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
+    
+    f = - (dist - dist_0) * MEMBRANE_EXCLUDE / dist;
+    
+    if (dist < dist_0) {
+        
+        part_1->force[X] += f * (part_1->position[X] - nuc_pos[X]);
+        part_1->force[Y] += f * (part_1->position[Y] - nuc_pos[Y]);
+        part_1->force[Z] += f * (part_1->position[Z] - nuc_pos[Z]);
+    }
+}
+
 void init_SPB_calculate (dsfmt_t *dsfmt) {
     
     int k, j;
@@ -508,7 +537,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                 //membrane_exclude
                 membrane_exclude (part_1);
                 
-                nucleolus_exclude (part_1);
+                nucleolus_exclude_prot (part_1);
                 
                 //spb_exclude
                 dist = Euclid_norm (part_1->position, spb.position);
@@ -623,7 +652,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                 membrane_exclude ( part_1 );
                 
                 //nucleolus_exclude
-                nucleolus_exclude (part_1);
+                nucleolus_exclude_prot (part_1);
                 
                 break;
                 
@@ -647,13 +676,13 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         if (i != 5012) { //telomere
                             
                             membrane_fix ( part_1 );
-                            nucleolus_exclude (part_1);
+                            nucleolus_exclude_prot (part_1);
                             
                         }
                         else { //telomere_3
                             
                             membrane_exclude (part_1);
-                            //nucleolus_fix ( part_1 );
+                            nucleolus_fix_prot ( part_1 );
                         }
                         
                         //spring2
@@ -842,7 +871,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                 
                 membrane_exclude ( part_1 );
                 
-                nucleolus_exclude (part_1);
+                nucleolus_exclude_prot (part_1);
                 
                 //spb_exclude
                 dist = Euclid_norm (part_1->position, spb.position);
@@ -955,7 +984,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
  
                 membrane_exclude ( part_1 );
                 
-                nucleolus_exclude (part_1);
+                nucleolus_exclude_prot (part_1);
                 
                 break;
                 
@@ -979,12 +1008,12 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         if (i != 5012) { //telomere
                             
                             membrane_fix ( part_1 );
-                            nucleolus_exclude (part_1);
+                            nucleolus_exclude_prot (part_1);
                         }
                         else { //telomere_3
                             
                             membrane_exclude ( part_1 );
-                            //nucleolus_fix (part_1);
+                            nucleolus_fix_prot (part_1);
                         }
                         
                         //spring2
@@ -1014,12 +1043,12 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         if (i != 6192) {//telomere
                             
                             membrane_fix ( part_1 );
-                            nucleolus_exclude ( part_1);
+                            nucleolus_exclude_prot ( part_1);
                         }
                         else { //telomere_3
                             
                             membrane_exclude ( part_1 );
-                            //nucleolus_fix (part_1);
+                            nucleolus_fix_prot (part_1);
                         }
                         
                         //spring2
@@ -1141,6 +1170,18 @@ void make_nucleolus () {
     }
 }
 
+void make_nucleolus_space () {
+    
+    const double delta = 1000;
+    
+    if (nuc.al_1 < 0.35 * mem.al_1) {
+        
+        nuc.al_1 += 0.35 * mem.al_1 / delta;
+        nuc.al_2 += 0.35 * mem.al_1 / delta;
+        nuc.al_3 += 0.35 * mem.al_1 / delta;
+    }
+}
+
 void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     int i;
@@ -1169,10 +1210,13 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     fprintf(fpw, "%s %s %lf %lf %lf %lf %lf %lf\n", str, str, spb.position_old[X], spb.position_old[Y], spb.position_old[Z],
             spb.velocity[X], spb.velocity[Y], spb.velocity[Z]);
     
-    sprintf (str, "Axis_length");
+    sprintf (str, "Membrane_Axis_length");
     
     fprintf (fpw, "%s %lf %lf %lf\n", str, mem.al_1, mem.al_2, mem.al_3);
     
+    sprintf (str, "Nucleolus_Axis_length");
+    
+    fprintf (fpw, "%s %lf %lf %lf\n", str, nuc.al_1, nuc.al_2, nuc.al_3);
     
     fclose (fpw);
 }
@@ -1263,7 +1307,7 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ t , start_number);
         }
         
-        printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
+        printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, nuc.al_1, nuc.al_2, nuc.al_3);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t , start_number);
