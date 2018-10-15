@@ -337,7 +337,7 @@ void nucleolus_fix_prot ( Particle * part_1) {
     double dist = Euclid_norm (part_1->position, nuc_pos);
     double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
     
-    f = - (dist - dist_0) * NUCLEOLUS_FIX / dist;
+    double f = - (dist - dist_0) * NUCLEOLUS_FIX / dist;
     
     part_1->force[X] += f * (part_1->position[X] - nuc_pos[X]);
     part_1->force[Y] += f * (part_1->position[Y] - nuc_pos[Y]);
@@ -350,7 +350,7 @@ void nucleolus_exclude_prot ( Particle *part_1) {
     double dist = Euclid_norm (part_1->position, nuc_pos);
     double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
     
-    f = - (dist - dist_0) * MEMBRANE_EXCLUDE / dist;
+    double f = - (dist - dist_0) * MEMBRANE_EXCLUDE / dist;
     
     if (dist < dist_0) {
         
