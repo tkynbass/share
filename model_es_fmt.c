@@ -1295,7 +1295,7 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t < calculate_number; t++) {
         
-        if (nucleolus_flag == 1) make_nucleolus();
+        if (nucleolus_flag == 1) make_nucleolus_space();
         
         for (l=1; l<=10000; l++){
             
