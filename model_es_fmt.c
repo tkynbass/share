@@ -1176,9 +1176,9 @@ void make_nucleolus_space () {
     
     if (nuc.al_1 < 0.35 * mem.al_1) {
         
-        nuc.al_1 += 0.35 * mem.al_1 / delta;
-        nuc.al_2 += 0.35 * mem.al_1 / delta;
-        nuc.al_3 += 0.35 * mem.al_1 / delta;
+        nuc.al_1 += (0.35 * mem.al_1 - 1.0) / delta;
+        nuc.al_2 += (0.35 * mem.al_1 - 1.0) / delta;
+        nuc.al_3 += (0.35 * mem.al_1 - 1.0) / delta;
     }
 }
 
@@ -1276,9 +1276,9 @@ int main ( int argc, char **argv ) {
     
     if (nucleolus_flag == 1){
         
-        nuc.al_1 = 0.0;
-        nuc.al_2 = 0.0;
-        nuc.al_3 = 0.0;
+        nuc.al_1 = 1.0;
+        nuc.al_2 = 1.0;
+        nuc.al_3 = 1.0;
     }
     else {
         
