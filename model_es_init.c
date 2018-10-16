@@ -98,7 +98,7 @@ void read_coordinate_init ( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%d.dat", start);
+    sprintf (filename, "es_result_%d.dat", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
