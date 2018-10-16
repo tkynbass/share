@@ -40,7 +40,7 @@
 #define SPB_RADIUS ( 3.0 )      //SPBの半径
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
-#define MEMBRANE_INIT_RADIUS (60)
+#define MEMBRANE_INIT_RADIUS (32)
 
 
 //k_bond2 k_expression
@@ -98,7 +98,7 @@ void read_coordinate_init ( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "es_result_%d.dat", start);
+    sprintf (filename, "fission_result_%s.dat", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
