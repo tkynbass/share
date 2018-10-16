@@ -1108,9 +1108,7 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     */
-    
-    init_genrand((unsigned)time(NULL));
-    
+
     //dSFMT
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
