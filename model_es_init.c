@@ -5,17 +5,18 @@
 //  Created by tkym on 2018/09/26.
 //
 
+////noma 3C data　から　核膜を楕円体、粒子径3.0e-8で初期構造を作る
+
 #include <stdio.h>
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-//#include "dSFMT/dSFMT.h"
-#include "MT.h"
+#include "dSFMT/dSFMT.h"
 #include <time.h>
 #include <omp.h>
 
 #define DIMENSION (3) //次元
-#define NANO (4.0e-8)   // 長さの単位
+#define NANO (3.0e-8)   // 長さの単位
 #define KBT (1.38064852e-23 / NANO / NANO) //ボルツマン
 #define TEMPARTURE (300)
 #define M_A (1.82527596e+6)
@@ -38,6 +39,9 @@
 
 #define SPB_RADIUS ( 3.0 )      //SPBの半径
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
+
+#define MEMBRANE_INIT_RADIUS (60)
+
 
 //k_bond2 k_expression
 double set_al_1;
@@ -254,7 +258,7 @@ void nucleolus_exclude ( Particle *part_1 ){
 }
 */
 
-void init_SPB_calculate () {
+void init_SPB_calculate ( dsfmt_t *dsfmt) {
     
     int k, j;
     double p1, p2, theta, psi, dist, f;
@@ -319,7 +323,7 @@ void init_SPB_calculate () {
     
 }
 
-void SPB_calculate (const unsigned int l){
+void SPB_calculate (const unsigned int l, dsfmt_t *dsfmt){
     
     int k, j;
     double p1, p2, theta, psi, dist, f;
@@ -380,7 +384,7 @@ void SPB_calculate (const unsigned int l){
     
 }
 
-void init_particle_calculate(/*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
+void init_particle_calculate( dsfmt_t *dsfmt/*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */){
     
     int i, k, j, m, gene_counter=0;
     
@@ -685,7 +689,7 @@ void init_particle_calculate(/*, const unsigned int gene_list [CLUSTER_GENE_NUMB
     }
 }
 
-void particle_calculate( const unsigned int l /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */)
+void particle_calculate( const unsigned int l, dsfmt_t *dsfmt /*, const unsigned int gene_list [CLUSTER_GENE_NUMBER] */)
 //位置と速度の計算 private part_1->force dist f part_1 part_2 part_3
 {
     int i, k, j, m, gene_counter = 0;
@@ -1016,11 +1020,11 @@ void renew () {
 void membrane_to_ellipsoid (void) {
     
     // al_1 31.815 → 25, al_2 31.815 → 21.25, al_3 31.815 → 17.5
-    const double delta = 1000;
+    const double delta = 10000;
     
-    mem.al_1 -= ( 31.815 - set_al_1 ) / delta;
-    mem.al_2 -= ( 31.815 - 0.85 * set_al_1 ) / delta;
-    mem.al_3 -= ( 31.815 - 0.7 * set_al_1 ) / delta;
+    mem.al_1 -= ( MEMBRANE_INIT_RADIUS - set_al_1 ) / delta;
+    mem.al_2 -= ( MEMBRANE_INIT_RADIUS - 0.85 * set_al_1 ) / delta;
+    mem.al_3 -= ( MEMBRANE_INIT_RADIUS - 0.7 * set_al_1 ) / delta;
     
 }
 
@@ -1103,12 +1107,10 @@ int main ( int argc, char **argv ) {
     init_genrand((unsigned)time(NULL));
     
     //dSFMT
-    /*dsfmt_t dsfmt;
+    dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
-    */
     
     read_coordinate_init (start_number );
-    //Nucleolus_position_init();
     
     //read_gene_list (gene_list);
     
@@ -1116,12 +1118,12 @@ int main ( int argc, char **argv ) {
     scanf ("%lf", &set_al_1);
     
     //核膜主成分の初期化
-    mem.al_1 = 31.815;
-    mem.al_2 = 31.815;
-    mem.al_3 = 31.815;
+    mem.al_1 = MEMBRANE_INIT_RADIUS;
+    mem.al_2 = MEMBRANE_INIT_RADIUS;
+    mem.al_3 = MEMBRANE_INIT_RADIUS;
     
-    init_particle_calculate (/*, gene_list*/);
-    init_SPB_calculate();
+    init_particle_calculate ( &dsfmt/*, gene_list*/);
+    init_SPB_calculate( &dsfmt);
     
     //初期位置の出力
     write_coordinate (/* argv[3],*/ 0, start_number );
@@ -1130,8 +1132,8 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=10000; l++){
             
-            particle_calculate(l /*, gene_list*/);
-            SPB_calculate(l);
+            particle_calculate(l, &dsfmt /*, gene_list*/);
+            SPB_calculate(l, &dsfmt);
             
             renew ();
         }
