@@ -14,7 +14,7 @@
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
-#define NANO ( 4.0e-8 )   // 長さの単位
+#define NANO ( 3.0e-8 )   // 長さの単位
 #define KBT ( 1.38064852e-23 / NANO / NANO ) //ボルツマン
 #define TEMPARTURE ( 300 )
 #define M_A ( 1.82527596e+6 )
@@ -333,7 +333,7 @@ void nucleolus_exclude ( Particle *part_1 ) {
 
 void nucleolus_fix_prot ( Particle * part_1) {
     
-    double nuc_pos[] = { -0.6 * mem.al_1, 0.0, 0.0 };
+    static double nuc_pos[] = { -5.0 * sqrt(3), 5.0, 0.0 };
     double dist = Euclid_norm (part_1->position, nuc_pos);
     double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
     
@@ -346,7 +346,7 @@ void nucleolus_fix_prot ( Particle * part_1) {
 
 void nucleolus_exclude_prot ( Particle *part_1) {
     
-    double nuc_pos[] = { -0.6 * mem.al_1, 0.0, 0.0 };
+    static double nuc_pos[] = { -5.0 * sqrt(3), 5.0, 0.0 };
     double dist = Euclid_norm (part_1->position, nuc_pos);
     double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
     
@@ -1176,9 +1176,9 @@ void make_nucleolus_space () {
     
     if (nuc.al_1 < 0.35 * mem.al_1) {
         
-        nuc.al_1 += (0.35 * mem.al_1 - 1.0) / delta;
-        nuc.al_2 += (0.35 * mem.al_1 - 1.0) / delta;
-        nuc.al_3 += (0.35 * mem.al_1 - 1.0) / delta;
+        nuc.al_1 += (10.54 -1.0) / delta;
+        nuc.al_2 += (10.54 -1.0) / delta;
+        nuc.al_3 += (10.54 -1.0) / delta;
     }
 }
 
@@ -1282,9 +1282,9 @@ int main ( int argc, char **argv ) {
     }
     else {
         
-        nuc.al_1 = 0.5 * mem.al_1;
-        nuc.al_2 = 0.425 * mem.al_1;
-        nuc.al_3 = 0.35 * mem.al_1;
+        nuc.al_1 = 17.56;
+        nuc.al_2 = 14.93;
+        nuc.al_3 = 10.54;
     }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
