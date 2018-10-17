@@ -333,7 +333,7 @@ void nucleolus_exclude ( Particle *part_1 ) {
 
 void nucleolus_fix_prot ( Particle * part_1) {
     
-    static double nuc_pos[] = { -5.0 * sqrt(3), 5.0, 0.0 };
+    double nuc_pos[] = { -5.0 * sqrt(3), 5.0, 0.0 };
     double dist = Euclid_norm (part_1->position, nuc_pos);
     double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
     
@@ -346,7 +346,7 @@ void nucleolus_fix_prot ( Particle * part_1) {
 
 void nucleolus_exclude_prot ( Particle *part_1) {
     
-    static double nuc_pos[] = { -5.0 * sqrt(3), 5.0, 0.0 };
+    double nuc_pos[] = { -5.0 * sqrt(3), 5.0, 0.0 };
     double dist = Euclid_norm (part_1->position, nuc_pos);
     double dist_0 = nuc.al_3 + PARTICLE_RADIUS;
     
