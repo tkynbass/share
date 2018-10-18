@@ -112,7 +112,7 @@ void read_coordinate_init ( int start ){       //初期値設定
         fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
                &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
                &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z]);
-        fgets(dummy, 128, fpr);
+        //fgets(dummy, 128, fpr);
         
         //printf ("%d %lf %lf %lf \n", i, part[i].position[X], part[i].position[Y], part[i].position[Z]);
         
