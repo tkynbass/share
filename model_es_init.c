@@ -1069,7 +1069,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l, membrane_flag = 0;
+    int i, t = 0, l, membrane_flag;
     
     int start_number = atoi(argv[1]);
     int calculate_number = atoi(argv[2]);
@@ -1116,9 +1116,10 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
+    printf ("\n     Membrane to ellipsoid(1) or mitigation(0) ? : ");
+    scanf ("%d", &membrane_flag);
     
-    
-    if (mem.al_1 == 0.0) {
+    if (membrane_flag == 1) {
         
         printf ("\n     Input length of axis_1 :  ");
         scanf ("%lf", &set_al_1);
@@ -1127,8 +1128,6 @@ int main ( int argc, char **argv ) {
         mem.al_1 = MEMBRANE_INIT_RADIUS;
         mem.al_2 = MEMBRANE_INIT_RADIUS;
         mem.al_3 = MEMBRANE_INIT_RADIUS;
-        
-        membrane_flag = 1;
     }
     
     init_particle_calculate ( &dsfmt/*, gene_list*/);
