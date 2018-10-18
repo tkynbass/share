@@ -98,7 +98,7 @@ void read_coordinate_init ( int start ){       //初期値設定
     
     FILE *fpr;
     
-    sprintf (filename, "fission_result_%s.dat", start);
+    sprintf (filename, "fission_result_%d.dat", start);
     
     if ((fpr = fopen(filename, "r")) == NULL){
         
@@ -118,9 +118,8 @@ void read_coordinate_init ( int start ){       //初期値設定
         
     }
     
-    fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
+    fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf\n", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
             &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
-    fgets(dummy, 128, fpr);
     
     fscanf (fpr, "%s %lf %lf %lf", dummy, &mem.al_1, &mem.al_2, &mem.al_3);
     
@@ -1117,10 +1116,12 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    printf ("\n     Input length of axis_1 :  ");
-    scanf ("%lf", &set_al_1);
+    
     
     if (mem.al_1 == 0.0) {
+        
+        printf ("\n     Input length of axis_1 :  ");
+        scanf ("%lf", &set_al_1);
         
         //核膜主成分の初期化
         mem.al_1 = MEMBRANE_INIT_RADIUS;
