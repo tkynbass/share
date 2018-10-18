@@ -122,7 +122,7 @@ void read_coordinate_init ( int start ){       //初期値設定
             &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
     fgets(dummy, 128, fpr);
     
-    //fscanf (fpr, "%s %s %lf %lf %lf", dummy, dummy, &Nucleolus_circle_center[X], &Nucleolus_circle_center[Y], &Nucleolus_circle_center[Z]);
+    fscanf (fpr, "%s %lf %lf %lf", dummy, &mem.al_1, &mem.al_2, &mem.al_3);
     
     fclose (fpr);
     
@@ -1070,7 +1070,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l;
+    int i, t = 0, l, membrane_flag = 0;
     
     int start_number = atoi(argv[1]);
     int calculate_number = atoi(argv[2]);
@@ -1120,10 +1120,15 @@ int main ( int argc, char **argv ) {
     printf ("\n     Input length of axis_1 :  ");
     scanf ("%lf", &set_al_1);
     
-    //核膜主成分の初期化
-    mem.al_1 = MEMBRANE_INIT_RADIUS;
-    mem.al_2 = MEMBRANE_INIT_RADIUS;
-    mem.al_3 = MEMBRANE_INIT_RADIUS;
+    if (mem.al_1 == 0.0) {
+        
+        //核膜主成分の初期化
+        mem.al_1 = MEMBRANE_INIT_RADIUS;
+        mem.al_2 = MEMBRANE_INIT_RADIUS;
+        mem.al_3 = MEMBRANE_INIT_RADIUS;
+        
+        membrane_flag = 1;
+    }
     
     init_particle_calculate ( &dsfmt/*, gene_list*/);
     init_SPB_calculate( &dsfmt);
@@ -1141,7 +1146,7 @@ int main ( int argc, char **argv ) {
             renew ();
         }
         
-        if ( mem.al_3 > 0.7 * set_al_1 ) membrane_to_ellipsoid ();
+        if ( membrane_flag == 1 ) membrane_to_ellipsoid ();
         
         printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
         fflush (stdout);
