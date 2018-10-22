@@ -41,7 +41,7 @@
 
 //k_bond2 k_expression
 
-double nuc_pos[] = { -30.0, 0.0, 0.0};
+double nuc_pos[] = { -32.0, 0.0, 0.0};
 
 typedef enum chain {
     A, B, C
@@ -1178,7 +1178,7 @@ void move_nucleolus () {
     
     const double delta = 1000.0;
     
-    if (nuc_pos[X] < -10.0 ) nuc_pos[X] -= (30 - 10) / delta;
+    if (nuc_pos[X] < -10.0 ) nuc_pos[X] += (30 - 10) / delta;
 }
 
 void make_nucleolus_space () {
