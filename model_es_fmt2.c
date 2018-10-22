@@ -41,6 +41,8 @@
 
 //k_bond2 k_expression
 
+double nucleolus_pos[] = { -30.0, 0.0, 0.0}
+
 typedef enum chain {
     A, B, C
 } CHAIN;
@@ -262,7 +264,7 @@ void rotate_position_z ( double pos[DIMENSION], const double theta ) {
 
 void nucleolus_fix ( Particle *part_1 ) {
     
-    double nuc_pos[] = { -10.0, 0.0, 0.0 };
+    //double nuc_pos[] = { -10.0, 0.0, 0.0 };
     
     //位置座標をz軸まわりに-30度回転
     rotate_position_z (part_1->position, - PI / 6);
@@ -297,7 +299,7 @@ void nucleolus_fix ( Particle *part_1 ) {
 
 void nucleolus_exclude ( Particle *part_1 ) {
     
-    double nuc_pos[] = { -10.0, 0.0, 0.0 };
+    //static double nuc_pos[] = { -25.0, 0.0, 0.0 };
     
     //位置座標をz軸まわりに-30度回転
     rotate_position_z (part_1->position, - PI / 6);
@@ -684,7 +686,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         else { //telomere_3
                             
                             membrane_exclude (part_1);
-                            nucleolus_fix ( part_1 );
+                            //nucleolus_fix ( part_1 );
                         }
                         
                         //spring2
@@ -719,7 +721,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         else { //telomere_3
                             
                             membrane_fix ( part_1 );
-                            nucleolus_fix (part_1);
+                            //nucleolus_fix (part_1);
                         }
                         
                         //spring2
@@ -1015,7 +1017,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         else { //telomere_3
                             
                             membrane_exclude ( part_1 );
-                            nucleolus_fix (part_1);
+                            //nucleolus_fix (part_1);
                         }
                         
                         //spring2
@@ -1050,7 +1052,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         else { //telomere_3
                             
                             membrane_exclude ( part_1 );
-                            nucleolus_fix (part_1);
+                            //nucleolus_fix (part_1);
                         }
                         
                         //spring2
@@ -1172,6 +1174,13 @@ void make_nucleolus () {
     }
 }
 
+void move_nucleolus () {
+    
+    const double delta = 1000.0;
+    
+    if (nucleolus_pos[X] < -10.0 ) nucleolus_pos[X] -= (30 - 10) / delta;
+}
+
 void make_nucleolus_space () {
     
     const double delta = 1000;
@@ -1278,9 +1287,9 @@ int main ( int argc, char **argv ) {
     
     if (nuc.al_3 == 0.0){
         
-        nuc.al_1 = 1.0;
-        nuc.al_2 = 1.0;
-        nuc.al_3 = 1.0;
+        nuc.al_1 = 17.56;
+        nuc.al_2 = 14.93;
+        nuc.al_3 = 10.54;
     }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
@@ -1292,7 +1301,8 @@ int main ( int argc, char **argv ) {
     for (t=1; t < calculate_number; t++) {
         
         if (nucleolus_flag == 1) make_nucleolus_space();
-        else if (nucleolus_flag == 2) make_nucleolus ();
+        //else if (nucleolus_flag == 2) make_nucleolus ();
+        else if ( nucleolus_flag ==2 ) move_nucleolus();
         
         for (l=1; l<=10000; l++){
             
