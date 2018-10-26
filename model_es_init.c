@@ -40,7 +40,16 @@
 #define SPB_RADIUS ( 3.0 )      //SPBの半径
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
 
+
 #define MEMBRANE_INIT_RADIUS (32)
+// Ellipsoid axes parameter of nucleus & nucleolus //
+#define MEMBRANE_AXIS_1 ( 0.825e-6 / LENGTH )
+#define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
+#define MEMBRANE_AXIS_3 ( 0.7 * MEMBRANE_AXIS_1 )
+
+#define NUCLEOLUS_AXIS_1 ( 0.527e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_2 ( 0.85 * NUCLEOLUS_AXIS_1 )
+#define NUCLEOLUS_AXIS_3 ( 0.65 * NUCLEOLUS_AXIS_1 )
 
 
 //k_bond2 k_expression
@@ -1024,11 +1033,11 @@ void renew () {
 void membrane_to_ellipsoid (void) {
     
     // al_1 31.815 → 25, al_2 31.815 → 21.25, al_3 31.815 → 17.5
-    const double delta = 10000;
+    const double delta = 5000;
     
-    mem.al_1 -= ( MEMBRANE_INIT_RADIUS - set_al_1 ) / delta;
-    mem.al_2 -= ( MEMBRANE_INIT_RADIUS - 0.85 * set_al_1 ) / delta;
-    mem.al_3 -= ( MEMBRANE_INIT_RADIUS - 0.7 * set_al_1 ) / delta;
+    mem.al_1 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_1 ) / delta;
+    mem.al_2 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_2 ) / delta;
+    mem.al_3 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_3 ) / delta;
     
 }
 
@@ -1119,6 +1128,7 @@ int main ( int argc, char **argv ) {
     printf ("\n     Membrane to ellipsoid(1) or mitigation(0) ? : ");
     scanf ("%d", &membrane_flag);
     
+    /*
     if (membrane_flag == 1) {
         
         printf ("\n     Input length of axis_1 :  ");
@@ -1129,7 +1139,7 @@ int main ( int argc, char **argv ) {
         mem.al_2 = MEMBRANE_INIT_RADIUS;
         mem.al_3 = MEMBRANE_INIT_RADIUS;
     }
-    
+    */
     init_particle_calculate ( &dsfmt/*, gene_list*/);
     init_SPB_calculate( &dsfmt);
     
