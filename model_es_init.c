@@ -1128,18 +1128,20 @@ int main ( int argc, char **argv ) {
     printf ("\n     Membrane to ellipsoid(1) or mitigation(0) ? : ");
     scanf ("%d", &membrane_flag);
     
-    /*
+    
     if (membrane_flag == 1) {
         
+        /*
         printf ("\n     Input length of axis_1 :  ");
         scanf ("%lf", &set_al_1);
+        */
         
         //核膜主成分の初期化
         mem.al_1 = MEMBRANE_INIT_RADIUS;
         mem.al_2 = MEMBRANE_INIT_RADIUS;
         mem.al_3 = MEMBRANE_INIT_RADIUS;
     }
-    */
+    
     init_particle_calculate ( &dsfmt/*, gene_list*/);
     init_SPB_calculate( &dsfmt);
     
