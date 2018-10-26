@@ -16,8 +16,8 @@
 #include <omp.h>
 
 #define DIMENSION (3) //次元
-#define NANO (3.0e-8)   // 長さの単位
-#define KBT (1.38064852e-23 / NANO / NANO) //ボルツマン
+#define LENGTH (3.0e-8)   // 長さの単位
+#define KBT (1.38064852e-23 / LENGTH / LENGTH) //ボルツマン
 #define TEMPARTURE (300)
 #define M_A (1.82527596e+6)
 #define N_A (6.022140857e+23)
@@ -33,12 +33,12 @@
 #define K_BOND (1.0)    //ばね定数
 #define K_BOND_2 (1.0e-4)  //ひもの硬さ
 #define DELTA (1.0e-11)  //刻み幅
-#define PARTICLE_MYU (2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 )    //粘性抵抗の強さ
+#define PARTICLE_MYU (2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 )    //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE (1.0)     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB (1.0) //SPBとの衝突
 
 #define SPB_RADIUS ( 3.0 )      //SPBの半径
-#define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100 )  //SPBの粘性
+#define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100 )  //SPBの粘性
 
 
 #define MEMBRANE_INIT_RADIUS (32)
