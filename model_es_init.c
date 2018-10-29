@@ -1071,7 +1071,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     sprintf (str, "Axis_length");
     
-    fprintf (fpw, "%s %lf %lf %lf\n", str, set_al_1, 0.85 * set_al_1, 0.7 * set_al_1);
+    fprintf (fpw, "%s %lf %lf %lf\n", str, mem.al_1, mem.al_2, mem.al_3);
     
     fclose (fpw);
 }
@@ -1160,7 +1160,7 @@ int main ( int argc, char **argv ) {
         
         if ( membrane_flag == 1 ) membrane_to_ellipsoid ();
         
-        printf("    t = %d, r = %lfe-8, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, LENGTH*10e+8, mem.al_1, mem.al_2, mem.al_3);
+        printf("    t = %d, r = %lfe-8, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, LENGTH*1.0e+8, mem.al_1, mem.al_2, mem.al_3);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t , start_number);
