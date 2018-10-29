@@ -14,8 +14,8 @@
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
-#define NANO ( 3.0e-8 )   // 長さの単位
-#define KBT ( 1.38064852e-23 / NANO / NANO ) //ボルツマン
+#define LENGTH ( 3.0e-8 )   // 長さの単位
+#define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
 #define TEMPARTURE ( 300 )
 #define M_A ( 1.82527596e+6 )
 #define N_A ( 6.022140857e+23 )
@@ -31,15 +31,16 @@
 #define K_BOND ( 1.0 )    //ばね定数
 #define K_BOND_2 ( 1.0e-4 )  //ひもの硬さ
 #define DELTA ( 1.0e-11 )  //刻み幅
-#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * NANO * 0.000890 / 100 ) //粘性抵抗の強さ
+#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
 #define NUCLEOLUS_FIX ( 1.0e-2)     //第３染色体末端と核小体の結合強度
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
-#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * NANO * 0.000890 / 100)  //SPBの粘性
+#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100)  //SPBの粘性
 
 //k_bond2 k_expression
+
 
 double nuc_pos[] = { -32.0, 0.0, 0.0};
 
@@ -832,20 +833,6 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
         
     }
     
-    /*
-    if ( l==1 ) {
-        
-        noise[X] = part[3097].force[X];
-        noise[Y] = part[3097].force[Y];
-        noise[Z] = part[3097].force[Z];
-    }
-    else {
-        
-        if (noise[X] == part[3097].force[X]) {
-            
-            printf ("   warning  l = %d    \n", l);
-        }
-    }*/
     
 #pragma omp parallel for private ( j, k, m, gene_counter,dist, f, part_1, part_2, part_3, f_2, f_3) num_threads (8)
     for (i = 0; i < NUMBER; i++){
@@ -1162,6 +1149,7 @@ void renew () {
     
 }
 
+/*
 void make_nucleolus () {
     
     const double delta = 1000;
@@ -1173,14 +1161,16 @@ void make_nucleolus () {
         //nuc.al_3 += 10.53 / delta;
     }
 }
-
+*/
+ 
 void move_nucleolus () {
     
-    const double delta = 1000.0;
+    const double delta = 2000.0;
     
-    if (nuc_pos[X] < -10.0 ) nuc_pos[X] += (30 - 10) / delta;
+    if (nuc_pos[X] < -10.0 ) nuc_pos[X] += (40 - 10) / delta;
 }
 
+/*
 void make_nucleolus_space () {
     
     const double delta = 1000;
@@ -1192,7 +1182,8 @@ void make_nucleolus_space () {
         nuc.al_3 += (10.54 -1.0) / delta;
     }
 }
-
+*/
+ 
 void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     int i;
@@ -1282,14 +1273,14 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    printf ("\n     Make nucleolus? (ellipsoid:2 or space:1 or n:0) : ");
+    printf ("\n     Make nucleolus? (ellipsoid move:2 or space:1 or n:0) : ");
     scanf ("%d", &nucleolus_flag);
     
     if (nuc.al_3 == 0.0){
         
-        nuc.al_1 = 17.56;
-        nuc.al_2 = 14.93;
-        nuc.al_3 = 10.54;
+        nuc.al_1 = 0.5269e-6 / LENGTH;
+        nuc.al_2 = 0.85 * nuc.al_1;
+        nuc.al_3 = 0.65 * nuc.al_1;
     }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
