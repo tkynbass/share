@@ -118,16 +118,16 @@ void read_coordinate_init ( int start ){       //初期値設定
     
     for (i=0; i<NUMBER; i++){
         
-        fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &i_dummy, &part[i].chr_no, &part[i].particle_type,
+        fscanf(fpr, "%d %d %d %lf %lf %lf %lf %lf %lf", &i_dummy, &part[i].chr_no, &part[i].particle_type,
                &part[i].position[X], &part[i].position[Y], &part[i].position[Z],
                &part[i].velocity[X], &part[i].velocity[Y], &part[i].velocity[Z]);
-        //fgets(dummy, 128, fpr);
+        fgets(dummy, 128, fpr);
         
         //printf ("%d %lf %lf %lf \n", i, part[i].position[X], part[i].position[Y], part[i].position[Z]);
         
     }
     
-    fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf\n", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
+    fscanf (fpr, "%s %s %lf %lf %lf %lf %lf %lf", dummy, dummy, &spb.position[X], &spb.position[Y], &spb.position[Z],
             &spb.velocity[X], &spb.velocity[Y], &spb.velocity[Z]);
     
     fscanf (fpr, "%s %lf %lf %lf", dummy, &mem.al_1, &mem.al_2, &mem.al_3);
@@ -1160,7 +1160,7 @@ int main ( int argc, char **argv ) {
         
         if ( membrane_flag == 1 ) membrane_to_ellipsoid ();
         
-        printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, mem.al_1, mem.al_2, mem.al_3);
+        printf("    t = %d, r = %lf, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, LENGTH, mem.al_1, mem.al_2, mem.al_3);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t , start_number);
