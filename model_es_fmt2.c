@@ -1149,7 +1149,7 @@ void renew () {
     
 }
 
-
+/*
 void make_nucleolus () {
     
     const double delta = 1000;
@@ -1161,7 +1161,7 @@ void make_nucleolus () {
         //nuc.al_3 += 10.53 / delta;
     }
 }
-
+*/
  
 void move_nucleolus () {
     
@@ -1291,9 +1291,9 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t < calculate_number; t++) {
         
-        if (nucleolus_flag == 1) make_nucleolus_space();
+        //if (nucleolus_flag == 1) make_nucleolus_space();
         //else if (nucleolus_flag == 2) make_nucleolus ();
-        else if ( nucleolus_flag ==2 ) move_nucleolus();
+        if ( nucleolus_flag ==2 ) move_nucleolus();
         
         for (l=1; l<=10000; l++){
             
