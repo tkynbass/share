@@ -14,7 +14,7 @@
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
-#define LENGTH ( 3.0e-8 )   // 長さの単位
+#define LENGTH ( 4.0e-8 )   // 長さの単位
 #define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
 #define TEMPARTURE ( 300 )
 #define M_A ( 1.82527596e+6 )
@@ -43,11 +43,11 @@
 
 // Ellipsoid axes parameter of nucleus & nucleolus //
 
-#define MEMBRANE_AXIS_1 ( 0.825e-6 / LENGTH )
+#define MEMBRANE_AXIS_1 ( 1.64032e-6 / LENGTH )
 #define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
 #define MEMBRANE_AXIS_3 ( 0.7 * MEMBRANE_AXIS_1 )
 
-#define NUCLEOLUS_AXIS_1 ( 0.5269e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_1 ( 0.98325e-6 / LENGTH )
 #define NUCLEOLUS_AXIS_2 ( 0.85 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.65 * NUCLEOLUS_AXIS_1 )
 
@@ -1283,7 +1283,7 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    printf ("\n\t Radius of particles is %2fe-8, OK? (y:1 or n:0) : ", PARTICLE_RADIUS * 1.0e+8);
+    printf ("\n\t Radius of particles is %2fe-8, OK? (y:1 or n:0) : ", LENGTH * 1.0e+8);
     scanf ("%d", &flag);
     
     if (flag == 0) exit(1);
