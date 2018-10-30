@@ -1080,7 +1080,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l, membrane_flag;
+    int i, t = 0, l, membrane_flag, flag;
     
     int start_number = atoi(argv[1]);
     int calculate_number = atoi(argv[2]);
