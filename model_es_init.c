@@ -41,13 +41,13 @@
 #define SPB_MYU (2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100 )  //SPBの粘性
 
 
-#define MEMBRANE_INIT_RADIUS (32)
+#define MEMBRANE_INIT_RADIUS (31.8)
 // Ellipsoid axes parameter of nucleus & nucleolus //
-#define MEMBRANE_AXIS_1 ( 0.825e-6 / LENGTH )
+#define MEMBRANE_AXIS_1 ( 1.64032e-6 / LENGTH )
 #define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
 #define MEMBRANE_AXIS_3 ( 0.7 * MEMBRANE_AXIS_1 )
 
-#define NUCLEOLUS_AXIS_1 ( 0.527e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_1 ( 0.98325e-6 / LENGTH )
 #define NUCLEOLUS_AXIS_2 ( 0.85 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.65 * NUCLEOLUS_AXIS_1 )
 
@@ -1030,15 +1030,17 @@ void renew () {
     
 }
 
-void membrane_to_ellipsoid (void) {
+void membrane_to_ellipsoid (const unsigned int time) {
     
     // al_1 31.815 → 25, al_2 31.815 → 21.25, al_3 31.815 → 17.5
     const double delta = 5000;
     
-    mem.al_1 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_1 ) / delta;
-    mem.al_2 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_2 ) / delta;
-    mem.al_3 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_3 ) / delta;
-    
+    if (time <= delta) {
+        
+        mem.al_1 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_1 ) / delta;
+        mem.al_2 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_2 ) / delta;
+        mem.al_3 -= ( MEMBRANE_INIT_RADIUS - MEMBRANE_AXIS_3 ) / delta;
+    }
 }
 
 void write_coordinate ( /*const char *number,*/ int t , int start) {
@@ -1125,16 +1127,16 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
+    printf ("\n\t Radius of particles is %2fe-8, OK? (y:1 or n:0) : ", PARTICLE_RADIUS * 1.0e+8);
+    scanf ("%d", &flag);
+    
+    if (flag == 0) exit(1);
+    
     printf ("\n     Membrane to ellipsoid(1) or mitigation(0) ? : ");
     scanf ("%d", &membrane_flag);
     
     
     if (membrane_flag == 1) {
-        
-        /*
-        printf ("\n     Input length of axis_1 :  ");
-        scanf ("%lf", &set_al_1);
-        */
         
         //核膜主成分の初期化
         mem.al_1 = MEMBRANE_INIT_RADIUS;
@@ -1150,6 +1152,8 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t < calculate_number; t++) {
         
+        if ( membrane_flag == 1 ) membrane_to_ellipsoid (t);
+        
         for (l=1; l<=10000; l++){
             
             particle_calculate(l, &dsfmt /*, gene_list*/);
@@ -1157,8 +1161,6 @@ int main ( int argc, char **argv ) {
             
             renew ();
         }
-        
-        if ( membrane_flag == 1 ) membrane_to_ellipsoid ();
         
         printf("    t = %d, r = %lfe-8, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, LENGTH*1.0e+8, mem.al_1, mem.al_2, mem.al_3);
         fflush (stdout);
