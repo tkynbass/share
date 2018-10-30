@@ -1283,7 +1283,7 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
-    printf ("\n\t Radius of particles is %2fe-8, OK? (y:1 or n:0) : ");
+    printf ("\n\t Radius of particles is %2fe-8, OK? (y:1 or n:0) : ", PARTICLE_RADIUS * 1.0e+8);
     scanf ("%d", &flag);
     
     if (flag == 0) exit(1);
