@@ -41,8 +41,18 @@
 
 //k_bond2 k_expression
 
+// Ellipsoid axes parameter of nucleus & nucleolus //
 
-double nuc_pos[] = { -32.0, 0.0, 0.0};
+#define MEMBRANE_AXIS_1 ( 0.825e-6 / LENGTH )
+#define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
+#define MEMBRANE_AXIS_3 ( 0.7 * MEMBRANE_AXIS_1 )
+
+#define NUCLEOLUS_AXIS_1 ( 0.5269e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_2 ( 0.85 * NUCLEOLUS_AXIS_1 )
+#define NUCLEOLUS_AXIS_3 ( 0.65 * NUCLEOLUS_AXIS_1 )
+
+
+double nuc_pos[] = { - (MEMBRANE_AXIS_1 + NUCLEOLUS_AXIS_3), 0.0, 0.0};
 
 typedef enum chain {
     A, B, C
@@ -1225,7 +1235,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l, nucleolus_flag;
+    int i, t = 0, l, nucleolus_flag, flag;
     
     int start_number = atoi(argv[1]);
     int calculate_number = atoi(argv[2]);
@@ -1273,14 +1283,19 @@ int main ( int argc, char **argv ) {
     
     //read_gene_list (gene_list);
     
+    printf ("\n\t Radius of particles is %2fe-8, OK? (y:1 or n:0) : ");
+    scanf ("%d", &flag);
+    
+    if (flag == 0) exit(1);
+    
     printf ("\n     Make nucleolus? (ellipsoid move:2 or space:1 or n:0) : ");
     scanf ("%d", &nucleolus_flag);
     
     if (nuc.al_3 == 0.0){
         
-        nuc.al_1 = 0.5269e-6 / LENGTH;
-        nuc.al_2 = 0.85 * nuc.al_1;
-        nuc.al_3 = 0.65 * nuc.al_1;
+        nuc.al_1 = NUCLEOLUS_AXIS_1;
+        nuc.al_2 = NUCLEOLUS_AXIS_2;
+        nuc.al_3 = NUCLEOLUS_AXIS_3;
     }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
