@@ -1179,7 +1179,7 @@ void move_nucleolus () {
     
     const double delta = 2000.0;
     
-    if (nuc_pos[X] < -NUC_MEM_DIST ) nuc_pos[X] += (NUCLEOLUS_AXIS_1 + MEMBRANE_AXIS_3 - NUC_MEM_DIST) / delta;
+    if (nuc_pos[X] < -NUC_MEM_DIST ) nuc_pos[X] += (NUCLEOLUS_AXIS_3 + MEMBRANE_AXIS_1 - NUC_MEM_DIST) / delta;
 }
 
 /*
