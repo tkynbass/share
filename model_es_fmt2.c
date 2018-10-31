@@ -51,6 +51,8 @@
 #define NUCLEOLUS_AXIS_2 ( 0.85 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.65 * NUCLEOLUS_AXIS_1 )
 
+#define NUC_MEM_DIST ( 0.6 / LENGTH )
+
 
 double nuc_pos[] = { - (MEMBRANE_AXIS_1 + NUCLEOLUS_AXIS_3), 0.0, 0.0};
 
@@ -278,7 +280,7 @@ void nucleolus_fix ( Particle *part_1 ) {
     //double nuc_pos[] = { -10.0, 0.0, 0.0 };
     
     //位置座標をz軸まわりに-30度回転
-    rotate_position_z (part_1->position, - PI / 6);
+    rotate_position_z (part_1->position, - PI / 6.0);
     
     //核小体中心から粒子へのベクトル
     double nuc_to_pos[] = { part_1->position[X] - nuc_pos[X],
@@ -1177,7 +1179,7 @@ void move_nucleolus () {
     
     const double delta = 2000.0;
     
-    if (nuc_pos[X] < -10.0 ) nuc_pos[X] += (40 - 10) / delta;
+    if (nuc_pos[X] < -NUC_MEM_DIST ) nuc_pos[X] += (NUCLEOLUS_AXIS_1 + MEMBRANE_AXIS_3 - NUC_MEM_DIST) / delta;
 }
 
 /*
@@ -1229,6 +1231,10 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     sprintf (str, "Nucleolus_Axis_length");
     
     fprintf (fpw, "%s %lf %lf %lf\n", str, nuc.al_1, nuc.al_2, nuc.al_3);
+    
+    sprintf (str, "Nucleolus_pos");
+    
+    fprintf (fpw, "%s %lf %lf %lf\n", str, nuc_pos[X], nuc_pos[Y], nuc_pos[Z] );
     
     fclose (fpw);
 }
