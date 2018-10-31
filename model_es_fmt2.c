@@ -1326,7 +1326,7 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        printf("    t = %d, nuc_pos = %lf \r", t, nuc[X]);
+        printf("    t = %d, nuc_pos = %lf \r", t, nuc_pos[X]);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t , start_number);
