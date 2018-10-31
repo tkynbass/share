@@ -51,7 +51,7 @@
 #define NUCLEOLUS_AXIS_2 ( 0.85 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.65 * NUCLEOLUS_AXIS_1 )
 
-#define NUC_MEM_DIST ( 0.6 / LENGTH )
+#define NUC_MEM_DIST ( 0.6e-6 / LENGTH )
 
 
 double nuc_pos[] = { - (MEMBRANE_AXIS_1 + NUCLEOLUS_AXIS_3), 0.0, 0.0};
@@ -1326,7 +1326,7 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        printf("    t = %d, al_1 = %lf, al_2 = %lf, al_3 = %lf \r", t, nuc.al_1, nuc.al_2, nuc.al_3);
+        printf("    t = %d, nuc_pos = %lf \r", t, nuc[X]);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t , start_number);
