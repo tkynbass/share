@@ -140,7 +140,7 @@ void read_coordinate_init ( int start ){       //初期値設定
     
     fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc.al_1, &nuc.al_2, &nuc.al_3);
     
-    fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc_pos[X], &nuc_pos[Y], nuc_pos[Z]);
+    fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc_pos[X], &nuc_pos[Y], &nuc_pos[Z]);
     
     fclose (fpr);
     
