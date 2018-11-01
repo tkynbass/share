@@ -1309,6 +1309,8 @@ int main ( int argc, char **argv ) {
     if (nuc_pos[X] == 0.0){
         
         nuc_pos[X] = - (MEMBRANE_AXIS_1 + NUCLEOLUS_AXIS_3);
+        nuc_pos[Y] = 0.0;
+        nuc_pos[Z] = 0.0;
     }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
