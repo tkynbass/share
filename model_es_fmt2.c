@@ -699,7 +699,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         else { //telomere_3
                             
                             membrane_exclude (part_1);
-                            //nucleolus_fix ( part_1 );
+                            nucleolus_fix ( part_1 );
                         }
                         
                         //spring2
@@ -734,7 +734,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         else { //telomere_3
                             
                             membrane_fix ( part_1 );
-                            //nucleolus_fix (part_1);
+                            nucleolus_fix (part_1);
                         }
                         
                         //spring2
