@@ -54,7 +54,7 @@
 #define NUC_MEM_DIST ( 0.6e-6 / LENGTH )
 
 
-double nuc_pos[] = { - (MEMBRANE_AXIS_1 + NUCLEOLUS_AXIS_3), 0.0, 0.0};
+double nuc_pos[3];
 
 typedef enum chain {
     A, B, C
@@ -139,6 +139,8 @@ void read_coordinate_init ( int start ){       //初期値設定
     }
     
     fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc.al_1, &nuc.al_2, &nuc.al_3);
+    
+    fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc_pos[X], &nuc_pos[Y], nuc_pos[Z]);
     
     fclose (fpr);
     
@@ -1302,6 +1304,11 @@ int main ( int argc, char **argv ) {
         nuc.al_1 = NUCLEOLUS_AXIS_1;
         nuc.al_2 = NUCLEOLUS_AXIS_2;
         nuc.al_3 = NUCLEOLUS_AXIS_3;
+    }
+    
+    if (nuc_pos[X] == 0.0){
+        
+        nuc_pos[X] = - (MEMBRANE_AXIS_1 + NUCLEOLUS_AXIS_3);
     }
      
     init_particle_calculate ( &dsfmt /*, gene_list*/);
