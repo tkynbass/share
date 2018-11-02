@@ -249,22 +249,17 @@ void membrane_fix ( Particle *part_1 ) {
     part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
     part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
 }
-/*
-void nucleolus_exclude ( Particle *part_1 ){
+
+void rotate_position_z ( double pos[DIMENSION], const double theta ) {
     
-    //Nucleolus_exclude
+    double pos_new[DIMENSION];
     
-    dist = Euclid_norm (part_1->position, Nucleolus_circle_center);
-    f = MEMBRANE_EXCLUDE * ( 4.0 * membrane_radius - dist - PARTICLE_RADIUS ) / dist;
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
+    pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
     
-    if ( dist + PARTICLE_RADIUS > 4.0 * membrane_radius) {
-        
-        part_1->force[X] += f * (part_1->position[X] - Nucleolus_circle_center[X]);
-        part_1->force[Y] += f * (part_1->position[Y] - Nucleolus_circle_center[Y]);
-        part_1->force[Z] += f * (part_1->position[Z] - Nucleolus_circle_center[Z]);
-     }
+    pos[X] = pos_new[X];
+    pos[Y] = pos_new[Y];
 }
-*/
 
 void init_SPB_calculate ( dsfmt_t *dsfmt) {
     
