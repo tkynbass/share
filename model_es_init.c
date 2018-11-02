@@ -1080,7 +1080,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l, membrane_flag, flag;
+    int i, t = 0, l, membrane_flag, flag, rotate_flag;
     
     int start_number = atoi(argv[1]);
     int calculate_number = atoi(argv[2]);
@@ -1134,6 +1134,18 @@ int main ( int argc, char **argv ) {
     
     printf ("\n     Membrane to ellipsoid(1) or mitigation(0) ? : ");
     scanf ("%d", &membrane_flag);
+    
+    printf ("\n     Rotate pos around z axis ? (y:1 or n:0) : ");
+    scanf ("%d", &rotate_flag);
+    
+    if (rotate_flag == 1) {
+        
+        for (i=0; i<NUMBER; i++) {
+            
+            rotate_position_z (part[i].position, 17.0 * PI / 180.0);
+        }
+        rotate_position_z (spb.position, 17.0 * PI / 180.0);
+    }
     
     
     if (membrane_flag == 1) {
