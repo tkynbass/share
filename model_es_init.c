@@ -254,8 +254,8 @@ void rotate_position_z ( double pos[DIMENSION], const double theta ) {
     
     double pos_new[DIMENSION];
     
-    pos_new[X] = cos (theta) * pos[X] + sin (theta) * pos[Z];
-    pos_new[Z] = -sin (theta) * pos[X] + cos (theta) * pos[Z];
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Z];
+    pos_new[Z] = sin (theta) * pos[X] + cos (theta) * pos[Z];
     
     pos[X] = pos_new[X];
     pos[Z] = pos_new[Z];
