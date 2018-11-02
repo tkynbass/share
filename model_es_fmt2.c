@@ -34,7 +34,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
-#define NUCLEOLUS_FIX ( 1.0e-1)     //第３染色体末端と核小体の結合強度
+#define NUCLEOLUS_FIX ( 1.0e-3)     //第３染色体末端と核小体の結合強度
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100)  //SPBの粘性
@@ -700,7 +700,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         }
                         else { //telomere_3
                             
-                            membrane_exclude (part_1);
+                            membrane_fix (part_1);
                             nucleolus_fix ( part_1 );
                         }
                         
@@ -1017,8 +1017,8 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         }
                         else { //telomere_3
                             
-                            membrane_exclude ( part_1 );
-                            //nucleolus_fix (part_1);
+                            membrane_fix ( part_1 );
+                            nucleolus_fix (part_1);
                         }
                         
                         //spring2
