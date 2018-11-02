@@ -16,7 +16,7 @@
 #include <omp.h>
 
 #define DIMENSION (3) //次元
-#define LENGTH (3.0e-8)   // 長さの単位
+#define LENGTH (4.0e-8)   // 長さの単位
 #define KBT (1.38064852e-23 / LENGTH / LENGTH) //ボルツマン
 #define TEMPARTURE (300)
 #define M_A (1.82527596e+6)
@@ -1137,9 +1137,9 @@ int main ( int argc, char **argv ) {
         
         for (i=0; i<NUMBER; i++) {
             
-            rotate_position_z (part[i].position, 17.0 * PI / 180.0);
+            rotate_position_z (part[i].position, 107.0 * PI / 180.0);
         }
-        rotate_position_z (spb.position, 17.0 * PI / 180.0);
+        rotate_position_z (spb.position, 107.0 * PI / 180.0);
     }
     
     
