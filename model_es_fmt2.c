@@ -462,7 +462,7 @@ void SPB_calculate (dsfmt_t *dsfmt, const unsigned int l){
     spb.force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     membrane_fix ( &spb );
-    nucleolus_exclude (%spb);
+    nucleolus_exclude (&spb);
     
     spring (&spb, &part[1880], spb.force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], spb.force);
