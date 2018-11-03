@@ -396,6 +396,7 @@ void init_SPB_calculate (dsfmt_t *dsfmt) {
     spb.force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     membrane_fix ( &spb );
+    nucleolus_exclude (&spb);
     
     spring (&spb, &part[1880], spb.force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], spb.force);
@@ -461,6 +462,7 @@ void SPB_calculate (dsfmt_t *dsfmt, const unsigned int l){
     spb.force[Z] = p2 * sin(psi) / sqrt(DELTA);
     
     membrane_fix ( &spb );
+    nucleolus_exclude (%spb);
     
     spring (&spb, &part[1880], spb.force);       //セントロメアとのバネによる力
     spring (&spb, &part[3561], spb.force);
@@ -700,7 +702,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         }
                         else { //telomere_3
                             
-                            membrane_fix (part_1);
+                            membrane_exclude (part_1);
                             nucleolus_fix ( part_1 );
                         }
                         
@@ -735,7 +737,7 @@ void init_particle_calculate( dsfmt_t *dsfmt /*, const unsigned int gene_list [C
                         }
                         else { //telomere_3
                             
-                            membrane_fix ( part_1 );
+                            membrane_exclude ( part_1 );
                             nucleolus_fix (part_1);
                         }
                         
@@ -1017,7 +1019,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         }
                         else { //telomere_3
                             
-                            membrane_fix ( part_1 );
+                            membrane_exclude ( part_1 );
                             nucleolus_fix (part_1);
                         }
                         
@@ -1052,7 +1054,7 @@ void particle_calculate( dsfmt_t *dsfmt, const unsigned int l /*, const unsigned
                         }
                         else { //telomere_3
                             
-                            membrane_fix ( part_1 );
+                            membrane_exclude ( part_1 );
                             nucleolus_fix (part_1);
                         }
                         
@@ -1314,7 +1316,8 @@ int main ( int argc, char **argv ) {
         nuc_pos[Y] = 0.0;
         nuc_pos[Z] = 0.0;
     }
-     
+    
+    
     init_particle_calculate ( &dsfmt /*, gene_list*/);
     init_SPB_calculate ( &dsfmt );
     
