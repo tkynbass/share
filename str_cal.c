@@ -68,7 +68,7 @@ enum label{ X, Y, Z};
 
 void read_coordinate_init ( char *filename ){       //初期値設定
     
-    unsigned int number = 0;
+    unsigned int i, number = 0;
     
     char dummy[256];
     
@@ -82,8 +82,8 @@ void read_coordinate_init ( char *filename ){       //初期値設定
         exit (1);
     }
     
-    while (fscanf (fpr, "%d %s %d %lf %lf %lf\n", &part[i].pastis_no, &dummy,
-                   &part[i].position[X], &part[i].position[Y], &part[i].position[Z]) != EOF) {
+    while (fscanf (fpr, "%s %d %lf %lf %lf\n", &part[number].pastis_no, &dummy,
+                   &part[number].position[X], &part[number].position[Y], &part[number].position[Z]) != EOF) {
         number++;
     }
     
@@ -203,29 +203,29 @@ void calculate() {
         // 隣同士 //
         if ( i != 0 && i != particle_number - 1 ) {
             
-            spring (part_1, &part[i-1]);
-            spring (part_1, &part[i+1]);
+            spring (part_1, &part[i-1], K_BOND);
+            spring (part_1, &part[i+1], K_BOND);
         }
-        else if ( i == 0) spring (part_1, &part[i+1]);
-        else spring (part_1, &part[i-1]);
+        else if ( i == 0) spring (part_1, &part[i+1], K_BOND);
+        else spring (part_1, &part[i-1], K_BOND);
         
         // 2個隣 //
         if ( 0 <= i-2 && i+2 <= particle_number-1) {
             
-            spring (part_1, &part[i-2]);
-            spring (part_1, &part[i+2]);
+            spring (part_1, &part[i-2], K_BOND_2);
+            spring (part_1, &part[i+2], K_BOND_2);
         }
-        else if ( 0 <= i-2) spring (part_1, &part[i+2]);
-        else spring (part_1, &part[i-2]);
+        else if ( 0 <= i-2) spring (part_1, &part[i+2], K_BOND_2);
+        else spring (part_1, &part[i-2], K_BOND_2);
         
         // 3個隣 //
         if ( 0 <= i-3 && i+3 <= particle_number-1) {
             
-            spring (part_1, &part[i-3]);
-            spring (part_1, &part[i+3]);
+            spring (part_1, &part[i-3], K_BOND_3);
+            spring (part_1, &part[i+3], K_BOND_3);
         }
-        else if ( 0 <= i-3) spring (part_1, &part[i+3]);
-        else spring (part_1, &part[i-3]);
+        else if ( 0 <= i-3) spring (part_1, &part[i+3], K_BOND_3);
+        else spring (part_1, &part[i-3], K_BOND_3);
         
         if (part_1->spb_mean != 0.0) {
             
@@ -262,6 +262,8 @@ void write_coordinate (int t) {
     
     int i;
     
+    Particle *part_1;
+    
     FILE *fpw;
     
     char result[128], str[128];
@@ -277,6 +279,7 @@ void write_coordinate (int t) {
     
     for (i=0; i<NUMBER; i++) {
         
+        part_1 = &part[i];
         fprintf (fpw, "%d %d %lf %lf %lf\n", i, part_1->pastis_no, part_1->position[X],
                  part_1->position[Y], part_1->position[Z]);
     }
