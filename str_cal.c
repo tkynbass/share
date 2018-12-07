@@ -123,7 +123,6 @@ void read_hmm_data (char *hmm_data) {
         exit (1);
     }
     
-    fgets (dummy, 256, fpr);
     while (fscanf (fpr, "%d\t", &i) != EOF) {
         
         part_1 = &part[i];
