@@ -18,7 +18,7 @@
 //#define M_A ( 1.85131596e+7 )
 //#define N_A ( 6.022140857e+23 )
 
-//#define NUMBER ( 604 )    //粒子数
+#define NUMBER ( 604 )    //粒子数
 #define PARTICLE_MASS ( 1.0)    //染色体粒子の質量 Kg
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
@@ -258,7 +258,7 @@ void calculate() {
 }
 
  
-void write_coordinate ( /*const char *number,*/ int t , int start) {
+void write_coordinate (int t) {
     
     int i;
     
@@ -266,7 +266,7 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     char result[128], str[128];
     
-    sprintf (result, "result.txt", t + start);
+    sprintf (result, "result_%d.txt", t);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -277,8 +277,8 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
     
     for (i=0; i<NUMBER; i++) {
         
-        fprintf (fpw, "%d %d %d %lf %lf %lf %lf %lf %lf\n", i, part[i].chr_no, part[i].particle_type,
-                 part[i].position_old[X], part[i].position_old[Y], part[i].position_old[Z], part[i].velocity[X], part[i].velocity[Y], part[i].velocity[Z]);
+        fprintf (fpw, "%d %d %lf %lf %lf\n", i, part_1->pastis_no, part_1->position[X],
+                 part_1->position[Y], part_1->position[Z]);
     }
     
     fclose (fpw);
@@ -287,14 +287,19 @@ void write_coordinate ( /*const char *number,*/ int t , int start) {
 int main ( int argc, char **argv ) {
     
     int i, t = 0, l;
-    char filename[256], hmm_data[256];
+    char input_file[256], hmm_data[256], output_file[256];
     
     printf ("\t Input coordinate data : ");
-    scanf ("%s", filename);
+    scanf ("%s", input_file);
     
     printf ("\t Input hmm data : ");
     scanf ("%s", hmm_data);
     
+    /*
+    printf ("\t Input output_file : ");
+    scanf ("%s", output_file);
+    */
+     
     part = (Particle *)malloc(NUMBER * sizeof(Particle));
     
     if (part == NULL) {
@@ -312,11 +317,11 @@ int main ( int argc, char **argv ) {
         }
     }
     
-    read_coordinate_init (filename);
+    read_coordinate_init (input_file);
     read_hmm_data (hmm_data);
     
     //初期位置の出力
-    write_coordinate (0, start_number );
+    write_coordinate (0);
     
     for (t=1; t < 10; t++) {
         
@@ -326,10 +331,10 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        printf("    t = %d  \r", t, nuc_pos[X]);
+        printf("    t = %d  \r", t);
         fflush (stdout);
         
-        write_coordinate (/* argv[3],*/ t , start_number);
+        write_coordinate (/* argv[3],*/ t);
     }
     
     return ( 0 );
