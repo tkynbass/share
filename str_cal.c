@@ -24,7 +24,7 @@
 #define PI ( M_PI )
 
 #define K_EXCLUDE ( 1.0 )    //排除体積効果の強さ
-#define K_BOND ( 1.0-2 )    //ばね定数
+#define K_BOND ( 1.0e-2 )    //ばね定数
 #define K_BOND_2 ( 1.0e-4 )  //ひもの硬さ
 #define K_BOND_3 ( 1.0e-4)
 #define HMM_BOND (1.0)
@@ -124,10 +124,10 @@ void read_hmm_data (char *hmm_data) {
     }
     
     fgets (dummy, 256, fpr);
-    while (fscanf (fpr, "%d ", &i) != EOF) {
+    while (fscanf (fpr, "%d\t", &i) != EOF) {
         
         part_1 = &part[i];
-        fscanf (fpr, "%lf %lf %lf %lf\n", part_1->nucleolus_mean, part_1->nucleolus_var, part_1->spb_mean, part_1->spb_var);
+        fscanf (fpr, "%lf\t%lf\t%lf\t%lf\n", part_1->nucleolus_mean, part_1->nucleolus_var, part_1->spb_mean, part_1->spb_var);
     }
     
     fclose(fpr);
