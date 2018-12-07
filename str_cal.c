@@ -320,10 +320,13 @@ int main ( int argc, char **argv ) {
     }
     
     read_coordinate_init (input_file);
+    printf ("\tpass1 \n");
     read_hmm_data (hmm_data);
+    printf ("\tpass2 \n");
     
     //初期位置の出力
     write_coordinate (0);
+    printf ("\tpass3 \n");
     
     for (t=1; t < 10; t++) {
         
