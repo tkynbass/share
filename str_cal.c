@@ -108,7 +108,7 @@ void read_coordinate_init ( char *filename ){       //初期値設定
     }
 }
 
-void read_hmm_data (char *hmm_data) {
+void read_hmm_data (char *filename) {
     
     unsigned int i;
     
@@ -116,7 +116,9 @@ void read_hmm_data (char *hmm_data) {
     Particle *part_1;
     char dummy[256];
     
-    if ((fpr = fopen(hmm_data, "r")) == NULL){
+    double nucleolus_mean, nucleolus_var, spb_mean, spb_var;
+    
+    if ((fpr = fopen(filename, "r")) == NULL){
         
         printf ("\n\terror : cannnot read hmm_data \n");
         
@@ -124,11 +126,14 @@ void read_hmm_data (char *hmm_data) {
     }
     
     
-    while (fscanf (fpr, "%d\t", &i) != EOF) {
+    while (fscanf (fpr, "%d %lf %lf %lf %lf\n", &i, nucleolus_mean, nucleolus_var, spb_mean, spb_var) != EOF) {
         
+        printf ("read %d\n", i);
         part_1 = &part[i];
-        fscanf (fpr, "%lf\t%lf\t%lf\t%lf\n", part_1->nucleolus_mean, part_1->nucleolus_var, part_1->spb_mean, part_1->spb_var);
-        printf ("pass hmm  %d", i);
+        part_1->nucleolus_var = nucleolus_var;
+        part_1->nucleolus_mean = nucleolus_mean;
+        part_1->spb_var = spb_var;
+        part_1->spb_mean = spb_mean;
     }
     
     fclose(fpr);
