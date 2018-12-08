@@ -123,10 +123,12 @@ void read_hmm_data (char *hmm_data) {
         exit (1);
     }
     
+    
     while (fscanf (fpr, "%d\t", &i) != EOF) {
         
         part_1 = &part[i];
         fscanf (fpr, "%lf\t%lf\t%lf\t%lf\n", part_1->nucleolus_mean, part_1->nucleolus_var, part_1->spb_mean, part_1->spb_var);
+        printf ("pass hmm  %d", i);
     }
     
     fclose(fpr);
