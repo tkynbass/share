@@ -29,7 +29,7 @@
 #define K_BOND_3 ( 1.0e-4)
 #define HMM_BOND (1.0)
 
-#define DELTA ( 1.0e-11 )  //刻み幅
+#define DELTA ( 1.0e-7 )  //刻み幅
 
 unsigned int particle_number;
 
@@ -88,7 +88,7 @@ void read_data ( char *filename ){       //初期値設定
     while (fscanf (fpr, "%d ", &part[number].pastis_no) != EOF) {
         
         part_1 = &part[number];
-        fscanf (fpr, "%d %s %lf %lf %lf %lf %lf %lf %lf\n", &part_1->pastis_no, &dummy,
+        fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
         number++;
     }
@@ -308,9 +308,6 @@ int main ( int argc, char **argv ) {
     
     printf ("\t Input coordinate data : ");
     scanf ("%s", input_file);
-    
-    printf ("\t Input hmm data : ");
-    scanf ("%s", hmm_data);
     
     /*
     printf ("\t Input output_file : ");
