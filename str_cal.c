@@ -83,6 +83,8 @@ void read_data ( char *filename ){       //初期値設定
         exit (1);
     }
     
+    fgets (dummy, 256, fpr);
+    
     while (fscanf (fpr, "%d ", &part[number].pastis_no) != EOF) {
         
         part_1 = &part[number];
