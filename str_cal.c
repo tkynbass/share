@@ -18,7 +18,7 @@
 //#define M_A ( 1.85131596e+7 )
 //#define N_A ( 6.022140857e+23 )
 
-#define NUMBER ( 604 )    //粒子数
+#define NUMBER ( 200 )    //粒子数
 #define PARTICLE_MASS ( 1.0)    //染色体粒子の質量 Kg
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
@@ -53,12 +53,12 @@ typedef struct particle {           //構造体の型宣言
     double velocity[DIMENSION];
     double velocity_2[DIMENSION];
     double nucleolus_mean;
-    double nucleolus_var;
+    //double nucleolus_var;
     double spb_mean;
-    double spb_var;
+    //double spb_var;
     double force[DIMENSION];
-    int list_no;
-    int *list;
+    //int list_no;
+    //int *list;
     
 } Particle;
 
@@ -66,11 +66,12 @@ Particle *part;
 
 enum label{ X, Y, Z};
 
-void read_coordinate_init ( char *filename ){       //初期値設定
+void read_data ( char *filename ){       //初期値設定
     
     unsigned int i, number = 0;
     
     char dummy[256];
+    double d_dummy;
     
     Particle *part_1;
     FILE *fpr;
@@ -82,8 +83,11 @@ void read_coordinate_init ( char *filename ){       //初期値設定
         exit (1);
     }
     
-    while (fscanf (fpr, "%s %d %lf %lf %lf\n", &part[number].pastis_no, &dummy,
-                   &part[number].position[X], &part[number].position[Y], &part[number].position[Z]) != EOF) {
+    while (fscanf (fpr, "%d ", &part[number].pastis_no) != EOF) {
+        
+        part_1 = &part[number];
+        fscanf (fpr, "%d %s %lf %lf %lf %lf %lf %lf %lf\n", &part_1->pastis_no, &dummy,
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &part_1->d_dummy, &d_dummy);
         number++;
     }
     
@@ -102,12 +106,10 @@ void read_coordinate_init ( char *filename ){       //初期値設定
         part->velocity_2[X] = 0.0;
         part->velocity_2[Y] = 0.0;
         part->velocity_2[Z] = 0.0;
-        
-        part_1->spb_mean = 0.0;
-        part_1->nucleolus_mean = 0.0;
     }
 }
 
+/*
 void read_hmm_data (char *filename) {
     
     unsigned int i;
@@ -125,8 +127,8 @@ void read_hmm_data (char *filename) {
         exit (1);
     }
     
-    
-    while (fscanf (fpr, "%d %lf %lf %lf %lf\n", &i, nucleolus_mean, nucleolus_var, spb_mean, spb_var) != EOF) {
+ 
+    while (fscanf (fpr, "%d %lf %lf %lf %lf\n", &i, &nucleolus_mean, &nucleolus_var, &spb_mean, &spb_var) != EOF) {
         
         printf ("read %d\n", i);
         part_1 = &part[i];
@@ -137,7 +139,7 @@ void read_hmm_data (char *filename) {
     }
     
     fclose(fpr);
-}
+}*/
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
@@ -176,15 +178,19 @@ void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) 
 
 void hmm_potential (Particle *part_1) {
     
-    double spb_dist = Euclid_norm (part_1->position, spb_pos);
-    double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
+    if (part_1->nucleolus_mean != 0.0) {
     
-    double spb_f = HMM_BOND * (spb_dist - part_1->spb_mean);
-    double nucleolus_f = HMM_BOND * (nucleolus_dist - part_1->nucleolus_mean);
-    
-    part_1->force[X] += spb_f * (part_1->position[X] - spb_pos[X]) + nucleolus_f * (part_1->position[X] - nucleolus_pos[X]);
-    part_1->force[Y] += spb_f * (part_1->position[Y] - spb_pos[Y]) + nucleolus_f * (part_1->position[Y] - nucleolus_pos[Y]);
-    part_1->force[Z] += spb_f * (part_1->position[Z] - spb_pos[Z]) + nucleolus_f * (part_1->position[Z] - nucleolus_pos[Z]);
+        double spb_dist = Euclid_norm (part_1->position, spb_pos);
+        double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
+        
+        double spb_f = HMM_BOND * (spb_dist - part_1->spb_mean);
+        double nucleolus_f = HMM_BOND * (nucleolus_dist - part_1->nucleolus_mean);
+        
+        part_1->force[X] += spb_f * (part_1->position[X] - spb_pos[X]) + nucleolus_f * (part_1->position[X] - nucleolus_pos[X]);
+        part_1->force[Y] += spb_f * (part_1->position[Y] - spb_pos[Y]) + nucleolus_f * (part_1->position[Y] - nucleolus_pos[Y]);
+        part_1->force[Z] += spb_f * (part_1->position[Z] - spb_pos[Z]) + nucleolus_f * (part_1->position[Z] - nucleolus_pos[Z]);
+        
+    }
 }
 
 void calculate() {
@@ -283,7 +289,7 @@ void write_coordinate (int t) {
         exit (1);
     }
     
-    for (i=0; i<NUMBER; i++) {
+    for (i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
         fprintf (fpw, "%d %d %lf %lf %lf\n", i, part_1->pastis_no, part_1->position[X],
@@ -317,6 +323,7 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     
+    /*
     for (i = 0;i < NUMBER;i++) {
         part[i].list = (int *)malloc(NUMBER * sizeof(int));
         
@@ -325,12 +332,10 @@ int main ( int argc, char **argv ) {
             exit(1);
         }
     }
-    
-    read_coordinate_init (input_file);
-    printf ("\tpass1 \n");
-    read_hmm_data (hmm_data);
-    printf ("\tpass2 \n");
-    
+    */
+     
+    read_data (input_file);
+
     //初期位置の出力
     write_coordinate (0);
     printf ("\tpass3 \n");
