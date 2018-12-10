@@ -23,8 +23,8 @@
 
 #define K_EXCLUDE ( 1.0 )    //排除体積効果の強さ
 #define K_BOND ( 1.0 )    //ばね定数
-#define K_BOND_2 ( 1.0e-4 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-6)
+#define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e-4)
 #define HMM_BOND (1.0)
 
 #define DELTA ( 1.0e-7 )  //刻み幅
@@ -311,6 +311,10 @@ int main ( int argc, char **argv ) {
     
     printf ("\t Input coordinate data : ");
     scanf ("%s", input_file);
+    
+    printf ("\tK_BOND1 = %lf\n", K_BOND);
+    printf ("\tK_BOND2 = %lf\n", K_BOND_2);
+    printf ("\tK_BOND3 = %lf\n", K_BOND_3);
     
     /*
     printf ("\t Input output_file : ");
