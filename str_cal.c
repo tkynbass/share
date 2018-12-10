@@ -87,7 +87,7 @@ void read_data ( char *filename ){       //初期値設定
         
         part_1 = &part[number];
         fscanf (fpr, "%d %s %lf %lf %lf %lf %lf %lf %lf\n", &part_1->pastis_no, &dummy,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &part_1->d_dummy, &d_dummy);
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
         number++;
     }
     
