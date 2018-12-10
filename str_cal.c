@@ -21,10 +21,9 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_EXCLUDE ( 1.0 )    //排除体積効果の強さ
 #define K_BOND ( 1.0 )    //ばね定数
-#define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-4)
+#define K_BOND_2 ( 1.0e-0 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e-0)
 #define HMM_BOND (1.0)
 
 #define DELTA ( 1.0e-7 )  //刻み幅
@@ -111,38 +110,6 @@ void read_data ( char *filename ){       //初期値設定
         part_1->spb_mean /= LENGTH;
     }
 }
-
-/*
-void read_hmm_data (char *filename) {
-    
-    unsigned int i;
-    
-    FILE *fpr;
-    Particle *part_1;
-    char dummy[256];
-    
-    double nucleolus_mean, nucleolus_var, spb_mean, spb_var;
-    
-    if ((fpr = fopen(filename, "r")) == NULL){
-        
-        printf ("\n\terror : cannnot read hmm_data \n");
-        
-        exit (1);
-    }
-    
- 
-    while (fscanf (fpr, "%d %lf %lf %lf %lf\n", &i, &nucleolus_mean, &nucleolus_var, &spb_mean, &spb_var) != EOF) {
-        
-        printf ("read %d\n", i);
-        part_1 = &part[i];
-        part_1->nucleolus_var = nucleolus_var;
-        part_1->nucleolus_mean = nucleolus_mean;
-        part_1->spb_var = spb_var;
-        part_1->spb_mean = spb_mean;
-    }
-    
-    fclose(fpr);
-}*/
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
@@ -309,6 +276,8 @@ int main ( int argc, char **argv ) {
     int i, t = 0, l;
     char input_file[256], hmm_data[256], output_file[256];
     
+    unsigned int calculate_number = atoi (argv[1]);
+    
     printf ("\t Input coordinate data : ");
     scanf ("%s", input_file);
     
@@ -345,7 +314,7 @@ int main ( int argc, char **argv ) {
     //初期位置の出力
     write_coordinate (0);
     
-    for (t=1; t < 1000; t++) {
+    for (t=1; t <= calculate_number; t++) {
         
         for (l=1; l<=10000; l++){
             
