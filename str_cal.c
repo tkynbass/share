@@ -13,8 +13,6 @@
 
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 1.4e-6 / 75)   // 長さの単位
-#define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
-#define TEMPARTURE ( 300 )
 //#define M_A ( 1.85131596e+7 )
 //#define N_A ( 6.022140857e+23 )
 
@@ -108,6 +106,9 @@ void read_data ( char *filename ){       //初期値設定
         part->velocity_2[X] = 0.0;
         part->velocity_2[Y] = 0.0;
         part->velocity_2[Z] = 0.0;
+        
+        part_1->nucleolus_mean /= LENGTH;
+        part_1->spb_mean /= LENGTH;
     }
 }
 
@@ -340,7 +341,7 @@ int main ( int argc, char **argv ) {
     //初期位置の出力
     write_coordinate (0);
     
-    for (t=1; t < 10; t++) {
+    for (t=1; t < 1000; t++) {
         
         for (l=1; l<=10000; l++){
             
