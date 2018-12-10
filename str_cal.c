@@ -22,9 +22,9 @@
 #define PI ( M_PI )
 
 #define K_EXCLUDE ( 1.0 )    //排除体積効果の強さ
-#define K_BOND ( 1.0e-2 )    //ばね定数
+#define K_BOND ( 1.0 )    //ばね定数
 #define K_BOND_2 ( 1.0e-4 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-4)
+#define K_BOND_3 ( 1.0e-6)
 #define HMM_BOND (1.0)
 
 #define DELTA ( 1.0e-7 )  //刻み幅
