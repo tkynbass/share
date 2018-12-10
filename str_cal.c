@@ -211,7 +211,7 @@ void calculate() {
     }
     
     
-#pragma omp parallel for private (part_1) num_threds (6)
+#pragma omp parallel for private (part_1) num_threads (6)
     for ( i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
