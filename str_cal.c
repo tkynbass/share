@@ -316,7 +316,7 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t <= calculate_number; t++) {
         
-        for (l=1; l<=10000; l++){
+        for (l=1; l<=1.0e+7; l++){
             
             calculate();
             //write_coordinate (/* argv[3],*/ l , start_number);
