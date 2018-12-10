@@ -210,6 +210,8 @@ void calculate() {
         part_1->force[Z] = 0.0;
     }
     
+    
+#pragma omp parallel for private (part_1) num_threds (6)
     for ( i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
@@ -337,7 +339,6 @@ int main ( int argc, char **argv ) {
 
     //初期位置の出力
     write_coordinate (0);
-    printf ("\tpass3 \n");
     
     for (t=1; t < 10; t++) {
         
