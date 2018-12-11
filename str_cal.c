@@ -28,7 +28,7 @@
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
 
-#define DELTA ( 1.0e-7 )  //刻み幅
+#define DELTA ( 1.0e-9 )  //刻み幅
 
 #define POTENTIAL_DELTA (1.0e-7)
 
@@ -234,9 +234,9 @@ void calculate( unsigned int l ) {
         part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity_2[Z];
         */
         
-        part_1->velocity[X] = part_1->force[X] / PARTICLE_MYU;
-        part_1->velocity[Y] = part_1->force[Y] / PARTICLE_MYU;
-        part_1->velocity[Z] = part_1->force[Z] / PARTICLE_MYU;
+        part_1->velocity[X] = part_1->force[X];
+        part_1->velocity[Y] = part_1->force[Y];
+        part_1->velocity[Z] = part_1->force[Z];
         
         part_1->position_new[X] = part_1->position[X] + DELTA * part_1->velocity[X];
         part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->velocity[Y];
