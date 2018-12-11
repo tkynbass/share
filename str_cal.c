@@ -163,7 +163,7 @@ void hmm_potential (Particle *part_1) {
     }
 }
 
-void calculate() {
+void calculate( unsigned int l ) {
     
     int i;
     
@@ -211,7 +211,7 @@ void calculate() {
         else if ( 0 <= i-3) spring (part_1, &part[i+3], K_BOND_3);
         else spring (part_1, &part[i-3], K_BOND_3);
         
-        if (part_1->spb_mean != 0.0) {
+        if (part_1->spb_mean != 0.0 && l==1) {
             
             hmm_potential (part_1);
         }
@@ -405,7 +405,7 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=1.0e+5; l++){
             
-            calculate();
+            calculate(l);
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
