@@ -21,12 +21,12 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e-1 )    //ばね定数
+#define K_BOND ( 1.0e-2 )    //ばね定数
 #define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-3)
-#define HMM_BOND (1.0)
+#define K_BOND_3 ( 1.0e-2)
+#define HMM_BOND (1.0e-2)
 
-#define DELTA ( 1.0e-5 )  //刻み幅
+#define DELTA ( 1.0e-7 )  //刻み幅
 
 unsigned int particle_number;
 
@@ -285,7 +285,7 @@ double calculate_potential () {
             dist_1 = Euclid_norm (part_1->position, part[i+2].position);
             potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0;
         }
-        else spring {
+        else{
             
             dist_1 = Euclid_norm (part_1->position, part[i-2].position);
             potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0;
@@ -304,7 +304,7 @@ double calculate_potential () {
             dist_1 = Euclid_norm (part_1->position, part[i+3].position);
             potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0;
         }
-        else spring {
+        else {
             
             dist_1 = Euclid_norm (part_1->position, part[i-3].position);
             potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0;
@@ -395,8 +395,8 @@ int main ( int argc, char **argv ) {
      
     read_data (input_file);
     
-    init_V = calculate_potential();
-    printf ("\tInitial V = %lf\n", init_V);
+    //init_V = calculate_potential();
+    //printf ("\tInitial V = %lf\n", );
     
     //初期位置の出力
     write_coordinate (0);
@@ -409,7 +409,8 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
+        printf ("\tt = %d \r", t);
+        //printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t);
