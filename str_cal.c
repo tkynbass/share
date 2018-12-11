@@ -110,8 +110,8 @@ void read_data ( char *filename ){       //初期値設定
         part->velocity_2[Y] = 0.0;
         part->velocity_2[Z] = 0.0;
         
-        part_1->nucleolus_mean /= LENGTH;
-        part_1->spb_mean /= LENGTH;
+        part_1->nucleolus_mean *= 1.0e-6/ LENGTH;
+        part_1->spb_mean *= 1.0e-6 / LENGTH;
         
         if (i == 1) printf ("nuc_mean , spb_mean = %lf, %lf\n", part_1->nucleolus_mean, part_1->spb_mean);
     }
