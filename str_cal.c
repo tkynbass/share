@@ -407,8 +407,8 @@ int main ( int argc, char **argv ) {
      
     read_data (input_file);
     
-    init_V = calculate_potential();
-    printf ("\tinit_V = %lf\n", init_V);
+    //init_V = calculate_potential();
+    //printf ("\tinit_V = %lf\n", init_V);
     
     //初期位置の出力
     write_coordinate (0);
@@ -421,8 +421,8 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        //printf ("\tt = %d \r", t);
-        printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
+        printf ("\tt = %d \r", t);
+        //printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t);
