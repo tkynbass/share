@@ -21,12 +21,12 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0 )    //ばね定数
-#define K_BOND_2 ( 1.0e-0 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-0)
+#define K_BOND ( 1.0e-1 )    //ばね定数
+#define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e-3)
 #define HMM_BOND (1.0)
 
-#define DELTA ( 1.0e-7 )  //刻み幅
+#define DELTA ( 1.0e-5 )  //刻み幅
 
 unsigned int particle_number;
 
@@ -316,7 +316,7 @@ int main ( int argc, char **argv ) {
     
     for (t=1; t <= calculate_number; t++) {
         
-        for (l=1; l<=1.0e+7; l++){
+        for (l=1; l<=1.0e+5; l++){
             
             calculate();
             //write_coordinate (/* argv[3],*/ l , start_number);
