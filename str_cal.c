@@ -159,7 +159,7 @@ void hmm_potential (Particle *part_1) {
         double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
         
         double spb_f = HMM_BOND * (part_1->spb_mean - spb_dist);
-        double nucleolus_f = HMM_BOND * (part_1->nucleolus_mean nucleolus_dist);
+        double nucleolus_f = HMM_BOND * (part_1->nucleolus_mean - nucleolus_dist);
         
         part_1->force[X] += spb_f * (part_1->position[X] - spb_pos[X]) + nucleolus_f * (part_1->position[X] - nucleolus_pos[X]);
         part_1->force[Y] += spb_f * (part_1->position[Y] - spb_pos[Y]) + nucleolus_f * (part_1->position[Y] - nucleolus_pos[Y]);
