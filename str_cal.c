@@ -21,12 +21,14 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e-2 )    //ばね定数
+#define K_BOND ( 1.0e-0 )    //ばね定数
 #define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
 #define K_BOND_3 ( 1.0e-2)
 #define HMM_BOND (1.0e-2)
 
 #define DELTA ( 1.0e-7 )  //刻み幅
+
+#define POTENTIAL_DELTA (1.0e-7)
 
 unsigned int particle_number;
 
@@ -259,36 +261,36 @@ double calculate_potential () {
             dist_1 = Euclid_norm (part_1->position, part[i-1].position);
             dist_2 = Euclid_norm (part_1->position, part[i+1].position);
             
-            potential_V += K_BOND * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+            potential_V += K_BOND * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0 * POTENTIAL_DELTA;
         }
         else if ( i == 0) {
             
             dist_1 = Euclid_norm (part_1->position, part[i+1].position);
-            potential_V += K_BOND * dist_1 * dist_1 / 2.0;
+            potential_V += K_BOND * dist_1 * dist_1 / 2.0 * POTENTIAL_DELTA;
         }
         else {
             
             dist_1 = Euclid_norm (part_1->position, part[i-1].position);
-            potential_V += K_BOND * dist_1 * dist_1 / 2.0;
+            potential_V += K_BOND * dist_1 * dist_1 / 2.0 * POTENTIAL_DELTA;
         }
         
         // 2個隣 //
         if ( 0 <= i-2 && i+2 <= particle_number-1) {
             
-            dist_1 = Euclid_norm (part_1->position, part[i-2].position);
+            dist_1 = Euclid_norm (part_1->position, part[i-2].position) ;
             dist_2 = Euclid_norm (part_1->position, part[i+2].position);
             
-            potential_V += K_BOND_2 * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+            potential_V += K_BOND_2 * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0 * POTENTIAL_DELTA;
         }
         else if ( 0 <= i-2) {
             
             dist_1 = Euclid_norm (part_1->position, part[i+2].position);
-            potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0;
+            potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0 * POTENTIAL_DELTA;
         }
         else{
             
             dist_1 = Euclid_norm (part_1->position, part[i-2].position);
-            potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0;
+            potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0 * POTENTIAL_DELTA;
         }
         
         // 3個隣 //
@@ -297,17 +299,17 @@ double calculate_potential () {
             dist_1 = Euclid_norm (part_1->position, part[i-3].position);
             dist_2 = Euclid_norm (part_1->position, part[i+3].position);
             
-            potential_V += K_BOND_3 * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+            potential_V += K_BOND_3 * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0 * POTENTIAL_DELTA;
         }
         else if ( 0 <= i-3) {
             
             dist_1 = Euclid_norm (part_1->position, part[i+3].position);
-            potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0;
+            potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0 * POTENTIAL_DELTA;
         }
         else {
             
             dist_1 = Euclid_norm (part_1->position, part[i-3].position);
-            potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0;
+            potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0 * POTENTIAL_DELTA;
         }
         
         if (part_1->spb_mean != 0.0) {
@@ -315,11 +317,11 @@ double calculate_potential () {
             dist_1 = Euclid_norm (part_1->position, spb_pos);
             dist_2 = Euclid_norm (part_1->position, nucleolus_pos);
             
-            potential_V += K_BOND * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+            potential_V += K_BOND * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0 * POTENTIAL_DELTA;
         }
         
         potential_V += PARTICLE_MASS * (part_1->velocity[X] * part_1->velocity[X] + part_1->velocity[Y] * part_1->velocity[Y]
-                                        + part_1->velocity[Z] * part_1->velocity[Z]) / 2.0;
+                                        + part_1->velocity[Z] * part_1->velocity[Z]) / 2.0 * POTENTIAL_DELTA;
     }
     
     return potential_V;
@@ -395,8 +397,8 @@ int main ( int argc, char **argv ) {
      
     read_data (input_file);
     
-    //init_V = calculate_potential();
-    //printf ("\tInitial V = %lf\n", );
+    init_V = calculate_potential();
+    printf ("\tInitial V = %lf\n", );
     
     //初期位置の出力
     write_coordinate (0);
@@ -409,8 +411,8 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        printf ("\tt = %d \r", t);
-        //printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
+        //printf ("\tt = %d \r", t);
+        printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t);
