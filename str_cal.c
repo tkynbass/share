@@ -398,7 +398,7 @@ int main ( int argc, char **argv ) {
     read_data (input_file);
     
     init_V = calculate_potential();
-    printf ("\tInitial V = %lf\n", );
+    printf ("\tinit_V = %lf\n", init_V);
     
     //初期位置の出力
     write_coordinate (0);
