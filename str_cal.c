@@ -241,6 +241,89 @@ void calculate() {
     
 }
 
+double calculate_potential () {
+    
+    unsigned int i;
+    Particle *part_1;
+    double potential_V = 0.0, dist_1, dist_2;
+    
+    for (i=0; i<particle_number; i++) {
+        
+        part_1 = &part[i];
+        
+        part_1 = &part[i];
+        
+        // 隣同士 //
+        if ( i != 0 && i != particle_number - 1 ) {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i-1].position);
+            dist_2 = Euclid_norm (part_1->position, part[i+1].position);
+            
+            potential_V += K_BOND * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+        }
+        else if ( i == 0) {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i+1].position);
+            potential_V += K_BOND * dist_1 * dist_1 / 2.0;
+        }
+        else {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i-1].position);
+            potential_V += K_BOND * dist_1 * dist_1 / 2.0;
+        }
+        
+        // 2個隣 //
+        if ( 0 <= i-2 && i+2 <= particle_number-1) {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i-2].position);
+            dist_2 = Euclid_norm (part_1->position, part[i+2].position);
+            
+            potential_V += K_BOND_2 * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+        }
+        else if ( 0 <= i-2) {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i+2].position);
+            potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0;
+        }
+        else spring {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i-2].position);
+            potential_V += K_BOND_2 * dist_1 * dist_1 / 2.0;
+        }
+        
+        // 3個隣 //
+        if ( 0 <= i-3 && i+3 <= particle_number-1) {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i-3].position);
+            dist_2 = Euclid_norm (part_1->position, part[i+3].position);
+            
+            potential_V += K_BOND_3 * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+        }
+        else if ( 0 <= i-3) {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i+3].position);
+            potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0;
+        }
+        else spring {
+            
+            dist_1 = Euclid_norm (part_1->position, part[i-3].position);
+            potential_V += K_BOND_3 * dist_1 * dist_1 / 2.0;
+        }
+        
+        if (part_1->spb_mean != 0.0) {
+            
+            dist_1 = Euclid_norm (part_1->position, spb_pos);
+            dist_2 = Euclid_norm (part_1->position, nucleolus_pos);
+            
+            potential_V += K_BOND * (dist_1 * dist_1 + dist_2 * dist_2) / 2.0;
+        }
+        
+        potential_V += PARTICLE_MASS * (part_1->velocity[X] * part_1->velocity[X] + part_1->velocity[Y] * part_1->velocity[Y]
+                                        + part_1->velocity[Z] * part_1->velocity[Z]) / 2.0;
+    }
+    
+    return potential_V;
+}
  
 void write_coordinate (int t) {
     
@@ -277,6 +360,7 @@ int main ( int argc, char **argv ) {
     char input_file[256], hmm_data[256], output_file[256];
     
     unsigned int calculate_number = atoi (argv[1]);
+    double init_V;
     
     printf ("\t Input coordinate data : ");
     scanf ("%s", input_file);
@@ -310,7 +394,10 @@ int main ( int argc, char **argv ) {
     */
      
     read_data (input_file);
-
+    
+    init_V = calculate_potential();
+    printf ("\tInitial V = %lf\n", init_V);
+    
     //初期位置の出力
     write_coordinate (0);
     
@@ -322,7 +409,7 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        printf("    t = %d  \r", t);
+        printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
         write_coordinate (/* argv[3],*/ t);
