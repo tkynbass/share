@@ -26,7 +26,7 @@
 #define K_BOND_3 ( 1.0e-2)
 #define HMM_BOND (1.0e-1)
 
-#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
+#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
 
 #define DELTA ( 1.0e-7 )  //刻み幅
 
