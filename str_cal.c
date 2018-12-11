@@ -21,10 +21,12 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e-0 )    //ばね定数
+#define K_BOND ( 1.0e-2 )    //ばね定数
 #define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
 #define K_BOND_3 ( 1.0e-2)
-#define HMM_BOND (1.0e-2)
+#define HMM_BOND (1.0e-1)
+
+#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 
 #define DELTA ( 1.0e-7 )  //刻み幅
 
@@ -213,11 +215,12 @@ void calculate( unsigned int l ) {
         else if ( 0 <= i-3) spring (part_1, &part[i+3], K_BOND_3);
         else spring (part_1, &part[i-3], K_BOND_3);
         
-        if (part_1->spb_mean != 0.0 && l==1) {
+        if (part_1->spb_mean != 0.0) {
             
             hmm_potential (part_1);
         }
         
+        /*
         part_1->velocity[X] = part_1->velocity_2[X] + DELTA * part_1->force[X] / (2.0 * PARTICLE_MASS);
         part_1->velocity[Y] = part_1->velocity_2[Y] + DELTA * part_1->force[Y] / (2.0 * PARTICLE_MASS);
         part_1->velocity[Z] = part_1->velocity_2[Z] + DELTA * part_1->force[Z] / (2.0 * PARTICLE_MASS);
@@ -229,6 +232,15 @@ void calculate( unsigned int l ) {
         part_1->position_new[X] = part_1->position[X] + DELTA * part_1->velocity_2[X];
         part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->velocity_2[Y];
         part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity_2[Z];
+        */
+        
+        part_1->velocity[X] = part_1->force[X] / PARTICLE_MYU;
+        part_1->velocity[Y] = part_1->force[Y] / PARTICLE_MYU;
+        part_1->velocity[Z] = part_1->force[Z] / PARTICLE_MYU;
+        
+        part_1->position_new[X] = part_1->position[X] + DELTA * part_1->velocity[X];
+        part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->velocity[Y];
+        part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity[Z];
     }
     
     // position の更新 //
@@ -250,8 +262,6 @@ double calculate_potential () {
     double potential_V = 0.0, dist_1, dist_2;
     
     for (i=0; i<particle_number; i++) {
-        
-        part_1 = &part[i];
         
         part_1 = &part[i];
         
