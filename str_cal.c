@@ -24,11 +24,11 @@
 #define K_BOND ( 1.0e-2 )    //ばね定数
 #define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
 #define K_BOND_3 ( 1.0e-2)
-#define HMM_BOND (1.0e-1)
+#define HMM_BOND (1.0e-0)
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
 
-#define DELTA ( 1.0e-9 )  //刻み幅
+#define DELTA ( 1.0e-7 )  //刻み幅
 
 #define POTENTIAL_DELTA (1.0e-7)
 
@@ -112,8 +112,7 @@ void read_data ( char *filename ){       //初期値設定
         
         part_1->nucleolus_mean *= 1.0e-6/ LENGTH;
         part_1->spb_mean *= 1.0e-6 / LENGTH;
-        
-        if (i == 1) printf ("nuc_mean , spb_mean = %lf, %lf\n", part_1->nucleolus_mean, part_1->spb_mean);
+    
     }
 }
 
@@ -221,20 +220,6 @@ void calculate( unsigned int l ) {
             
             hmm_potential (part_1);
         }
-        
-        /*
-        part_1->velocity[X] = part_1->velocity_2[X] + DELTA * part_1->force[X] / (2.0 * PARTICLE_MASS);
-        part_1->velocity[Y] = part_1->velocity_2[Y] + DELTA * part_1->force[Y] / (2.0 * PARTICLE_MASS);
-        part_1->velocity[Z] = part_1->velocity_2[Z] + DELTA * part_1->force[Z] / (2.0 * PARTICLE_MASS);
-        
-        part_1->velocity_2[X] = part_1->velocity[X] + DELTA * part_1->force[X] / ( 2.0 * PARTICLE_MASS );
-        part_1->velocity_2[Y] = part_1->velocity[Y] + DELTA * part_1->force[Y] / ( 2.0 * PARTICLE_MASS );
-        part_1->velocity_2[Z] = part_1->velocity[Z] + DELTA * part_1->force[Z] / ( 2.0 * PARTICLE_MASS );
-        
-        part_1->position_new[X] = part_1->position[X] + DELTA * part_1->velocity_2[X];
-        part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->velocity_2[Y];
-        part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity_2[Z];
-        */
         
         part_1->velocity[X] = part_1->force[X];
         part_1->velocity[Y] = part_1->force[Y];
