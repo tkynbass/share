@@ -21,9 +21,9 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e-2 )    //ばね定数
-#define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-2)
+#define K_BOND ( 1.0e-0 )    //ばね定数
+#define K_BOND_2 ( 1.0e-1 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e-1)
 #define HMM_BOND (1.0e-0)
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
@@ -361,9 +361,11 @@ int main ( int argc, char **argv ) {
     unsigned int calculate_number = atoi (argv[1]);
     double init_V;
     
+    /*
     printf ("\t Input coordinate data : ");
     scanf ("%s", input_file);
-    
+    */
+     
     printf ("\tK_BOND1 = %lf\n", K_BOND);
     printf ("\tK_BOND2 = %lf\n", K_BOND_2);
     printf ("\tK_BOND3 = %lf\n", K_BOND_3);
@@ -392,7 +394,7 @@ int main ( int argc, char **argv ) {
     }
     */
      
-    read_data (input_file);
+    read_data (argv[2]);
     
     //init_V = calculate_potential();
     //printf ("\tinit_V = %lf\n", init_V);
