@@ -44,6 +44,7 @@ typedef enum type {
 
 const double nucleolus_pos[] = { 0.0, 0.0, 0.0};
 const double spb_pos[] = { 1.7128e-6/LENGTH, 0.0, 0.0};
+double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]);
 
 typedef struct particle {           //構造体の型宣言
     //CHAIN chr_no;
@@ -72,7 +73,7 @@ void read_data ( char *filename ){       //初期値設定
     unsigned int i, number = 0;
     
     char dummy[256];
-    double d_dummy;
+    double d_dummy, enlarge_ratio;
     
     Particle *part_1;
     FILE *fpr;
@@ -98,9 +99,9 @@ void read_data ( char *filename ){       //初期値設定
     
     fclose (fpr);
     
-    if (part[0].pastis_no <= 278) double enlarge_ratio = 1.75 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position)
-    else if (part[0].pastis_no <= 505) double enlarge_ratio = 1.5 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position)
-    else double enlarge_ratio = 1.3 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position)
+    if (part[0].pastis_no <= 278) enlarge_ratio = 1.75 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
+    else if (part[0].pastis_no <= 505) enlarge_ratio = 1.5 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
+    else enlarge_ratio = 1.3 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
     
     
     for (i=0; i<particle_number; i++) {
@@ -135,12 +136,6 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     dist += (pos_1[Z] - pos_2[Z]) * (pos_1[Z] - pos_2[Z]);
     
     return (sqrt(dist));
-}
-
-//  内積計算    //
-double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
-    
-    return ( pos_1[X] * pos_2[X] + pos_1[Y] * pos_2[Y] + pos_1[Z] * pos_2[Z]);
 }
 
 //　ばねによる力 part_1 粒子側の力計算
