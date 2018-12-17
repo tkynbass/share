@@ -99,9 +99,9 @@ void read_data ( char *filename ){       //初期値設定
     
     fclose (fpr);
     
-    if (part[0].pastis_no <= 278) enlarge_ratio = 1.75 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
-    else if (part[0].pastis_no <= 505) enlarge_ratio = 1.5 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
-    else enlarge_ratio = 1.3 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
+    if (part[0].pastis_no <= 278) enlarge_ratio = 1.75e-6 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
+    else if (part[0].pastis_no <= 505) enlarge_ratio = 1.5e-6 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
+    else enlarge_ratio = 1.3e-6 / LENGTH / Euclid_norm (part[0].position, part[particle_number - 1].position);
     
     
     for (i=0; i<particle_number; i++) {
