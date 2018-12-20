@@ -56,9 +56,9 @@ typedef struct particle {           //構造体の型宣言
     double position_init[DIMENSION];
     double velocity[DIMENSION];
     double velocity_2[DIMENSION];
-    //double nucleolus_mean;
+    double nucleolus_mean;
     //double nucleolus_var;
-    //double spb_mean;
+    double spb_mean;
     //double spb_var;
     double force[DIMENSION];
     //int list_no;
