@@ -93,7 +93,7 @@ void read_data ( char *filename ){       //初期値設定
         
         part_1 = &part[number];
         fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &d_dummy, &d_dummy, &d_dummy, &d_dummy);
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &d_dummy, &d_dummy, &d_dummy);
         number++;
     }
     
@@ -103,11 +103,11 @@ void read_data ( char *filename ){       //初期値設定
     
     // live imaging データを持つ粒子の中での末端粒子番号を探す //
     i = 0;
-    while (part[i].spb_mean == 0) i++;
+    while (part[i].nucleolus_mean == 0) i++;
     edge_up = i;
     
     i = particle_number - 1;
-    while (part[i].spb_mean == 0) i--;
+    while (part[i].nucleolus_mean == 0) i--;
     edge_down = i;
     
     // 各染色体腕のlive imaging両端をSPB,核小体と固定　G2  //
