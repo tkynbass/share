@@ -103,11 +103,11 @@ void read_data ( char *filename ){       //初期値設定
     
     // live imaging データを持つ粒子の中での末端粒子番号を探す //
     i = 0;
-    which (part[i].spb_mean == 0) i++;
+    while (part[i].spb_mean == 0) i++;
     edge_up = i;
     
     i = particle_number - 1;
-    which (part[i].spb_mean == 0) i--;
+    while (part[i].spb_mean == 0) i--;
     edge_down = i;
     
     // 各染色体腕のlive imaging両端をSPB,核小体と固定　G2  //
