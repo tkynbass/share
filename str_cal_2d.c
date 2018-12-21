@@ -289,7 +289,7 @@ void calculate( unsigned int l ) {
             spring (part_1, &part[i-2], K_BOND_2);
             spring (part_1, &part[i+2], K_BOND_2);
         }
-        else if ( 0 <= i-2) spring (part_1, &part[i+2], K_BOND_2);
+        else if ( i-2 < 0) spring (part_1, &part[i+2], K_BOND_2);
         else spring (part_1, &part[i-2], K_BOND_2);
         
         // 3個隣 //
@@ -298,7 +298,7 @@ void calculate( unsigned int l ) {
             spring (part_1, &part[i-3], K_BOND_3);
             spring (part_1, &part[i+3], K_BOND_3);
         }
-        else if ( 0 <= i-3) spring (part_1, &part[i+3], K_BOND_3);
+        else if ( i-3 < 0 ) spring (part_1, &part[i+3], K_BOND_3);
         else spring (part_1, &part[i-3], K_BOND_3);
         
         if ( i != edge_down && i != edge_up) {
