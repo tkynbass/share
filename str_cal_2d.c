@@ -21,11 +21,11 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e-0 )    //ばね定数
-#define K_BOND_2 ( 1.0e-0 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-0)
+#define K_BOND ( 1.0e+1 )    //ばね定数
+#define K_BOND_2 ( 1.0e+1 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e+1)
 #define HMM_BOND (5.0e-0)
-#define NUC_OUT_FORCE (1.0e-0)
+#define NUC_OUT_FORCE (1.0e-1)
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
 
