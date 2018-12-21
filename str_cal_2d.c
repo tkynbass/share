@@ -21,11 +21,11 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e+1 )    //ばね定数
-#define K_BOND_2 ( 1.0e+1 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e+1)
+#define K_BOND ( 1.0e+2 )    //ばね定数
+#define K_BOND_2 ( 1.0e+2 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e+2)
 #define HMM_BOND (5.0e-0)
-#define NUC_OUT_FORCE (1.0e-1)
+#define NUC_OUT_FORCE (1.0e-0)
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
 
@@ -457,6 +457,8 @@ int main ( int argc, char **argv ) {
     printf ("\tK_BOND1 = %lf\n", K_BOND);
     printf ("\tK_BOND2 = %lf\n", K_BOND_2);
     printf ("\tK_BOND3 = %lf\n", K_BOND_3);
+    printf ("\tHMM_BOND = %lf\n", HMM_BOND);
+    printf ("\tNucleolus_force = %lf\n", NUC_OUT_FORCE);
     
     /*
     printf ("\t Input output_file : ");
