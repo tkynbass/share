@@ -322,17 +322,14 @@ int main ( int argc, char **argv ) {
      */
     
     double nuclear_radius = atof (argv[2]);
-
-    /*
-     for (i = 0;i < NUMBER;i++) {
-     part[i].list = (int *)malloc(NUMBER * sizeof(int));
-     
-     if (part[i].list == NULL) {
-     printf("\n error : can not secure the memory \n");
-     exit(1);
-     }
-     }
-     */
+    
+    part = (Particle *)malloc(6 * sizeof(Particle));
+    
+    if (part == NULL) {
+        
+        printf("\n error : can not secure the memory \n");
+        exit(1);
+    }
     
     read_data ( nuclear_radius);
     
