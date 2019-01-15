@@ -153,9 +153,9 @@ void read_data ( const double nuclear_radius ){       //初期値設定
         average_dist += part_1->spb_mean / 6.0;
     }
     
-    spb.position[X] *= 1.0 + average_dist / Euclid_norm (spb.position[X], origin);
-    spb.position[Y] *= 1.0 + average_dist / Euclid_norm (spb.position[Y], origin);
-    spb.position[Z] *= 1.0 + average_dist / Euclid_norm (spb.position[Z], origin);
+    spb.position[X] *= 1.0 + average_dist / Euclid_norm (spb.position, origin);
+    spb.position[Y] *= 1.0 + average_dist / Euclid_norm (spb.position, origin);
+    spb.position[Z] *= 1.0 + average_dist / Euclid_norm (spb.position, origin);
 
 }
 
@@ -188,12 +188,12 @@ void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) 
     part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
 }
 
-void hmm_potential (Particle part_1) {
+void hmm_potential (Particle *part_1) {
     
     if (part_1->nucleolus_mean != 0.0) {
         
-        double spb_dist = Euclid_norm (part_1->position, spb_pos);
-        double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
+        double spb_dist = Euclid_norm (part_1->position, spb.position);
+        double nucleolus_dist = Euclid_norm (part_1->position, nucleolus.position);
         
         double spb_f = HMM_BOND * (part_1->spb_mean - spb_dist);
         double nucleolus_f = HMM_BOND * (part_1->nucleolus_mean - nucleolus_dist);
@@ -260,7 +260,7 @@ void calculate( unsigned int l ) {
 void write_data (const int t, const double nuclear_radius) {
     
     int i;
-    double spb_strain += 0.0, nucleolus_strain += 0.0;
+    double spb_strain = 0.0, nucleolus_strain = 0.0;
     
     Particle *part_1;
     
