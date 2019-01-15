@@ -102,6 +102,7 @@ void read_data ( const double nuclear_radius ){       //初期値設定
                 fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
                         &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
             }
+            else fgets (dummy, 256, fpr);
         }
         
         fclose (fpr);
@@ -126,6 +127,7 @@ void read_data ( const double nuclear_radius ){       //初期値設定
                 fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
                         &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
             }
+            else fgets (dummy, 256, fpr);
         }
         
         fclose (fpr);
@@ -314,12 +316,6 @@ int main ( int argc, char **argv ) {
     char input_file[256], hmm_data[256], output_file[256];
     
     unsigned int calculate_number = atoi (argv[1]);
-    double init_V;
-    
-    /*
-     printf ("\t Input coordinate data : ");
-     scanf ("%s", input_file);
-     */
     
     double nuclear_radius = atof (argv[2]);
     
