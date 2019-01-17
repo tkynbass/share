@@ -136,8 +136,8 @@ void read_data ( const double nuclear_radius ){       //初期値設定
     
     // 初期値設定 //
     nucleolus.position[X] = 0.0;
-    nucleolus.position[Y] = -40.0;
-    nucleolus.position[Z] = 0.0;
+    nucleolus.position[Y] = 0.0;
+    nucleolus.position[Z] = -50.0;
     
     spb.position[X] = 0.0;
     spb.position[Y] = 0.0;

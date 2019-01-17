@@ -136,8 +136,8 @@ void read_data ( const double nuclear_radius ){       //初期値設定
     
     // 初期値設定 //
     nucleolus.position[X] = 0.0;
-    nucleolus.position[Y] = -40.0;
-    nucleolus.position[Z] = 0.0;
+    nucleolus.position[Y] = 0.0;
+    nucleolus.position[Z] = -50.0;
     
     spb.position[X] = 0.0;
     spb.position[Y] = 0.0;
@@ -306,8 +306,9 @@ void write_data (const int t, const double nuclear_radius) {
     
     fclose (fpw);
     
+    if (t < calculate_number) printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf \r", t, spb_strain, nucleolus_strain);
+    else printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf \n", t, spb_strain, nucleolus_strain);
     
-    printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf \r", t, spb_strain, nucleolus_strain);
 }
 
 
