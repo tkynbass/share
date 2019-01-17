@@ -33,8 +33,9 @@
 
 #define POTENTIAL_DELTA (1.0e-7)
 
-unsigned int particle_number;
-unsigned int number_list[] = { 196, 177, 356, 365, 554, 568};
+unsigned int particle_number = 6;
+// セントロメアから３番目の輝点を含む番号 //
+unsigned int number_list[] = { 205, 170, 347, 374, 543, 578};
 
 typedef enum chain {
     A, B, C
