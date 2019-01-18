@@ -137,7 +137,7 @@ void read_data ( const double nuclear_radius ){       //初期値設定
     // 初期値設定 //
     nucleolus.position[X] = 0.0;
     nucleolus.position[Y] = 0.0;
-    nucleolus.position[Z] = -50.0;
+    nucleolus.position[Z] = 50.0;
     
     spb.position[X] = 0.0;
     spb.position[Y] = 0.0;
@@ -260,7 +260,7 @@ void calculate( unsigned int l ) {
     
 }
 
-void write_data (const int t, const double nuclear_radius) {
+void write_data (const int t, const double nuclear_radius, const int calculate_number) {
     
     int i;
     double spb_strain = 0.0, nucleolus_strain = 0.0;
@@ -306,8 +306,8 @@ void write_data (const int t, const double nuclear_radius) {
     
     fclose (fpw);
     
-    
-    printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf \r", t, spb_strain, nucleolus_strain);
+    if (t < calculate_number) printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf \r", t, spb_strain, nucleolus_strain);
+    else printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf \n", t, spb_strain, nucleolus_strain);
 }
 
 
@@ -334,7 +334,7 @@ int main ( int argc, char **argv ) {
     //printf ("\tinit_V = %lf\n", init_V);
     
     //初期位置の出力
-    write_data (0, nuclear_radius);
+    write_data (0, nuclear_radius, calculate_number);
     
     for (t=1; t <= calculate_number; t++) {
         
@@ -347,7 +347,7 @@ int main ( int argc, char **argv ) {
         //printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
-        write_data (t, nuclear_radius);
+        write_data (t, nuclear_radius, calculate_number);
     }
     
     return ( 0 );
