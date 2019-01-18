@@ -271,11 +271,19 @@ void write_data (const int t, const double nuclear_radius) {
     
     char result[128], str[128];
     
+    /*
     for ( i=0; i<6; i++) {
         
         part_1 = &part[i];
         spb_strain += fabs (Euclid_norm (part_1->position, spb.position) - part_1->spb_mean);
         nucleolus_strain += fabs ( Euclid_norm (part_1->position, nucleolus.position) - part_1->nucleolus_mean);
+    }*/
+    
+    for ( i=0; i<6; i++) {
+        
+        part_1 = &part[i];
+        spb_strain += fabs ( 1.0 - Euclid_norm (part_1->position, spb.position)/part_1->spb_mean);
+        nucleolus_strain += fabs ( 1.0 - Euclid_norm (part_1->position, nucleolus.position) / part_1->nucleolus_mean);
     }
     
     // SPB //
