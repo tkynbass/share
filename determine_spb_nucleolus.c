@@ -260,7 +260,7 @@ void calculate( unsigned int l ) {
     
 }
 
-void write_data (const int t, const double nuclear_radius) {
+void write_data (const int t, const double nuclear_radius, const int calculate_number) {
     
     int i;
     double spb_strain = 0.0, nucleolus_strain = 0.0;
@@ -356,7 +356,7 @@ int main ( int argc, char **argv ) {
         //printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
-        write_data (t, nuclear_radius);
+        write_data (t, nuclear_radius, calculate_number);
     }
     
     return ( 0 );
