@@ -137,7 +137,7 @@ void read_data ( const double nuclear_radius ){       //初期値設定
     // 初期値設定 //
     nucleolus.position[X] = 0.0;
     nucleolus.position[Y] = 0.0;
-    nucleolus.position[Z] = -50.0;
+    nucleolus.position[Z] = 50.0;
     
     spb.position[X] = 0.0;
     spb.position[Y] = 0.0;
@@ -211,9 +211,10 @@ void hmm_potential (Particle *part_1) {
     }
 }
  
-void calculate( unsigned int l ) {
+void calculate( unsigned int l, const double nuclear_radius ) {
     
     int i;
+    double spb_nuc_dist = 75 * 1.71 / nuclear_radius;
     
     Particle *part_1;
     
@@ -225,7 +226,7 @@ void calculate( unsigned int l ) {
     
     
 //#pragma omp parallel for private (part_1) num_threads (6)
-    for ( i=0; i<particle_number; i++) {
+    for ( i=0; i<6; i++) {
         
         part_1 = &part[i];
         
@@ -234,6 +235,18 @@ void calculate( unsigned int l ) {
             hmm_potential (part_1);
         }
     }
+    
+    // spb - nucleolus spring //
+    double f = HMM_BOND * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
+    
+    spb.force[X] += f * (spb.position[X] - nucleolus.position[X]);
+    spb.force[Y] += f * (spb.position[Y] - nucleolus.position[Y]);
+    spb.force[Z] += f * (spb.position[Z] - nucleolus.position[Z]);
+    
+    nucleolus.position[X] += f * (nucleolus.position[X] - spb.position[X]);
+    nucleolus.position[Y] += f * (nucleolus.position[Y] - spb.position[Y]);
+    nucleolus.position[Z] += f * (nucleolus.position[Z] - spb.position[Z]);
+    
     
     spb.velocity[X] = spb.force[X];
     spb.velocity[Y] = spb.force[Y];
@@ -343,13 +356,13 @@ int main ( int argc, char **argv ) {
     //printf ("\tinit_V = %lf\n", init_V);
     
     //初期位置の出力
-    write_data (0, nuclear_radius);
+    write_data (0, nuclear_radius, calculate_number);
     
     for (t=1; t <= calculate_number; t++) {
         
         for (l=1; l<=1.0e+5; l++){
             
-            calculate(l);
+            calculate(l, nuclear_radius);
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         

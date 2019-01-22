@@ -211,9 +211,10 @@ void hmm_potential (Particle *part_1) {
     }
 }
  
-void calculate( unsigned int l ) {
+void calculate( unsigned int l, const double nuclear_radius ) {
     
     int i;
+    double spb_nuc_dist = 75 * 1.71 / nuclear_radius;
     
     Particle *part_1;
     
@@ -234,6 +235,22 @@ void calculate( unsigned int l ) {
             hmm_potential (part_1);
         }
     }
+    
+    // spb - nucleolus spring //
+    double f = HMM_BOND * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
+    
+    spb.force[X] += f * (spb.position[X] - nucleolus.position[X]);
+    spb.force[Y] += f * (spb.position[Y] - nucleolus.position[Y]);
+    spb.force[Z] += f * (spb.position[Z] - nucleolus.position[Z]);
+    
+    nucleolus.position[X] += f * (nucleolus.position[X] - spb.position[X]);
+    nucleolus.position[Y] += f * (nucleolus.position[Y] - spb.position[Y]);
+    nucleolus.position[Z] += f * (nucleolus.position[Z] - spb.position[Z]);
+    
+    
+    spb.velocity[X] = spb.force[X];
+    spb.velocity[Y] = spb.force[Y];
+    spb.velocity[Z] = spb.force[Z];
     
     spb.velocity[X] = spb.force[X];
     spb.velocity[Y] = spb.force[Y];
@@ -271,11 +288,20 @@ void write_data (const int t, const double nuclear_radius, const int calculate_n
     
     char result[128], str[128];
     
+    /*
     for ( i=0; i<6; i++) {
         
         part_1 = &part[i];
         spb_strain += fabs (Euclid_norm (part_1->position, spb.position) - part_1->spb_mean);
         nucleolus_strain += fabs ( Euclid_norm (part_1->position, nucleolus.position) - part_1->nucleolus_mean);
+    }
+    */
+    
+    for ( i=0; i<6; i++) {
+        
+        part_1 = &part[i];
+        spb_strain += fabs ( 1.0 - Euclid_norm (part_1->position, spb.position)/part_1->spb_mean);
+        nucleolus_strain += fabs ( 1.0 - Euclid_norm (part_1->position, nucleolus.position) / part_1->nucleolus_mean);
     }
     
     // SPB //
@@ -340,7 +366,7 @@ int main ( int argc, char **argv ) {
         
         for (l=1; l<=1.0e+5; l++){
             
-            calculate(l);
+            calculate(l, nuclear_radius);
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
