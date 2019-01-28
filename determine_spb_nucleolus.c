@@ -350,8 +350,8 @@ int main ( int argc, char **argv ) {
     }
     
     // 使用する粒子リストの宣言 //
-    numberList_1[] = { 196, 177, 356, 365, 554, 568};
-    numberList_3[] = { 205, 170, 347, 374, 543, 578};
+    unsigned int numberList_1[] = { 196, 177, 356, 365, 554, 568};
+    unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};
     
     if (particleGroup == 1) read_data (nuclear_radius, numberList_1);
     else read_data (nuclear_radius, numberList_3);
