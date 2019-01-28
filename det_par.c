@@ -340,7 +340,7 @@ int main ( int argc, char **argv ) {
     unsigned int particleGroup = atoi (argv[1]);
     unsigned int calculate_number = atoi (argv[2]);
     Particle *part_1;
-    double spb_strain, nucleolus_strain;
+    double spb_strain, nucleolus_strain, nuclear_radius, spb_nuc_dist;
     
     part = (Particle *)malloc(6 * sizeof(Particle));
     
