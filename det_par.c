@@ -340,7 +340,7 @@ int main ( int argc, char **argv ) {
     unsigned int particleGroup = atoi (argv[1]);
     unsigned int calculate_number = atoi (argv[2]);
     Particle *part_1;
-    double spb_strain, nucleolus_strain, nuclear_radius, spb_nuc_dist;
+    double spb_strain, nucleolus_strain, nuclear_radius, spb_nuc_dist = 75 * 1.71 / nuclear_radius;
     
     part = (Particle *)malloc(6 * sizeof(Particle));
     
@@ -355,7 +355,7 @@ int main ( int argc, char **argv ) {
     unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};
     
     //初期位置の出力
-    write_data (0, nuclear_radius, calculate_number);
+    //write_data (0, nuclear_radius, calculate_number);
     
     for (double nuclear_radius = 0.5; nuclear_radius <= 4.0; nuclear_radius += 0.1) {
         
