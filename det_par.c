@@ -340,7 +340,7 @@ int main ( int argc, char **argv ) {
     unsigned int particleGroup = atoi (argv[1]);
     unsigned int calculate_number = atoi (argv[2]);
     Particle *part_1;
-    double spb_strain, nucleolus_strain, nuclear_radius, spb_nuc_dist = 75 * 1.71 / nuclear_radius;
+    double spb_strain, nucleolus_strain, nuclear_radius, spb_nuc_dist;
     
     part = (Particle *)malloc(6 * sizeof(Particle));
     
@@ -362,6 +362,7 @@ int main ( int argc, char **argv ) {
         // 歪み値の初期化 //
         spb_strain = 0.0;
         nucleolus_strain = 0.0;
+        spb_nuc_dist = 75 * 1.71 / nuclear_radius;
         
         // データの読み込み //
         if (particleGroup == 1) read_data (nuclear_radius, numberList_1);
@@ -374,7 +375,6 @@ int main ( int argc, char **argv ) {
                 calculate(l, nuclear_radius);
                 //write_coordinate (/* argv[3],*/ l , start_number);
             }
-            fflush (stdout);
             
             //write_data (t, nuclear_radius, calculate_number);
         }
