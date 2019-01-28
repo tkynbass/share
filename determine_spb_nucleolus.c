@@ -71,7 +71,7 @@ Particle nucleolus;
 
 enum label{ X, Y, Z};
 
-void read_data ( const double nuclear_radius ){       //初期値設定
+void read_data ( const double nuclear_radius, const double number_list[6] ){       //初期値設定
     
     unsigned int i, number = 0;
     
@@ -339,9 +339,9 @@ int main ( int argc, char **argv ) {
     int i, t = 0, l;
     char input_file[256], hmm_data[256], output_file[256];
     
-    unsigned int calculate_number = atoi (argv[1]);
-    
-    double nuclear_radius = atof (argv[2]);
+    unsigned int particleGroup = atoi (argv[1]);
+    unsigned int calculate_number = atoi (argv[2]);
+    double nuclear_radius = atof (argv[3]);
     
     part = (Particle *)malloc(6 * sizeof(Particle));
     
@@ -351,7 +351,12 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     
-    read_data ( nuclear_radius);
+    // 使用する粒子リストの宣言 //
+    if (particleGroup == 1) unsigned int number_list[] = { 196, 177, 356, 365, 554, 568};
+    else unsigned int number_list[] = { 205, 170, 347, 374, 543, 578};
+    
+    
+    read_data ( nuclear_radius, number_list);
     
     //init_V = calculate_potential();
     //printf ("\tinit_V = %lf\n", init_V);
