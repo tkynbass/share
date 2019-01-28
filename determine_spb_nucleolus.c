@@ -350,14 +350,11 @@ int main ( int argc, char **argv ) {
     }
     
     // 使用する粒子リストの宣言 //
-    if (particleGroup == 1) unsigned int number_list[] = { 196, 177, 356, 365, 554, 568};
-    else unsigned int number_list[] = { 205, 170, 347, 374, 543, 578};
+    numberList_1[] = { 196, 177, 356, 365, 554, 568};
+    numberList_3[] = { 205, 170, 347, 374, 543, 578};
     
-    
-    read_data ( nuclear_radius, number_list);
-    
-    //init_V = calculate_potential();
-    //printf ("\tinit_V = %lf\n", init_V);
+    if (particleGroup == 1) read_data (nuclear_radius, numberList_1);
+    else read_data (nuclear_radius, numberList_3);
     
     //初期位置の出力
     write_data (0, nuclear_radius, calculate_number);
@@ -369,8 +366,6 @@ int main ( int argc, char **argv ) {
             calculate(l, nuclear_radius);
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
-        
-        //printf("    t = %d\t V - init_V = %lf \r", t, calculate_potential()-init_V);
         fflush (stdout);
         
         write_data (t, nuclear_radius, calculate_number);
