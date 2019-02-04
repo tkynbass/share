@@ -353,6 +353,8 @@ int main ( int argc, char **argv ) {
     // 使用する粒子リストの宣言 //
     unsigned int numberList_1[] = { 196, 177, 356, 365, 554, 568};
     unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};
+    unsigned int numberList_4[] = { 235, 93, 320, 382, 533, 592}; // 各腕中心のデータ
+    unsigned int numberList_5[] = { 262, 13, 292, 491, 521, 611}; // テロメアから３番目
     
     //初期位置の出力
     //write_data (0, nuclear_diameter, calculate_number);
@@ -365,8 +367,20 @@ int main ( int argc, char **argv ) {
         spb_nuc_dist = 75 * 1.71 / nuclear_diameter;
         
         // データの読み込み //
-        if (particleGroup == 1) read_data (nuclear_diameter, numberList_1);
-        else read_data (nuclear_diameter, numberList_3);
+        switch (particleGroup) {
+            case 1:
+                read_data (nuclear_diameter, numberList_1);
+                break;
+            case 3:
+                read_data (nuclear_diameter, numberList_3);
+                break;
+            case 4:
+                read_data (nuclear_diameter, numberList_4);
+                break;
+            default:
+                read_data (nuclear_diameter, numberList_5);
+                break;
+        }
         
         for (t=1; t <= calculate_number; t++) {
             
@@ -386,7 +400,7 @@ int main ( int argc, char **argv ) {
             nucleolus_strain += fabs ( 1.0 - Euclid_norm (part_1->position, nucleolus.position) / part_1->nucleolus_mean);
         }
         
-        printf ("%1.1f %lf %lf %lf\n", nuclear_diameter, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) / spb_nuc_dist);
+        printf ("%1.1f %lf %lf %lf\n", nuclear_diameter, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) /75 * nuclear_diameter);
         
     }
     
