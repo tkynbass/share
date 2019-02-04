@@ -69,7 +69,7 @@ Particle nucleolus;
 
 enum label{ X, Y, Z};
 
-void read_data ( const double nuclear_radius, const unsigned int number_list[6] ){       //初期値設定
+void read_data ( const double nuclear_diameter, const unsigned int number_list[6] ){       //初期値設定
     
     unsigned int i, number = 0;
     
@@ -145,8 +145,8 @@ void read_data ( const double nuclear_radius, const unsigned int number_list[6] 
         
         part_1 = &part[i];
         
-        part_1->nucleolus_mean *= 75 / nuclear_radius;
-        part_1->spb_mean *= 75 / nuclear_radius;
+        part_1->nucleolus_mean *= 75 / nuclear_diameter;
+        part_1->spb_mean *= 75 / nuclear_diameter;
         
         spb.position[X] += part_1->position[X] / 6.0;
         spb.position[Y] += part_1->position[Y] / 6.0;
@@ -209,10 +209,10 @@ void hmm_potential (Particle *part_1) {
     }
 }
  
-void calculate( unsigned int l, const double nuclear_radius ) {
+void calculate( unsigned int l, const double nuclear_diameter ) {
     
     int i;
-    double spb_nuc_dist = 75 * 1.71 / nuclear_radius;
+    double spb_nuc_dist = 75 * 1.71 / nuclear_diameter;
     
     Particle *part_1;
     
@@ -235,8 +235,8 @@ void calculate( unsigned int l, const double nuclear_radius ) {
     }
     
     // spb - nucleolus spring //
-    /*
-    double f = HMM_BOND * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
+    
+    double f = 1.0e-2 * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
     
     spb.force[X] += f * (spb.position[X] - nucleolus.position[X]);
     spb.force[Y] += f * (spb.position[Y] - nucleolus.position[Y]);
@@ -245,7 +245,7 @@ void calculate( unsigned int l, const double nuclear_radius ) {
     nucleolus.position[X] += f * (nucleolus.position[X] - spb.position[X]);
     nucleolus.position[Y] += f * (nucleolus.position[Y] - spb.position[Y]);
     nucleolus.position[Z] += f * (nucleolus.position[Z] - spb.position[Z]);
-    */
+    
     
     spb.velocity[X] = spb.force[X];
     spb.velocity[Y] = spb.force[Y];
@@ -272,10 +272,10 @@ void calculate( unsigned int l, const double nuclear_radius ) {
     
 }
 
-void write_data (const int t, const double nuclear_radius, const int calculate_number) {
+void write_data (const int t, const double nuclear_diameter, const int calculate_number) {
     
     int i;
-    double spb_strain = 0.0, nucleolus_strain = 0.0, spb_nuc_dist = 75 * 1.71 / nuclear_radius;
+    double spb_strain = 0.0, nucleolus_strain = 0.0, spb_nuc_dist = 75 * 1.71 / nuclear_diameter;
     
     Particle *part_1;
     
@@ -299,7 +299,7 @@ void write_data (const int t, const double nuclear_radius, const int calculate_n
     }
     
     // SPB //
-    sprintf (result, "spb_%lf.txt", nuclear_radius);
+    sprintf (result, "spb_%lf.txt", nuclear_diameter);
     
     if ((fpw = fopen (result, "a")) == NULL) {
         
@@ -313,7 +313,7 @@ void write_data (const int t, const double nuclear_radius, const int calculate_n
     fclose (fpw);
     
     // Nucleolus //
-    sprintf (result, "nucleolus_%lf.txt", nuclear_radius);
+    sprintf (result, "nucleolus_%lf.txt", nuclear_diameter);
     
     if ((fpw = fopen (result, "a")) == NULL) {
         
@@ -326,8 +326,8 @@ void write_data (const int t, const double nuclear_radius, const int calculate_n
     
     fclose (fpw);
     
-    if (t < calculate_number) printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lf \r", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) / spb_nuc_dist);
-    else printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lf \n", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) / spb_nuc_dist);
+    if (t < calculate_number) printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lfum \r", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) /75 *nuclear_diameter);
+    else printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lf \n", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) /75 *nuclear_diameter);
     
 }
 
@@ -339,7 +339,7 @@ int main ( int argc, char **argv ) {
     
     unsigned int particleGroup = atoi (argv[1]);
     unsigned int calculate_number = atoi (argv[2]);
-    double nuclear_radius = atof (argv[3]);
+    double nuclear_diameter = atof (argv[3]);
     
     part = (Particle *)malloc(6 * sizeof(Particle));
     
@@ -352,23 +352,38 @@ int main ( int argc, char **argv ) {
     // 使用する粒子リストの宣言 //
     unsigned int numberList_1[] = { 196, 177, 356, 365, 554, 568};
     unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};
+    unsigned int numberList_4[] = { 235, 93, 320, 382, 533, 592}; // 各腕中心のデータ
+    unsigned int numberList_5[] = { 262, 13, 292, 491, 521, 611}; // テロメアから３番目
     
-    if (particleGroup == 1) read_data (nuclear_radius, numberList_1);
-    else read_data (nuclear_radius, numberList_3);
+    // データの読み込み //
+    switch (particleGroup) {
+        case 1:
+            read_data (nuclear_diameter, numberList_1);
+            break;
+        case 3:
+            read_data (nuclear_diameter, numberList_3);
+            break;
+        case 4:
+            read_data (nuclear_diameter, numberList_4);
+            break;
+        default:
+            read_data (nuclear_diameter, numberList_5);
+            break;
+    }
     
     //初期位置の出力
-    write_data (0, nuclear_radius, calculate_number);
+    write_data (0, nuclear_diameter, calculate_number);
     
     for (t=1; t <= calculate_number; t++) {
         
         for (l=1; l<=1.0e+5; l++){
             
-            calculate(l, nuclear_radius);
+            calculate(l, nuclear_diameter);
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         fflush (stdout);
         
-        write_data (t, nuclear_radius, calculate_number);
+        write_data (t, nuclear_diameter, calculate_number);
     }
     
     return ( 0 );
