@@ -25,7 +25,7 @@
 #define K_BOND_2 ( 1.0e+2 )  //ひもの硬さ
 #define K_BOND_3 ( 1.0e+2)
 #define HMM_BOND (1.0e-0)
-#define NUC_OUT_FORCE (1.0e-0)
+#define SPB_NUC_BOND (1.0e-3)
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
 
@@ -235,8 +235,8 @@ void calculate( unsigned int l, const double nuclear_radius ) {
     }
     
     // spb - nucleolus spring //
-    /*
-    double f = HMM_BOND * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
+    
+    double f = SPB_NUC_BOND * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
     
     spb.force[X] += f * (spb.position[X] - nucleolus.position[X]);
     spb.force[Y] += f * (spb.position[Y] - nucleolus.position[Y]);
@@ -245,7 +245,7 @@ void calculate( unsigned int l, const double nuclear_radius ) {
     nucleolus.position[X] += f * (nucleolus.position[X] - spb.position[X]);
     nucleolus.position[Y] += f * (nucleolus.position[Y] - spb.position[Y]);
     nucleolus.position[Z] += f * (nucleolus.position[Z] - spb.position[Z]);
-    */
+    
     
     spb.velocity[X] = spb.force[X];
     spb.velocity[Y] = spb.force[Y];
@@ -275,7 +275,7 @@ void calculate( unsigned int l, const double nuclear_radius ) {
 void write_data (const int t, const double nuclear_radius, const int calculate_number) {
     
     int i;
-    double spb_strain = 0.0, nucleolus_strain = 0.0, spb_nuc_dist = 75 * 1.71 / nuclear_radius;
+    double spb_strain = 0.0, nucleolus_strain = 0.0, spb_nuc_dist = 75 * 1.71 / nuclear_diameter;
     
     Particle *part_1;
     
@@ -326,8 +326,8 @@ void write_data (const int t, const double nuclear_radius, const int calculate_n
     
     fclose (fpw);
     
-    if (t < calculate_number) printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lf \r", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) / spb_nuc_dist);
-    else printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lf \n", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) / spb_nuc_dist);
+    if (t < calculate_number) printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lfum \r", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) /75 *nuclear_radius );
+    else printf ("\tt = %d, spb_strain : %lf, nucleolus_strain : %lf, spb-nuc : %lfum \n", t, spb_strain, nucleolus_strain, Euclid_norm (spb.position, nucleolus.position) /75 * nuclear_radius );
     
 }
 
@@ -345,7 +345,7 @@ int main ( int argc, char **argv ) {
     part = (Particle *)malloc(6 * sizeof(Particle));
     
     if (part == NULL) {
-        
+    
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
