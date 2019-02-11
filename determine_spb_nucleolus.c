@@ -98,8 +98,9 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
             
             if (part_1->pastis_no == number_list[2*i] ) {
                 
-                fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
-                        &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
+                fscanf (fpr, "%s %lf %lf %lf %lf %lf", &dummy,
+                        &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean);
+                else fgets (dummy, 256, fpr);
             }
             else fgets (dummy, 256, fpr);
         }
@@ -133,13 +134,13 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
     }
     
     // 初期値設定 //
-    nucleolus.position[X] = 0.0;
+    nucleolus.position[X] = -50.0;
     nucleolus.position[Y] = 0.0;
     nucleolus.position[Z] = 50.0;
     
-    spb.position[X] = 0.0;
-    spb.position[Y] = 0.0;
-    spb.position[Z] = 0.0;
+    spb.position[X] = 65.265493;
+    spb.position[Y] = -6.447939;
+    spb.position[Z] = 6.777862;
     
     for (i=0; i<6; i++) {
         
@@ -147,16 +148,7 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
         
         part_1->nucleolus_mean *= 75 / nuclear_diameter;
         part_1->spb_mean *= 75 / nuclear_diameter;
-        
-        spb.position[X] += part_1->position[X] / 6.0;
-        spb.position[Y] += part_1->position[Y] / 6.0;
-        spb.position[Z] += part_1->position[Z] / 6.0;
-        average_dist += part_1->spb_mean / 6.0;
     }
-    
-    spb.position[X] *= 2.0 + average_dist / Euclid_norm (spb.position, origin);
-    spb.position[Y] *= 2.0 + average_dist / Euclid_norm (spb.position, origin);
-    spb.position[Z] *= 2.0 + average_dist / Euclid_norm (spb.position, origin);
 
 }
 
