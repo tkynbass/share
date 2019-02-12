@@ -100,7 +100,7 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
                 
                 fscanf (fpr, "%s %lf %lf %lf %lf %lf", &dummy,
                         &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean);
-                else fgets (dummy, 256, fpr);
+                fgets (dummy, 256, fpr);
             }
             else fgets (dummy, 256, fpr);
         }
@@ -126,7 +126,7 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
                 
                 fscanf (fpr, "%s %lf %lf %lf %lf %lf", &dummy,
                         &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean);
-                else fgets (dummy, 256, fpr);
+                fgets (dummy, 256, fpr);
             }
             else fgets (dummy, 256, fpr);
         }
@@ -228,7 +228,7 @@ void calculate( unsigned int l, const double nuclear_diameter ) {
     }
     
     // spb - nucleolus spring //
-    
+    /*
     double f = 1.0e-2 * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
     
     spb.force[X] += f * (spb.position[X] - nucleolus.position[X]);
@@ -238,7 +238,7 @@ void calculate( unsigned int l, const double nuclear_diameter ) {
     nucleolus.position[X] += f * (nucleolus.position[X] - spb.position[X]);
     nucleolus.position[Y] += f * (nucleolus.position[Y] - spb.position[Y]);
     nucleolus.position[Z] += f * (nucleolus.position[Z] - spb.position[Z]);
-    
+    */
     
     spb.velocity[X] = spb.force[X];
     spb.velocity[Y] = spb.force[Y];
