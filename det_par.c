@@ -100,7 +100,7 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
                 
                 fscanf (fpr, "%s %lf %lf %lf %lf %lf", &dummy,
                         &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean);
-                else fgets (dummy, 256, fpr);
+                fgets (dummy, 256, fpr);
             }
             else fgets (dummy, 256, fpr);
         }
@@ -124,8 +124,9 @@ void read_data ( const double nuclear_diameter, const unsigned int number_list[6
             
             if (part_1->pastis_no == number_list[2*i + 1] ) {
                 
-                fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
-                        &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
+                fscanf (fpr, "%s %lf %lf %lf %lf %lf", &dummy,
+                        &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean);
+                fgets (dummy, 256, fpr);
             }
             else fgets (dummy, 256, fpr);
         }
