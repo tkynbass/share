@@ -324,10 +324,9 @@ int main ( int argc, char **argv ) {
     int i, t = 0, l;
     char input_file[256], hmm_data[256], output_file[256];
     
-    unsigned int particleGroup = atoi (argv[1]);
-    unsigned int calculate_number = atoi (argv[2]);
+    unsigned int calculate_number = atoi (argv[1]);
     Particle *part_1;
-    double spb_strain, nucleolus_strain, nuclear_diameter, spb_nuc_dist;
+    double spb_strain, nucleolus_strain, nuclear_diameter;
     
     partTelomere = (Particle *)malloc(6 * sizeof(Particle));
     
