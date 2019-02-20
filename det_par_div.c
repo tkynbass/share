@@ -77,8 +77,8 @@ void read_data ( const double nuclear_diameter){       //初期値設定
     char dummy[256], filename[256];
     double d_dummy, average_dist = 0.0, origin[] = {0.0, 0.0, 0.0};
     
-    unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};  //セントロメアから３番目
-    unsigned int numberList_5[] = { 262, 13, 292, 491, 521, 611}; // テロメアから３番目
+    unsigned int number_list_3[] = { 205, 170, 347, 374, 543, 578};  //セントロメアから３番目
+    unsigned int number_list_5[] = { 262, 13, 292, 491, 521, 611}; // テロメアから３番目
     
     Particle *part_1, *part_2;
     FILE *fpr;
@@ -128,7 +128,8 @@ void read_data ( const double nuclear_diameter){       //初期値設定
             exit (1);
         }
         
-        part_1 = &part [2*i + 1];
+        part_1 = &partCentromere [2*i+1];
+        part_2 = &partTelomere [2*i+1];
         
         fgets (dummy, 256, fpr);
         
@@ -293,11 +294,12 @@ void write_data (const double nuclear_diameter, const unsigned int fix_flag) {
     
     char result[128];
     double spb_strain = 0.0, nucleolus_strain = 0.0;
-    Particle *part_1;
+    Particle *part_1, *part_2;
     
     for (unsigned int i=0; i<6; i++) {
         
-        part_1 = &part[i];
+        part_1 = &partCentromere[i];
+        part_2 = &partTelomere[i];
         spb_strain += fabs ( 1.0 - Euclid_norm (part_1->position, spb.position)/part_1->spb_mean);
         nucleolus_strain += fabs ( 1.0 - Euclid_norm (part_2->position, nucleolus.position) / part_2->nucleolus_mean);
     }
@@ -342,18 +344,7 @@ int main ( int argc, char **argv ) {
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
-    
-    printf ("")
-    
-    // 使用する粒子リストの宣言 //
-    unsigned int numberList_1[] = { 196, 177, 356, 365, 554, 568};
-    unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};
-    unsigned int numberList_4[] = { 235, 93, 320, 382, 533, 592}; // 各腕中心のデータ
-    unsigned int numberList_5[] = { 262, 13, 292, 491, 521, 611}; // テロメアから３番目
-    
-    //初期位置の出力
-    //write_data (0, nuclear_diameter, calculate_number);
-    
+
     for (double nuclear_diameter = 0.5; nuclear_diameter <= 4.0; nuclear_diameter += 0.1) {
         
         // SPB-核小体　固定なし //
