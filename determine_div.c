@@ -319,7 +319,7 @@ void write_data (const double nuclear_diameter, const unsigned int fix_flag) {
     
 }
 
-void write_coordinate (const int t, const double nuclear_diameter, const int calculate_number) {
+void write_coordinate (const int t, const double nuclear_diameter, const int calculate_number, const unsigned int fix_flag) {
     
     int i;
     double spb_strain = 0.0, nucleolus_strain = 0.0, spb_nuc_dist = 75 * 1.71 / nuclear_diameter;
@@ -340,7 +340,8 @@ void write_coordinate (const int t, const double nuclear_diameter, const int cal
     }
     
     // SPB //
-    sprintf (result, "spb_%lf.txt", nuclear_diameter);
+    if (fix_flag == 1) sprintf (result, "spb_fix_%lf.txt", nuclear_diameter);
+    else sprintf (result, "spb_%lf.txt", nuclear_diameter);
     
     if ((fpw = fopen (result, "a")) == NULL) {
         
@@ -354,7 +355,8 @@ void write_coordinate (const int t, const double nuclear_diameter, const int cal
     fclose (fpw);
     
     // Nucleolus //
-    sprintf (result, "nucleolus_%lf.txt", nuclear_diameter);
+    if (fix_flag == 1) sprintf (result, "nucleolus_fix_%lf.txt", nuclear_diameter);
+    else sprintf (result, "nucleolus_%lf.txt", nuclear_diameter);
     
     if ((fpw = fopen (result, "a")) == NULL) {
         
@@ -412,7 +414,7 @@ int main ( int argc, char **argv ) {
             //write_coordinate (/* argv[3],*/ l , start_number);
         }
         
-        write_coordinate (t, nuclear_diameter, calculate_number);
+        write_coordinate (t, nuclear_diameter, calculate_number, fix_flag);
     }
     
     return ( 0 );
