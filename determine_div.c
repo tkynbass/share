@@ -385,8 +385,8 @@ int main ( int argc, char **argv ) {
     Particle *part_1;
     double spb_strain, nucleolus_strain;
     
-    printf ("\n\t SPB-Nucleolus fix ?? (on:1 or off:0)");
-    scanf ("%d", fix_flag);
+    printf ("\n\t SPB-Nucleolus fix ?? (on:1 or off:0) : ");
+    scanf ("%d", &fix_flag);
     
     partTelomere = (Particle *)malloc(6 * sizeof(Particle));
     
