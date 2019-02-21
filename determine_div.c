@@ -376,14 +376,14 @@ void write_coordinate (const int t, const double nuclear_diameter, const int cal
 
 int main ( int argc, char **argv ) {
     
-    int i, t = 0, l;
+    unsigned int i, t = 0, l, fix_flag;
     char input_file[256], hmm_data[256], output_file[256];
     
     const unsigned int calculate_number = atoi (argv[1]);
     const double nuclear_diameter = atof (argv[2]);
     
     Particle *part_1;
-    double spb_strain, nucleolus_strain, nuclear_diameter;
+    double spb_strain, nucleolus_strain;
     
     printf ("\n\t SPB-Nucleolus fix ?? (on:1 or off:0)");
     scanf ("%d", fix_flag);
