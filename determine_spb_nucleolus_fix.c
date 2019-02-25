@@ -228,7 +228,7 @@ void calculate( unsigned int l, const double nuclear_diameter ) {
     }
     
     // spb - nucleolus spring //
-    /
+    
     double f = 1.0e-2 * ( spb_nuc_dist - Euclid_norm (spb.position, nucleolus.position));
     
     spb.force[X] += f * (spb.position[X] - nucleolus.position[X]);
@@ -344,9 +344,12 @@ int main ( int argc, char **argv ) {
     
     // 使用する粒子リストの宣言 //
     unsigned int numberList_1[] = { 196, 177, 356, 365, 554, 568};
-    unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};
+    unsigned int numberList_3[] = { 205, 170, 347, 374, 543, 578};  //セントロメアから3番目
     unsigned int numberList_4[] = { 235, 93, 320, 382, 533, 592}; // 各腕中心のデータ
     unsigned int numberList_5[] = { 262, 13, 292, 491, 521, 611}; // テロメアから３番目
+    unsigned int numberList_6[] = { 209, 164, 342, 377, 539, 582};  //セントロメアから4番目
+    unsigned int numberList_7[] = { 214, 159, 340, 382, 533, 587};  //セントロメアから5番目
+    unsigned int numberList_8[] = { 222, 152, 335, 386, 531, 592};  //セントロメアから6番目
     
     // データの読み込み //
     switch (particleGroup) {
@@ -359,8 +362,17 @@ int main ( int argc, char **argv ) {
         case 4:
             read_data (nuclear_diameter, numberList_4);
             break;
-        default:
+        case 5:
             read_data (nuclear_diameter, numberList_5);
+            break;
+        case 6:
+            read_data (nuclear_diameter, numberList_6);
+            break;
+        case 7:
+            read_data (nuclear_diameter, numberList_7);
+            break;
+        default:
+            read_data (nuclear_diameter, numberList_8);
             break;
     }
     
