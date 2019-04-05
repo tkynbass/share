@@ -70,7 +70,7 @@ enum label{ X, Y, Z};
 
 void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] ){       //初期値設定
 
-    unsigned int loop, number = 0, locus_number = 0;
+    unsigned int loop, number = 0, locus_number = 0, i_dummy;
     
     char dummy[256], pastis_data[128], hmm_data[128];
     double d_dummy, enlarge_ratio;
@@ -113,7 +113,7 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
 
     unsigned int pastis_no;
     number = 0;
-    while (fscanf (fpr, "%d ", &pastis_no) != EOF) {
+    while (fscanf (fpr, "%d %d ", &pastis_no, &i_dummy) != EOF) {
         
         while (pastis_no != part[number].pastis_no) {
             
