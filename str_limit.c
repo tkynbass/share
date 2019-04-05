@@ -92,8 +92,8 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
     while (fscanf (fpr, "%d ", &part[number].pastis_no) != EOF) {
         
         part_1 = &part[number];
-        fscanf (fpr, "%s %lf %lf %lf %lf %lf %lf %lf\n", &dummy,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->nucleolus_mean, &part_1->spb_mean, &d_dummy, &d_dummy);
+        fscanf (fpr, "%s %lf %lf %lf\n", &dummy,
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
         number++;
     }
     
@@ -106,7 +106,7 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
     
     if ((fpr = fopen(hmm_data, "r")) == NULL){
         
-        printf ("\n\terror : cannot read coordinate.\n");
+        printf ("\n\terror : cannot read hmm data.\n");
         
         exit (1);
     }
@@ -132,6 +132,8 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
         locus_list[locus_number] = number;
         locus_number ++;
     }
+    
+    fclose (fpr);
     
     loop = 0;
     while (locus_list != 0) {
@@ -222,7 +224,7 @@ void calculate( unsigned int l ) {
     }
     
     
-//#pragma omp parallel for private (part_1) num_threads (6) //
+//#pragma omp parallel for private (part_1) num_threads (6) //gdb
     for ( i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
