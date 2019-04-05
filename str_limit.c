@@ -329,6 +329,25 @@ int main ( int argc, char **argv ) {
         exit(1);
     }
     
+    for (loop=0; loop < NUMBER; loop++) {
+        
+        part[loop].spb_mean = (double *) malloc (NUMBER * sizeof (double));
+        
+        if (part[loop].spb_mean == NULL) {
+            
+            printf ("\t error : can not secure the memory of spb_mean \n");
+            exit (1);
+        }
+        
+        part[loop].nucleolus_mean = (double *) malloc (NUMBER * sizeof (double));
+        
+        if (part[loop].nucleolus_mean == NULL) {
+            
+            printf ("\t error : can not secure the memory of nucleolus_mean \n");
+            exit (1);
+        }
+    }
+    
     read_data (argv[1], argv[2], locus_list);
     
     /*
@@ -348,6 +367,8 @@ int main ( int argc, char **argv ) {
         write_coordinate (t);
     }
     */
+    
+    free (part);
     
     return ( 0 );
 }
