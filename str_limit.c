@@ -72,14 +72,15 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
 
     unsigned int loop, number = 0, locus_number = 0;
     
-    char dummy[256], hmm_data[128];
+    char dummy[256], pastis_data[128], hmm_data[128];
     double d_dummy, enlarge_ratio;
     
     Particle *part_1;
     FILE *fpr;
     
     // Input the coordinates of Pastis //
-    if ((fpr = fopen(sprintf("MDS_pos_%s.txt", arm_id), "r")) == NULL){
+    sprintf(pastis_data, "MDS_pos_%s.txt", arm_id);
+    if ((fpr = fopen(pastis_data, "r")) == NULL){
         
         printf ("\n\terror : cannot read coordinate.\n");
         
@@ -101,7 +102,6 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
     fclose (fpr);
     
     // HMMの平均データ読み込み //
-    char hmm_data[128];
     sprintf (hmm_data, "hmm_%s_%s.txt", cycle_dtatus, arm_id);
     
     if ((fpr = fopen(hmm_data, "r")) == NULL){
@@ -170,14 +170,15 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
+/*
 //　ばねによる力 part_1 粒子側の力計算
-void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) {     //ばね
+void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) {
     
     double dist, dist_0;
     
     double f;
     
-    //dist_0 = 自然長
+    //dist_0 = 自然長 //
     dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
     dist = Euclid_norm (part_1->position, part_2->position);
     
@@ -221,7 +222,7 @@ void calculate( unsigned int l ) {
     }
     
     
-#pragma omp parallel for private (part_1) num_threads (6)
+//#pragma omp parallel for private (part_1) num_threads (6) //
     for ( i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
@@ -308,6 +309,7 @@ void write_coordinate (int t) {
     
     fclose (fpw);
 }
+ */
 
 int main ( int argc, char **argv ) {
     
