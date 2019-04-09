@@ -4,6 +4,10 @@
 //  Hi-C + live imaging で構造推定
 //  nucleosomeレベルでの慣性半径内にいるHMMの状態で存在確率が最高位のものをSPB側から順に選んでいく.
 //  粒子はlocusデータ持ちのみ
+
+// hmm_data の　0 →　0.0
+// 粒子数分のpartの確保
+// malloc で part->spb_mean, nucleolus_meanのメモリ確保
 //
 //  Created by tkym on 2019/2/23.
 //
@@ -19,11 +23,11 @@
 //#define M_A ( 1.85131596e+7 )
 //#define N_A ( 6.022140857e+23 )
 
-#define NUMBER ( 45 )    //粒子数
+#define _MAX ( 184 )    //粒子数
 #define PARTICLE_MASS ( 1.0)    //染色体粒子の質量 Kg
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
-#define RANK (7)    //HMMのランク数
+#define RANK (8)    //HMMのランク数
 
 #define K_BOND ( 1.0e-0 )    //ばね定数
 #define K_BOND_2 ( 1.0e-1 )  //ひもの硬さ
@@ -31,13 +35,12 @@
 #define HMM_BOND (1.0e-0)
 
 #define GYRATION_RADIUS (20 * 10e+3 / 196 * 1.4e-8 * 75 / 2.2e-6)   // GYRATION_RADIUS * 粒子数 = 慣性半径
-#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) //粘性抵抗の強さ
+#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) /100 //粘性抵抗の強さ
 
-#define DELTA ( 1.0e-7 )  //刻み幅
+#define DELTA ( 1.0e-5 )  //刻み幅
+#define MITIGATION (1.0e+5)
 
 #define POTENTIAL_DELTA (1.0e-7)
-
-unsigned int particle_number;
 
 typedef enum chain {
     A, B, C
@@ -57,18 +60,76 @@ typedef struct particle {           //構造体の型宣言
     double position[DIMENSION];
     double position_new[DIMENSION];
     double position_init[DIMENSION];
-    double velocity[DIMENSION];
     double *nucleolus_mean;
     double *spb_mean;
     double force[DIMENSION];
-    
+    unsigned int *gr_list;
 } Particle;
-
-Particle *part;
 
 enum label{ X, Y, Z};
 
-void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] ){       //初期値設定
+void secure_main_memory (Particle *part, unsigned int *locus_list) {   // メモリ確保 //
+    
+    if ( (part = (Particle *)malloc(_MAX * sizeof(Particle))) == NULL) {
+        
+        printf("\n error : can not secure the memory \n");
+        exit(1);
+    }
+    
+    // part内配列のメモリ確保 //
+    for ( unsigned int loop=0; loop < NUMBER_MAX; loop++) {
+        
+        
+    }
+    
+    if ( (locus_list = (unsigned int *) calloc ( 45 * sizeof (unsigned int)) ) == NULL) {
+        
+        printf ("\t error : can not secure the memory of locus_list\n");
+        exit (1);
+    }
+}
+
+void secure_sub_memory (Particle *locus) {  // locus粒子限定のメモリ確保  //
+    
+    if ( (locus->spb_mean = (double *) malloc (RANK * sizeof (double)))== NULL) {
+        
+        printf ("\t error : can not secure the memory of spb_mean \n");
+        exit (1);
+    }
+    
+    if ( (locus->nucleolus_mean = (double *) malloc (RANK * sizeof (double)))== NULL) {
+        
+        printf ("\t error : can not secure the memory of nucleolus_mean \n");
+        exit (1);
+    }
+    
+    if ( (locus->gr_list = (unsigned int *)malloc (RANK * sizeof (unsigned int))) == NULL) {
+        
+        printf ("\t error : can not secure the memory of gr_list\n");
+        exit(1);
+    }
+}
+
+void free_useless_memory (Particle *part, unsigned int *locus_list, const double particle_number) {
+    
+    
+    unsigned int locus_number = 0;
+    while ( locus_list[locus_number] != 0) locus_number++;
+    
+    if ( (locus_list = (unsigned int *) realloc ( locus_number * sizeof (unsigned int))) == NULL) {
+        
+        printf ("\t error : can not shrink the memory of locus_list\n");
+        exit (1);
+    }
+    
+    if ( (part = (Particle *) realloc ( particle_number * sizeof (Particle))) == NULL) {
+        
+        printf ("\t error : can not shrink the memory of part \n");
+        exit (1);
+    }
+}
+
+void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45], unsigned int *particle_number){       //初期値設定
 
     unsigned int loop, number = 0, locus_number = 0, i_dummy;
     
@@ -113,7 +174,7 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
 
     unsigned int pastis_no;
     number = 0;
-    while (fscanf (fpr, "%d %d ", &pastis_no, &i_dummy) != EOF) {
+    while (fscanf (fpr, "%d %d", &pastis_no, &i_dummy) != EOF) {
         
         while (pastis_no != part[number].pastis_no) {
             
@@ -121,11 +182,11 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
         }
         
         part_1 = &part[number];
+        secure_sub_memory (part_1);
         
-        fscanf (fpr, "%lf ", d_dummy);
         for (loop = 0; loop < RANK; loop++) {
             
-            fscanf (fpr, "%lf %lf ", part_1->spb_mean[loop], part_1->nucleolus_mean[loop]);
+            fscanf (fpr, " %lf %lf", &part_1->nucleolus_mean[loop], &part_1->spb_mean[loop]);
         }
         fgets (dummy, 256, fpr);
         
@@ -136,15 +197,15 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
     fclose (fpr);
     
     loop = 0;
-    while (locus_list != 0) {
+    while (locus_list[loop] != 0) {
         
         part_1 = &part[locus_list[loop]];
-        printf ("\t%d status[0] %lf %lf, status[6] %lf %lf \n", part_1->pastis_no, part_1->spb_mean[0], part_1->nucleolus_mean[0],
-                part_1->spb_mean[6], part_1->nucleolus_mean[6]);
+        printf ("\t%d status[0] %lf %lf, status[RANK] %lf %lf \n", part_1->pastis_no, part_1->spb_mean[0], part_1->nucleolus_mean[0],
+                part_1->spb_mean[RANK], part_1->nucleolus_mean[RANK]);
         loop++;
     }
     
-    /*
+    
     for (i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
@@ -157,7 +218,7 @@ void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45] )
         part_1->nucleolus_mean *= 1.0e-6/ LENGTH;
         part_1->spb_mean *= 1.0e-6 / LENGTH;
     
-    }*/
+    }
     
 }
 
@@ -172,8 +233,8 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-/*
-//　ばねによる力 part_1 粒子側の力計算
+
+//　ばねによる力 part_1 粒子側の力計算//
 void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) {
     
     double dist, dist_0;
@@ -191,6 +252,7 @@ void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) 
     part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
 }
 
+/*
 void hmm_potential (Particle *part_1) {
     
     if (part_1->nucleolus_mean != 0.0) {
@@ -208,7 +270,7 @@ void hmm_potential (Particle *part_1) {
     }
 }
 
-void calculate( unsigned int l ) {
+void calculate() {
     
     int i;
     
@@ -260,14 +322,10 @@ void calculate( unsigned int l ) {
             
             hmm_potential (part_1);
         }
-        
-        part_1->velocity[X] = part_1->force[X];
-        part_1->velocity[Y] = part_1->force[Y];
-        part_1->velocity[Z] = part_1->force[Z];
-        
-        part_1->position_new[X] = part_1->position[X] + DELTA * part_1->velocity[X];
-        part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->velocity[Y];
-        part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->velocity[Z];
+
+        part_1->position_new[X] = part_1->position[X] + DELTA * part_1->force[X];
+        part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->force[Y];
+        part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->force[Z];
     }
     
     // position の更新 //
@@ -282,6 +340,31 @@ void calculate( unsigned int l ) {
     
 }
 
+void rank_optimization ( unsigned int locus, unsigned int locus_list[45]) {
+    
+    unsigned int time, rank_flag = 0;
+    if (locus != 0) double gyration_radius = GYRATION_RADIUS * (locus_list[locus] - locus_list[locus - 1]);
+    Particle *part = &part_now[locus_list[locus]], *part_old = &part[locus_list[locus - 1]];
+    
+    for (unsigned int rank = 0; rank < RANK; rank++) {
+        
+        for (time = 0; time < MITIGATION; time++) {
+            
+            calculate (locus_list[locus]);
+        }
+        
+        if ( locus != 0) {
+            
+            if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
+                
+                part_now->gr_list[rank_flag] = rank;
+                rannk_flag++;
+            }
+        }
+    }
+    
+    if
+}
 
 void write_coordinate (int t) {
     
@@ -311,44 +394,22 @@ void write_coordinate (int t) {
     
     fclose (fpw);
 }
- */
+*/
+
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, t = 0, l;
-    unsigned int locus_list[45];
+    unsigned int loop, t = 0, l, particle_number;
+    unsigned int *locus_list;
     char output_file[256];
     
-    for (loop = 0; loop < 45; loop++) locus_list[loop] = 0;
-     
-    part = (Particle *)malloc(NUMBER * sizeof(Particle));
+    Particle *part, *part_1;
     
-    if (part == NULL) {
-        
-        printf("\n error : can not secure the memory \n");
-        exit(1);
-    }
+    secure_main_memory (part, locus_list);
     
-    for (loop=0; loop < NUMBER; loop++) {
-        
-        part[loop].spb_mean = (double *) malloc (NUMBER * sizeof (double));
-        
-        if (part[loop].spb_mean == NULL) {
-            
-            printf ("\t error : can not secure the memory of spb_mean \n");
-            exit (1);
-        }
-        
-        part[loop].nucleolus_mean = (double *) malloc (NUMBER * sizeof (double));
-        
-        if (part[loop].nucleolus_mean == NULL) {
-            
-            printf ("\t error : can not secure the memory of nucleolus_mean \n");
-            exit (1);
-        }
-    }
+    read_data (argv[1], argv[2], locus_list, &particle_number);
     
-    read_data (argv[1], argv[2], locus_list);
+    free_useless_memory (part, locus_list, particle_number);
     
     /*
     //初期位置の出力//
@@ -368,6 +429,21 @@ int main ( int argc, char **argv ) {
     }
     */
     
+    unsigned int locus_number = sizeof (locus_list) / sizeof (locus_list[0]);
+    /*
+    for (loop=0; loop < locus_no; loop++) {
+        
+        rank_optimization (loop, locus_list);
+    }
+    */
+    
+    for (loop = 0; loop < locus_number; loop++) {
+        
+        part_1 = &part[locus_list[loop]];
+        free (part_1->spb_mean);
+        free (part_1->nucleolus_mean);
+        free (part_1->gr_list);
+    }
     free (part);
     
     return ( 0 );
