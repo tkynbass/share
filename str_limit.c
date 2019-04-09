@@ -129,7 +129,7 @@ void free_useless_memory (Particle *part, unsigned int *locus_list, const double
     }
 }
 
-void read_data ( char *cycle_dtatus, char *arm_id, unsigned int locus_list[45], unsigned int *particle_number){       //初期値設定
+void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int locus_list[45], unsigned int *particle_number){       //初期値設定
 
     unsigned int loop, number = 0, locus_number = 0, i_dummy;
     
@@ -407,7 +407,7 @@ int main ( int argc, char **argv ) {
     
     secure_main_memory (part, locus_list);
     
-    read_data (argv[1], argv[2], locus_list, &particle_number);
+    read_data (part, argv[1], argv[2], locus_list, &particle_number);
     
     free_useless_memory (part, locus_list, particle_number);
     
