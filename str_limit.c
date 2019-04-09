@@ -23,7 +23,7 @@
 //#define M_A ( 1.85131596e+7 )
 //#define N_A ( 6.022140857e+23 )
 
-#define _MAX ( 184 )    //粒子数
+#define NUMBER_MAX ( 184 )    //粒子数
 #define PARTICLE_MASS ( 1.0)    //染色体粒子の質量 Kg
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
@@ -82,7 +82,7 @@ void secure_main_memory (Particle *part, unsigned int *locus_list) {   // メモ
         
     }
     
-    if ( (locus_list = (unsigned int *) calloc ( 45 * sizeof (unsigned int)) ) == NULL) {
+    if ( (locus_list = (unsigned int *) calloc ( 45, sizeof (unsigned int)) ) == NULL) {
         
         printf ("\t error : can not secure the memory of locus_list\n");
         exit (1);
@@ -116,13 +116,13 @@ void free_useless_memory (Particle *part, unsigned int *locus_list, const double
     unsigned int locus_number = 0;
     while ( locus_list[locus_number] != 0) locus_number++;
     
-    if ( (locus_list = (unsigned int *) realloc ( locus_number * sizeof (unsigned int))) == NULL) {
+    if ( (locus_list = (unsigned int *) realloc ( locus_list, locus_number * sizeof (unsigned int))) == NULL) {
         
         printf ("\t error : can not shrink the memory of locus_list\n");
         exit (1);
     }
     
-    if ( (part = (Particle *) realloc ( particle_number * sizeof (Particle))) == NULL) {
+    if ( (part = (Particle *) realloc ( part, particle_number * sizeof (Particle))) == NULL) {
         
         printf ("\t error : can not shrink the memory of part \n");
         exit (1);
@@ -158,7 +158,7 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int l
         number++;
     }
     
-    particle_number = number;
+    particle_number = &number;
     
     fclose (fpr);
     
@@ -205,7 +205,7 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int l
         loop++;
     }
     
-    
+    /*
     for (i=0; i<particle_number; i++) {
         
         part_1 = &part[i];
@@ -219,7 +219,7 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int l
         part_1->spb_mean *= 1.0e-6 / LENGTH;
     
     }
-    
+    */
 }
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
