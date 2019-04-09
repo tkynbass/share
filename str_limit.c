@@ -70,16 +70,10 @@ enum label{ X, Y, Z};
 
 void secure_main_memory (Particle *part, unsigned int *locus_list) {   // メモリ確保 //
     
-    if ( (part = (Particle *)malloc(_MAX * sizeof(Particle))) == NULL) {
+    if ( (part = (Particle *)malloc(NUMBER_MAX * sizeof(Particle))) == NULL) {
         
         printf("\n error : can not secure the memory \n");
         exit(1);
-    }
-    
-    // part内配列のメモリ確保 //
-    for ( unsigned int loop=0; loop < NUMBER_MAX; loop++) {
-        
-        
     }
     
     if ( (locus_list = (unsigned int *) calloc ( 45, sizeof (unsigned int)) ) == NULL) {
