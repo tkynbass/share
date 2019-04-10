@@ -20,7 +20,7 @@
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
-#define LENGTH ( 2.2e-6 / 75)   // 長さの単位
+#define LENGTH ( 75 / 2.2 )   // 長さの単位  um → pastisスケール
 //#define M_A ( 1.85131596e+7 )
 //#define N_A ( 6.022140857e+23 )
 
@@ -31,11 +31,12 @@
 #define RANK (8)    //HMMのランク数
 
 #define K_BOND ( 1.0e-0 )    //ばね定数
-#define K_BOND_2 ( 1.0e-1 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-1)
+#define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e-2)
 #define HMM_BOND (1.0e-0)
 
-#define GYRATION_RADIUS (20 * 10e+3 / 196 * 1.4e-8 * 75 / 2.2e-6)   // GYRATION_RADIUS * 粒子数 = 慣性半径
+#define NUCLEOSOME_LENGTH (2.8e-8　* 75 / 2.2e-6) // (ヌクレオソーム+リンカー) 1セットの長さ
+#define GYRATION_N ( 20e+3 / 196)   // 隣接2粒子間のヌクレオソーム数 20Kbp / 196bp
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) /100 //粘性抵抗の強さ
 
 #define DELTA ( 1.0e-5 )  //刻み幅
@@ -52,7 +53,7 @@ typedef enum type {
 }TYPE;
 
 const double nucleolus_pos[] = { 0.0, 0.0, 0.0};
-const double spb_pos[] = { 1.7128e-6/LENGTH, 0.0, 0.0};
+const double spb_pos[] = { 1.7128 * LENGTH, 0.0, 0.0};
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]);
 
 typedef struct particle {           //構造体の型宣言
@@ -60,6 +61,7 @@ typedef struct particle {           //構造体の型宣言
     unsigned int pastis_no;
     double position[DIMENSION];
     double position_new[DIMENSION];
+    double position_state[DIMENSION];
     double position_init[DIMENSION];
     double *nucleolus_mean;
     double *spb_mean;
@@ -103,6 +105,11 @@ void secure_sub_memory (Particle *locus) {  // locus粒子限定のメモリ確�
         printf ("\t error : can not secure the memory of gr_list\n");
         exit(1);
     }
+    
+    for (unsigned int rank = 0; rank < RANK; rank++) {
+        
+        locus->gr_list[rank] = 99;
+    }
 }
 
 void free_useless_memory (Particle **part, unsigned int **locus_list, const double particle_number) {
@@ -126,8 +133,8 @@ void free_useless_memory (Particle **part, unsigned int **locus_list, const doub
 
 void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *locus_list, unsigned int *particle_number, unsigned int *locus_number){       //初期値設定
 
-    unsigned int loop, number = 0, locus_count = 0, i_dummy;
-    
+    unsigned int loop, number = 0, i_dummy;
+
     char dummy[256], pastis_data[128], hmm_data[128];
     double d_dummy, enlarge_ratio;
     
@@ -182,17 +189,20 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *
         for (loop = 0; loop < RANK; loop++) {
             
             fscanf (fpr, " %lf %lf", &part_1->nucleolus_mean[loop], &part_1->spb_mean[loop]);
+            
+            // spb, nucleollus mean のスケール調節 //
+            part_1->nucleolus_mean[loop] *= LENGTH;
+            part_1->spb_mean[loop] *= LENGTH;
         }
         fgets (dummy, 256, fpr);
         
-        locus_list[locus_count] = number;
-        locus_count ++;
+        locus_list[*locus_number] = number;
+        (*locus_number)++;
     }
-    
-    locus_number = &locus_count;
     
     fclose (fpr);
     
+    /*
     loop = 0;
     while (locus_list[loop] != 0) {
         
@@ -200,23 +210,21 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *
         printf ("\t%d status[0] %lf %lf, status[RANK-1] %lf %lf \n", part_1->pastis_no, part_1->spb_mean[0], part_1->nucleolus_mean[0],
                 part_1->spb_mean[RANK-1], part_1->nucleolus_mean[RANK-1]);
         loop++;
-    }
+    }*/
     
-    /*
-    for (i=0; i<particle_number; i++) {
+    for (loop = 0; loop < particle_number; loop++) {
         
-        part_1 = &part[i];
+        part_1 = &part[loop];
         
         // 初期座標の保存
         part_1->position_init[X] = part_1->position[X];
         part_1->position_init[Y] = part_1->position[Y];
         part_1->position_init[Z] = part_1->position[Z];
-        
-        part_1->nucleolus_mean *= 1.0e-6/ LENGTH;
-        part_1->spb_mean *= 1.0e-6 / LENGTH;
-    
+     
+        part_1->position_state[X] = part_1->position[X];
+        part_1->position_state[Y] = part_1->position[Y];
+        part_1->position_state[Z] = part_1->position[Z];
     }
-    */
 }
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
@@ -249,76 +257,67 @@ void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) 
     part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
 }
 
-/*
-void hmm_potential (Particle *part_1) {
+void hmm_potential (Particle *part_1, const unsigned int rank) {
     
-    if (part_1->nucleolus_mean != 0.0) {
+    double spb_dist = Euclid_norm (part_1->position, spb_pos);
+    double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
     
-        double spb_dist = Euclid_norm (part_1->position, spb_pos);
-        double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
-        
-        double spb_f = HMM_BOND * (part_1->spb_mean - spb_dist);
-        double nucleolus_f = HMM_BOND * (part_1->nucleolus_mean - nucleolus_dist);
-        
-        part_1->force[X] += spb_f * (part_1->position[X] - spb_pos[X]) + nucleolus_f * (part_1->position[X] - nucleolus_pos[X]);
-        part_1->force[Y] += spb_f * (part_1->position[Y] - spb_pos[Y]) + nucleolus_f * (part_1->position[Y] - nucleolus_pos[Y]);
-        part_1->force[Z] += spb_f * (part_1->position[Z] - spb_pos[Z]) + nucleolus_f * (part_1->position[Z] - nucleolus_pos[Z]);
-        
-    }
+    double spb_f = HMM_BOND * (part_1->spb_mean[rank] - spb_dist);
+    double nucleolus_f = HMM_BOND * (part_1->nucleolus_mean[rank] - nucleolus_dist);
+    
+    part_1->force[X] += spb_f * (part_1->position[X] - spb_pos[X]) + nucleolus_f * (part_1->position[X] - nucleolus_pos[X]);
+    part_1->force[Y] += spb_f * (part_1->position[Y] - spb_pos[Y]) + nucleolus_f * (part_1->position[Y] - nucleolus_pos[Y]);
+    part_1->force[Z] += spb_f * (part_1->position[Z] - spb_pos[Z]) + nucleolus_f * (part_1->position[Z] - nucleolus_pos[Z]);
 }
 
-void calculate() {
+void calculate (Particle *part, const unsigned int target_locus, const unsigned start_number, const unsigned int rank, const unsigned int particle_number) {
     
-    int i;
+    unsigned int loop;
     
     Particle *part_1;
     
-    for ( i=0; i<particle_number; i++) {
+    for ( loop = start_number; loop < particle_number; loop++) {
         
-        part_1 = &part[i];
+        part_1 = &part[loop];
         
         part_1->force[X] = 0.0;
         part_1->force[Y] = 0.0;
         part_1->force[Z] = 0.0;
     }
     
-    
-//#pragma omp parallel for private (part_1) num_threads (6) //gdb
-    for ( i=0; i<particle_number; i++) {
+#pragma omp parallel for private (part_1) num_threads (6)
+    for ( loop = start_number; loop < particle_number; loop++) {
         
-        part_1 = &part[i];
+        part_1 = &part[loop];
         
         // 隣同士 //
-        if ( i != 0 && i != particle_number - 1 ) {
+        if ( loop != 0 && loop != particle_number - 1 ) {
             
-            spring (part_1, &part[i-1], K_BOND);
-            spring (part_1, &part[i+1], K_BOND);
+            spring (part_1, &part[loop-1], K_BOND);
+            spring (part_1, &part[loop+1], K_BOND);
         }
-        else if ( i == 0) spring (part_1, &part[i+1], K_BOND);
-        else spring (part_1, &part[i-1], K_BOND);
+        else if ( loop == 0) spring (part_1, &part[loop+1], K_BOND);
+        else spring (part_1, &part[loop-1], K_BOND);
         
         // 2個隣 //
-        if ( 0 <= i-2 && i+2 <= particle_number-1) {
+        if ( 0 <= loop-2 && loop+2 <= particle_number-1) {
             
-            spring (part_1, &part[i-2], K_BOND_2);
-            spring (part_1, &part[i+2], K_BOND_2);
+            spring (part_1, &part[loop-2], K_BOND_2);
+            spring (part_1, &part[loop+2], K_BOND_2);
         }
-        else if ( 0 <= i-2) spring (part_1, &part[i+2], K_BOND_2);
-        else spring (part_1, &part[i-2], K_BOND_2);
+        else if ( 0 <= loop-2) spring (part_1, &part[loop+2], K_BOND_2);
+        else spring (part_1, &part[loop-2], K_BOND_2);
         
         // 3個隣 //
-        if ( 0 <= i-3 && i+3 <= particle_number-1) {
+        if ( 0 <= loop-3 && loop+3 <= particle_number-1) {
             
-            spring (part_1, &part[i-3], K_BOND_3);
-            spring (part_1, &part[i+3], K_BOND_3);
+            spring (part_1, &part[loop-3], K_BOND_3);
+            spring (part_1, &part[loop+3], K_BOND_3);
         }
-        else if ( 0 <= i-3) spring (part_1, &part[i+3], K_BOND_3);
-        else spring (part_1, &part[i-3], K_BOND_3);
+        else if ( 0 <= loop-3) spring (part_1, &part[loop+3], K_BOND_3);
+        else spring (part_1, &part[loop-3], K_BOND_3);
         
-        if (part_1->spb_mean != 0.0) {
-            
-            hmm_potential (part_1);
-        }
+        if (loop == target_locus) hmm_potential (part_1, rank);
 
         part_1->position_new[X] = part_1->position[X] + DELTA * part_1->force[X];
         part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->force[Y];
@@ -326,9 +325,9 @@ void calculate() {
     }
     
     // position の更新 //
-    for ( i=0; i<particle_number; i++) {
+    for ( loop = start_number; loop < particle_number; loop++) {
         
-        part_1 = &part[i];
+        part_1 = &part[loop];
         
         part_1->position[X] = part_1->position_new[X];
         part_1->position[Y] = part_1->position_new[Y];
@@ -337,30 +336,94 @@ void calculate() {
     
 }
 
-void rank_optimization ( unsigned int locus, unsigned int locus_list[45]) {
+void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number) {
     
-    unsigned int time, rank_flag = 0;
-    if (locus != 0) double gyration_radius = GYRATION_RADIUS * (locus_list[locus] - locus_list[locus - 1]);
-    Particle *part = &part_now[locus_list[locus]], *part_old = &part[locus_list[locus - 1]];
+    unsigned int time, rank_flag = 0, start_number, start_rank, rank, locus, loop;
+    double gyration_radius;
     
-    for (unsigned int rank = 0; rank < RANK; rank++) {
+    Particle *part_now, *part_old,  *part_1;
+    
+    for (unsigned int start_rank = 0; start_rank < RANK; start_rank++) {
         
         for (time = 0; time < MITIGATION; time++) {
             
-            calculate (locus_list[locus]);
+            calculate (part, locus_list[locus], 0, start_rank, particle_number);
         }
         
-        if ( locus != 0) {
+        for (loop = 0; loop < particle_number; loop++) {
             
-            if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
+            part_1 = &part[loop];
+            
+            part_1->position[X] = part_1->position_state[X];
+            part_1->position[Y] = part_1->position_state[Y];
+            part_1->position[Z] = part_1->position_state[Z];
+        }
+        
+        for (locus = 1; locus < locus_number; locus++) {
+            
+            gyration_radius = 0.5 * NUCLEOSOME_LENGTH * sqrt( GYRATION_N * (locus_list[locus] - locus_list[locus - 1]));
+            part_now = &part[locus_list[locus]];
+            part_old = &part[locus_list[locus - 1]];
+            
+            rank_flag = 0;
+            start_number = locus_list[locus - 1] + 1;
+            
+            for (rank = 0; rank < RANK; rank++) {
                 
-                part_now->gr_list[rank_flag] = rank;
-                rannk_flag++;
+                for (time = 0; time < MITIGATION; time++) {
+                    
+                    calculate (part, locus_list[locus], start_number, rank, particle_number);
+                }
+                
+                if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
+                    
+                    part_now->gr_list[rank_flag] = rank;
+                    rank_flag++;
+                }
+                
+                for (loop = start_number; loop < particle_number; loop++) {
+                    
+                    part_1 = &part[loop];
+                    
+                    part_1->position[X] = part_1->position_state[X];
+                    part_1->position[Y] = part_1->position_state[Y];
+                    part_1->position[Z] = part_1->position_state[Z];
+                }
+                
+            }
+            
+            if (rank_flag != 0) {
+                
+                for (time = 0; time < MITIGATION; time++) {
+                    
+                    calculate (part, locus_list[locus], start_number, part_now->gr_list[0], particle_number);
+                }
+                
+                for (loop = start_number; loop < particle_number; loop++) {
+                    
+                    part_1 = &part[loop];
+                    
+                    part_1->position_state[X] = part_1->position[X];
+                    part_1->position_state[Y] = part_1->position[Y];
+                    part_1->position_state[Z] = part_1->position[Z];
+                }
+                
+                printf ("\t [locus - %d] Total %d states = { ", locus_list[locus], rank_flag);
+                
+                for ( loop = 0; loop < rank_flag; loop++) printf ("%d ", part_now->gr_list[loop]);
+                printf ("\n");
+            }
+            else {
+                
+                printf ("\t There's no state of %d in gyration radius ( start_rank = %d)\n", locus_list[locus], start_rank);
+                exit(1);
             }
         }
+        
+        
     }
     
-    if
+    
 }
 
 void write_coordinate (int t) {
@@ -391,12 +454,17 @@ void write_coordinate (int t) {
     
     fclose (fpw);
 }
-*/
 
+void write_rank_state (Particle *part) {
+    
+    FILE *fpw;
+    
+    char filename[] = "rank"
+}
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, t = 0, l, particle_number, locus_number;
+    unsigned int locus, t = 0, l, particle_number, locus_number;
     unsigned int *locus_list;
     char output_file[256];
     
@@ -425,13 +493,10 @@ int main ( int argc, char **argv ) {
         write_coordinate (t);
     }
     */
-/*
-    for (loop=0; loop < locus_number; loop++) {
-        
-        rank_optimization (loop, locus_list);
-    }
-*/
-    for (loop = 0; loop < locus_number; loop++) {
+
+    rank_optimization (part, locus_list, locus_number, particle_number);
+
+    for (locus = 0; locus < locus_number; locus++) {
         
         part_1 = &part[locus_list[loop]];
         free (part_1->spb_mean);
