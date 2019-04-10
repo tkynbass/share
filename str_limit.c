@@ -396,7 +396,7 @@ void write_coordinate (int t) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, t = 0, l, particle_number;
+    unsigned int loop, t = 0, l, particle_number, locus_number;
     unsigned int *locus_list;
     char output_file[256];
     
@@ -425,12 +425,12 @@ int main ( int argc, char **argv ) {
         write_coordinate (t);
     }
     */
-
-    for (loop=0; loop < locus_no; loop++) {
+/*
+    for (loop=0; loop < locus_number; loop++) {
         
         rank_optimization (loop, locus_list);
     }
-    
+*/
     for (loop = 0; loop < locus_number; loop++) {
         
         part_1 = &part[locus_list[loop]];
