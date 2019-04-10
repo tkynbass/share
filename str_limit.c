@@ -42,7 +42,7 @@
 #define DELTA ( 1.0e-5 )  //刻み幅
 #define MITIGATION (1.0e+5)
 
-#define POTENTIAL_DELTA (1.0e-7)
+//#define POTENTIAL_DELTA (1.0e-7)
 
 typedef enum chain {
     A, B, C
@@ -349,6 +349,8 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         for (time = 0; time < MITIGATION; time++) {
             
             calculate (part, locus_list[0], 0, start_rank, particle_number);
+            
+            if (time % 100 == 0) write_coordinate (part, time, part[locus_list[0]].pastis_no, particle_number, 0);
         }
         
         for (loop = 0; loop < particle_number; loop++) {
@@ -374,6 +376,8 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                 for (time = 0; time < MITIGATION; time++) {
                     
                     calculate (part, locus_list[locus], start_number, rank, particle_number);
+                    
+                    if (time % 100 == 0) write_coordinate (part, time, part[locus_list[locus]].pastis_no, particle_number, rank);
                 }
                 
                 if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
@@ -427,10 +431,9 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
     
 }
 
-/*
-void write_coordinate (int t) {
+void write_coordinate (Particle *part, const unsigned int time, const unsigned int locus, const unsigned int particle_number, const unsigned int rank) {
     
-    int i;
+    unsigned int loop;
     
     Particle *part_1;
     
@@ -438,7 +441,7 @@ void write_coordinate (int t) {
     
     char result[128], str[128];
     
-    sprintf (result, "result_%d.txt", t);
+    sprintf (result, "l%d_r%d_t%d.txt", locus, rank, time);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -447,16 +450,16 @@ void write_coordinate (int t) {
         exit (1);
     }
     
-    for (i=0; i<particle_number; i++) {
+    for (loop = 0; loop < particle_number; loop++) {
         
-        part_1 = &part[i];
+        part_1 = &part[loop];
         fprintf (fpw, "%d %d %lf %lf %lf\n", i, part_1->pastis_no, part_1->position[X],
                  part_1->position[Y], part_1->position[Z]);
     }
     
     fclose (fpw);
 }
-
+/*
 void write_rank_state (Particle *part) {
     
     FILE *fpw;
