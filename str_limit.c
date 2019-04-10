@@ -8,6 +8,7 @@
 // hmm_data の　0 →　0.0
 // 粒子数分のpartの確保
 // malloc で part->spb_mean, nucleolus_meanのメモリ確保
+// malloc を関数化　→　ポインタのポインタを使う (sub_memory は アロー演算子で渡してるからポインタ引数で大丈夫？)
 //
 //  Created by tkym on 2019/2/23.
 //
@@ -68,15 +69,15 @@ typedef struct particle {           //構造体の型宣言
 
 enum label{ X, Y, Z};
 
-void secure_main_memory (Particle *part, unsigned int *locus_list) {   // メモリ確保 //
+void secure_main_memory (Particle **part, unsigned int **locus_list) {   // メモリ確保 //
     
-    if ( (part = (Particle *)malloc(NUMBER_MAX * sizeof(Particle))) == NULL) {
+    if ( (*part = (Particle *)malloc(NUMBER_MAX * sizeof(Particle))) == NULL) {
         
         printf("\n error : can not secure the memory \n");
         exit(1);
     }
     
-    if ( (locus_list = (unsigned int *) calloc ( 45, sizeof (unsigned int)) ) == NULL) {
+    if ( (*locus_list = (unsigned int *) calloc ( 45, sizeof (unsigned int)) ) == NULL) {
         
         printf ("\t error : can not secure the memory of locus_list\n");
         exit (1);
@@ -104,28 +105,28 @@ void secure_sub_memory (Particle *locus) {  // locus粒子限定のメモリ確�
     }
 }
 
-void free_useless_memory (Particle *part, unsigned int *locus_list, const double particle_number) {
+void free_useless_memory (Particle **part, unsigned int **locus_list, const double particle_number) {
     
     
     unsigned int locus_number = 0;
-    while ( locus_list[locus_number] != 0) locus_number++;
+    while ( (*locus_list)[locus_number] != 0) locus_number++;
     
-    if ( (locus_list = (unsigned int *) realloc ( locus_list, locus_number * sizeof (unsigned int))) == NULL) {
+    if ( (*locus_list = (unsigned int *) realloc ( *locus_list, locus_number * sizeof (unsigned int))) == NULL) {
         
         printf ("\t error : can not shrink the memory of locus_list\n");
         exit (1);
     }
     
-    if ( (part = (Particle *) realloc ( part, particle_number * sizeof (Particle))) == NULL) {
+    if ( (*part = (Particle *) realloc ( *part, particle_number * sizeof (Particle))) == NULL) {
         
         printf ("\t error : can not shrink the memory of part \n");
         exit (1);
     }
 }
 
-void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int locus_list[45], unsigned int *particle_number){       //初期値設定
+void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *locus_list, unsigned int *particle_number, unsigned int *locus_number){       //初期値設定
 
-    unsigned int loop, number = 0, locus_number = 0, i_dummy;
+    unsigned int loop, number = 0, locus_count = 0, i_dummy;
     
     char dummy[256], pastis_data[128], hmm_data[128];
     double d_dummy, enlarge_ratio;
@@ -184,9 +185,11 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int l
         }
         fgets (dummy, 256, fpr);
         
-        locus_list[locus_number] = number;
-        locus_number ++;
+        locus_list[locus_count] = number;
+        locus_count ++;
     }
+    
+    locus_number = &locus_count;
     
     fclose (fpr);
     
@@ -194,8 +197,8 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int l
     while (locus_list[loop] != 0) {
         
         part_1 = &part[locus_list[loop]];
-        printf ("\t%d status[0] %lf %lf, status[RANK] %lf %lf \n", part_1->pastis_no, part_1->spb_mean[0], part_1->nucleolus_mean[0],
-                part_1->spb_mean[RANK], part_1->nucleolus_mean[RANK]);
+        printf ("\t%d status[0] %lf %lf, status[RANK-1] %lf %lf \n", part_1->pastis_no, part_1->spb_mean[0], part_1->nucleolus_mean[0],
+                part_1->spb_mean[RANK-1], part_1->nucleolus_mean[RANK-1]);
         loop++;
     }
     
@@ -399,11 +402,11 @@ int main ( int argc, char **argv ) {
     
     Particle *part, *part_1;
     
-    secure_main_memory (part, locus_list);
+    secure_main_memory (&part, &locus_list);
     
-    read_data (part, argv[1], argv[2], locus_list, &particle_number);
+    read_data (part, argv[1], argv[2], locus_list, &particle_number, &locus_number);
     
-    free_useless_memory (part, locus_list, particle_number);
+    //free_useless_memory (&part, &locus_list, particle_number);
     
     /*
     //初期位置の出力//
@@ -422,14 +425,11 @@ int main ( int argc, char **argv ) {
         write_coordinate (t);
     }
     */
-    
-    unsigned int locus_number = sizeof (locus_list) / sizeof (locus_list[0]);
-    /*
+
     for (loop=0; loop < locus_no; loop++) {
         
         rank_optimization (loop, locus_list);
     }
-    */
     
     for (loop = 0; loop < locus_number; loop++) {
         
