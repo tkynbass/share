@@ -336,6 +336,35 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
     
 }
 
+void write_coordinate (Particle *part, const unsigned int time, const unsigned int locus, const unsigned int particle_number, const unsigned int rank) {
+    
+    unsigned int loop;
+    
+    Particle *part_1;
+    
+    FILE *fpw;
+    
+    char result[128], str[128];
+    
+    sprintf (result, "l%d_r%d_t%d.txt", locus, rank, time);
+    
+    if ((fpw = fopen (result, "w")) == NULL) {
+        
+        printf (" \n error \n");
+        
+        exit (1);
+    }
+    
+    for (loop = 0; loop < particle_number; loop++) {
+        
+        part_1 = &part[loop];
+        fprintf (fpw, "%d %d %lf %lf %lf\n", loop, part_1->pastis_no, part_1->position[X],
+                 part_1->position[Y], part_1->position[Z]);
+    }
+    
+    fclose (fpw);
+}
+
 void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number) {
     
     unsigned int time, rank_flag = 0, start_number, start_rank, rank, locus, loop;
@@ -431,34 +460,6 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
     
 }
 
-void write_coordinate (Particle *part, const unsigned int time, const unsigned int locus, const unsigned int particle_number, const unsigned int rank) {
-    
-    unsigned int loop;
-    
-    Particle *part_1;
-    
-    FILE *fpw;
-    
-    char result[128], str[128];
-    
-    sprintf (result, "l%d_r%d_t%d.txt", locus, rank, time);
-    
-    if ((fpw = fopen (result, "w")) == NULL) {
-        
-        printf (" \n error \n");
-        
-        exit (1);
-    }
-    
-    for (loop = 0; loop < particle_number; loop++) {
-        
-        part_1 = &part[loop];
-        fprintf (fpw, "%d %d %lf %lf %lf\n", i, part_1->pastis_no, part_1->position[X],
-                 part_1->position[Y], part_1->position[Z]);
-    }
-    
-    fclose (fpw);
-}
 /*
 void write_rank_state (Particle *part) {
     
@@ -467,6 +468,8 @@ void write_rank_state (Particle *part) {
     char filename[] = "rank"
 }
 */
+
+
 
 int main ( int argc, char **argv ) {
     
