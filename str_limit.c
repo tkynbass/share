@@ -35,7 +35,7 @@
 #define K_BOND_3 ( 1.0e-2)
 #define HMM_BOND (1.0e-0)
 
-#define NUCLEOSOME_LENGTH (2.8e-8　* 75 / 2.2e-6) // (ヌクレオソーム+リンカー) 1セットの長さ
+#define NUCLEOSOME_LENGTH (2.8e-8 * 75 / 2.2e-6) // (ヌクレオソーム+リンカー) 1セットの長さ
 #define GYRATION_N ( 20e+3 / 196)   // 隣接2粒子間のヌクレオソーム数 20Kbp / 196bp
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) /100 //粘性抵抗の強さ
 
@@ -131,7 +131,7 @@ void free_useless_memory (Particle **part, unsigned int **locus_list, const doub
     }
 }
 
-void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *locus_list, unsigned int *particle_number, unsigned int *locus_number){       //初期値設定
+void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *locus_list, unsigned int *particle_number, unsigned int *locus_number){       //初期値設定
 
     unsigned int loop, number = 0, i_dummy;
 
@@ -160,12 +160,12 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *
         number++;
     }
     
-    particle_number = &number;
+    *particle_number = number;
     
     fclose (fpr);
     
     // HMMの平均データ読み込み //
-    sprintf (hmm_data, "hmm_%s_%s.txt", cycle_dtatus, arm_id);
+    sprintf (hmm_data, "hmm_%s_%s.txt", cycle_status, arm_id);
     
     if ((fpr = fopen(hmm_data, "r")) == NULL){
         
@@ -196,7 +196,7 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *
         }
         fgets (dummy, 256, fpr);
         
-        locus_list[*locus_number] = number;
+        locus_list[ (*locus_number) ] = number;
         (*locus_number)++;
     }
     
@@ -212,7 +212,7 @@ void read_data (Particle *part, char *cycle_dtatus, char *arm_id, unsigned int *
         loop++;
     }*/
     
-    for (loop = 0; loop < particle_number; loop++) {
+    for (loop = 0; loop < *particle_number; loop++) {
         
         part_1 = &part[loop];
         
@@ -345,9 +345,10 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
     
     for (unsigned int start_rank = 0; start_rank < RANK; start_rank++) {
         
+        // 0番目のローカスにポテンシャルをかけ、全体を移動
         for (time = 0; time < MITIGATION; time++) {
             
-            calculate (part, locus_list[locus], 0, start_rank, particle_number);
+            calculate (part, locus_list[0], 0, start_rank, particle_number);
         }
         
         for (loop = 0; loop < particle_number; loop++) {
@@ -408,14 +409,14 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                     part_1->position_state[Z] = part_1->position[Z];
                 }
                 
-                printf ("\t [locus - %d] Total %d states = { ", locus_list[locus], rank_flag);
+                printf ("\t [locus = %d] Total %d states = { ", part_now->pastis_no, rank_flag);
                 
                 for ( loop = 0; loop < rank_flag; loop++) printf ("%d ", part_now->gr_list[loop]);
-                printf ("\n");
+                printf ("}\n");
             }
             else {
                 
-                printf ("\t There's no state of %d in gyration radius ( start_rank = %d)\n", locus_list[locus], start_rank);
+                printf ("\t There's no state of %d in gyration radius ( start_rank = %d)\n", part_now->pastis_no, start_rank);
                 exit(1);
             }
         }
@@ -426,6 +427,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
     
 }
 
+/*
 void write_coordinate (int t) {
     
     int i;
@@ -461,6 +463,7 @@ void write_rank_state (Particle *part) {
     
     char filename[] = "rank"
 }
+*/
 
 int main ( int argc, char **argv ) {
     
@@ -498,7 +501,7 @@ int main ( int argc, char **argv ) {
 
     for (locus = 0; locus < locus_number; locus++) {
         
-        part_1 = &part[locus_list[loop]];
+        part_1 = &part[locus_list[locus]];
         free (part_1->spb_mean);
         free (part_1->nucleolus_mean);
         free (part_1->gr_list);
