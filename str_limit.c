@@ -469,7 +469,7 @@ void write_rank_state (Particle *part) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int locus, t = 0, l, particle_number, locus_number;
+    unsigned int locus, t = 0, l, particle_number, locus_number = 0;
     unsigned int *locus_list;
     char output_file[256];
     
