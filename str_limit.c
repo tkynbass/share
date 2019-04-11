@@ -155,7 +155,7 @@ void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *
     while (fscanf (fpr, "%d ", &part[number].pastis_no) != EOF) {
         
         part_1 = &part[number];
-        fscanf (fpr, "%s %lf %lf %lf\n", &dummy,
+        fscanf (fpr, "%s %lf %lf %lf\n", dummy,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
         number++;
     }
@@ -285,7 +285,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
         part_1->force[Z] = 0.0;
     }
     
-#pragma omp parallel for private (part_1) num_threads (6)
+//#pragma omp parallel for private (part_1) num_threads (6)
     for ( loop = start_number; loop < particle_number; loop++) {
         
         part_1 = &part[loop];
@@ -300,21 +300,21 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
         else spring (part_1, &part[loop-1], K_BOND);
         
         // 2個隣 //
-        if ( 0 <= loop-2 && loop+2 <= particle_number-1) {
+        if ( 2 <= loop && loop+2 <= particle_number-1) {
             
             spring (part_1, &part[loop-2], K_BOND_2);
             spring (part_1, &part[loop+2], K_BOND_2);
         }
-        else if ( 0 <= loop-2) spring (part_1, &part[loop+2], K_BOND_2);
+        else if ( 2 <= loop ) spring (part_1, &part[loop+2], K_BOND_2);
         else spring (part_1, &part[loop-2], K_BOND_2);
         
         // 3個隣 //
-        if ( 0 <= loop-3 && loop+3 <= particle_number-1) {
+        if ( 3 <= loop && loop+3 <= particle_number-1) {
             
             spring (part_1, &part[loop-3], K_BOND_3);
             spring (part_1, &part[loop+3], K_BOND_3);
         }
-        else if ( 0 <= loop-3) spring (part_1, &part[loop+3], K_BOND_3);
+        else if ( 3 <= loop) spring (part_1, &part[loop+3], K_BOND_3);
         else spring (part_1, &part[loop-3], K_BOND_3);
         
         if (loop == target_locus) hmm_potential (part_1, rank);
@@ -491,6 +491,7 @@ int main ( int argc, char **argv ) {
         free (part_1->gr_list);
     }
     free (part);
+    free (locus_llist);
     
     return ( 0 );
 }
