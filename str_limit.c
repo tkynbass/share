@@ -272,7 +272,7 @@ void hmm_potential (Particle *part_1, const unsigned int rank) {
 
 void calculate (Particle *part, const unsigned int target_locus, const unsigned start_number, const unsigned int rank, const unsigned int particle_number) {
     
-    unsigned int loop;
+    int loop;
     
     Particle *part_1;
     
@@ -305,7 +305,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
             spring (part_1, &part[loop-2], K_BOND_2);
             spring (part_1, &part[loop+2], K_BOND_2);
         }
-        else if ( 2 <= loop ) spring (part_1, &part[loop+2], K_BOND_2);
+        else if ( loop <= 2 ) spring (part_1, &part[loop+2], K_BOND_2);
         else spring (part_1, &part[loop-2], K_BOND_2);
         
         // 3個隣 //
@@ -314,7 +314,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
             spring (part_1, &part[loop-3], K_BOND_3);
             spring (part_1, &part[loop+3], K_BOND_3);
         }
-        else if ( 3 <= loop) spring (part_1, &part[loop+3], K_BOND_3);
+        else if ( loop <= 3) spring (part_1, &part[loop+3], K_BOND_3);
         else spring (part_1, &part[loop-3], K_BOND_3);
         
         if (loop == target_locus) hmm_potential (part_1, rank);
@@ -389,8 +389,8 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
             // 0番目ローカス計算後の座標を保存 //
             part_1->position_state[X] = part_1->position[X];
             part_1->position_state[Y] = part_1->position[Y];
-            part_1->position_state[Z] = part_1->position[Z];        }
-        
+            part_1->position_state[Z] = part_1->position[Z];
+        }
         for (locus = 1; locus < locus_number; locus++) {
             
             gyration_radius = 0.5 * NUCLEOSOME_LENGTH * sqrt( GYRATION_N * (locus_list[locus] - locus_list[locus - 1]));
@@ -491,7 +491,7 @@ int main ( int argc, char **argv ) {
         free (part_1->gr_list);
     }
     free (part);
-    free (locus_llist);
+    free (locus_list);
     
     return ( 0 );
 }
