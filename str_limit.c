@@ -31,17 +31,16 @@
 #define RANK (8)    //HMMのランク数
 
 #define K_BOND ( 1.0e-0 )    //ばね定数
-#define K_BOND_2 ( 1.0e-2 )  //ひもの硬さ
-#define K_BOND_3 ( 1.0e-2)
+#define K_BOND_2 ( 1.0e-0 )  //ひもの硬さ
+#define K_BOND_3 ( 1.0e-0)
 #define HMM_BOND (1.0e-0)
 
 #define NUCLEOSOME_LENGTH (2.8e-8 * 75 / 2.2e-6) // (ヌクレオソーム+リンカー) 1セットの長さ
 #define GYRATION_N ( 20e+3 / 196)   // 隣接2粒子間のヌクレオソーム数 20Kbp / 196bp
-#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * 0.000890) /100 //粘性抵抗の強さ
 
 #define DELTA ( 1.0e-4 )  //刻み幅
-#define MITIGATION (1.0e+5)
-#define WRITE_INTERVAL (1.0e+3)
+#define MITIGATION (1.0e+6)
+#define WRITE_INTERVAL (1000)
 
 //#define POTENTIAL_DELTA (1.0e-7)
 
@@ -387,10 +386,10 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
             
             part_1 = &part[loop];
             
-            part_1->position[X] = part_1->position_state[X];
-            part_1->position[Y] = part_1->position_state[Y];
-            part_1->position[Z] = part_1->position_state[Z];
-        }
+            // 0番目ローカス計算後の座標を保存 //
+            part_1->position_state[X] = part_1->position[X];
+            part_1->position_state[Y] = part_1->position[Y];
+            part_1->position_state[Z] = part_1->position[Z];        }
         
         for (locus = 1; locus < locus_number; locus++) {
             
@@ -454,11 +453,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                 exit(1);
             }
         }
-        
-        
     }
-    
-    
 }
 
 /*
@@ -486,24 +481,6 @@ int main ( int argc, char **argv ) {
     
     //free_useless_memory (&part, &locus_list, particle_number);
     
-    /*
-    //初期位置の出力//
-    write_coordinate (0);
-    
-    for (t=1; t <= calculate_number; t++) {
-        
-        for (l=1; l<=1.0e+5; l++){
-            
-            calculate(l);
-        }
-        
-        printf ("\tt = %d \r", t);
-        fflush (stdout);
-        
-        write_coordinate (t);
-    }
-    */
-
     rank_optimization (part, locus_list, locus_number, particle_number);
 
     for (locus = 0; locus < locus_number; locus++) {
