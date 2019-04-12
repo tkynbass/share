@@ -428,14 +428,14 @@ void write_gr_list (Particle *part, const unsigned int locus_list[45], const uns
     
 }
 
-void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number) {
+void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number, const unsigned int writing_flag) {
     
     unsigned int time, rank_flag = 0, start_number, start_rank, rank, locus, loop;
     double gyration_radius;
     
     Particle *part_now, *part_old,  *part_1;
     
-    for (unsigned int start_rank = 0; start_rank < 1; start_rank++) {
+    for (unsigned int start_rank = 0; start_rank < RANK; start_rank++) {
         
         // 0番目のローカスにポテンシャルをかけ、全体を移動
         for (time = 0; time < MITIGATION; time++) {
@@ -506,7 +506,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                     
                     calculate (part, locus_list[locus], start_number, part_now->gr_list[0], particle_number);
                     
-                    if (time % WRITE_INTERVAL == 0) write_coordinate (part, time, part_now->pastis_no, particle_number, part_now->gr_list[0]);
+                    if (time % WRITE_INTERVAL == 0 && writing_flag == 1) write_coordinate (part, time, part_now->pastis_no, particle_number, part_now->gr_list[0]);
                 }
                 
                 for (loop = start_number; loop < particle_number; loop++) {
@@ -532,17 +532,21 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         }
         
         write_optimal_coordinate (part, particle_number, start_rank);
+        write_gr_list (part, locus_list, start_rank, locus_number);
     }
 }
 
 
 int main ( int argc, char **argv ) {
     
-    unsigned int locus, t = 0, l, particle_number, locus_number = 0;
+    unsigned int locus, t = 0, l, particle_number, locus_number = 0, writing_flag;
     unsigned int *locus_list;
     char output_file[256];
     
     Particle *part, *part_1;
+    
+    printf ("\t Do you write coordinate about each step ? (yes:1 or no: 0) : ");
+    scanf ("%d", &writing_flag);
     
     secure_main_memory (&part, &locus_list);
     
@@ -550,7 +554,7 @@ int main ( int argc, char **argv ) {
     
     //free_useless_memory (&part, &locus_list, particle_number);
     
-    rank_optimization (part, locus_list, locus_number, particle_number);
+    rank_optimization (part, locus_list, locus_number, particle_number, writing_flag);
 
     for (locus = 0; locus < locus_number; locus++) {
         
