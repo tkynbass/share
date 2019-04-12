@@ -412,8 +412,6 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         for (time = 0; time < MITIGATION; time++) {
             
             calculate (part, locus_list[0], 0, start_rank, particle_number);
-            
-            if (time % WRITE_INTERVAL == 0) write_coordinate (part, time, part[locus_list[0]].pastis_no, particle_number, 0);
         }
         
         for (loop = 0; loop < particle_number; loop++) {
@@ -474,7 +472,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                     
                     calculate (part, locus_list[locus], start_number, part_now->gr_list[0], particle_number);
                     
-                    if (time % WRITE_INTERVAL == 0 && rank == 4) write_coordinate (part, time, part[locus_list[locus]].pastis_no, particle_number, rank);
+                    if (time % WRITE_INTERVAL == 0) write_coordinate (part, time, part_now->pastis_no, particle_number, part_now->gr_list[0]);
                 }
                 
                 for (loop = start_number; loop < particle_number; loop++) {
