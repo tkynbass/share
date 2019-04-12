@@ -36,7 +36,7 @@
 #define HMM_BOND (1.0e-0)
 
 #define NUCLEOSOME_LENGTH (2.8e-8 * 75 / 2.2e-6) // (ヌクレオソーム+リンカー) 1セットの長さ
-#define GYRATION_N ( 20e+3 / 196)   // 隣接2粒子間のヌクレオソーム数 20Kbp / 196bp
+#define GYRATION_N ( 20000 / 196)   // 隣接2粒子間のヌクレオソーム数 20Kbp / 196bp
 
 #define DELTA ( 1.0e-4 )  //刻み幅
 #define MITIGATION (1.0e+6)
@@ -285,7 +285,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
         part_1->force[Z] = 0.0;
     }
     
-//#pragma omp parallel for private (part_1) num_threads (6)
+#pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = start_number; loop < particle_number; loop++) {
         
         part_1 = &part[loop];
@@ -365,6 +365,40 @@ void write_coordinate (Particle *part, const unsigned int time, const unsigned i
     fclose (fpw);
 }
 
+void write_optimal_coordinate (Particle *part, const unsigned int particle_number, const unsigned int start_rank) {
+    
+    unsigned int loop, rank;
+    
+    Particle *part_1;
+    
+    FILE *fpw;
+    
+    char result[128], str[128];
+    
+    sprintf (result, "optimal_s%d.txt", start_rank);
+    
+    if ((fpw = fopen (result, "w")) == NULL) {
+        
+        printf (" \n error \n");
+        
+        exit (1);
+    }
+    
+    for (loop = 0; loop < particle_number; loop++) {
+        
+        part_1 = &part[loop];
+        
+        if (part_1->gr_list != NULL) rank = part_1->gr_list[0];
+        else rank = 99;
+        
+        fprintf (fpw, "%d %d %d %lf %lf %lf\n", loop, part_1->pastis_no, rank, part_1->position[X],
+                 part_1->position[Y], part_1->position[Z]);
+    }
+    
+    fclose (fpw);
+}
+
+
 void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number) {
     
     unsigned int time, rank_flag = 0, start_number, start_rank, rank, locus, loop;
@@ -372,7 +406,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
     
     Particle *part_now, *part_old,  *part_1;
     
-    for (unsigned int start_rank = 0; start_rank < RANK; start_rank++) {
+    for (unsigned int start_rank = 0; start_rank < 1; start_rank++) {
         
         // 0番目のローカスにポテンシャルをかけ、全体を移動
         for (time = 0; time < MITIGATION; time++) {
@@ -390,6 +424,15 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
             part_1->position_state[X] = part_1->position[X];
             part_1->position_state[Y] = part_1->position[Y];
             part_1->position_state[Z] = part_1->position[Z];
+            
+            // gr_listの初期化 //
+            if (part_1->gr_list != NULL) {
+                
+                for (rank = 0; rank < RANK; rank++) {
+                    
+                    part_1->gr_list[rank] = 99;
+                }
+            }
         }
         for (locus = 1; locus < locus_number; locus++) {
             
@@ -405,8 +448,6 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                 for (time = 0; time < MITIGATION; time++) {
                     
                     calculate (part, locus_list[locus], start_number, rank, particle_number);
-                    
-                    if (time % WRITE_INTERVAL == 0 && rank == 4) write_coordinate (part, time, part[locus_list[locus]].pastis_no, particle_number, rank);
                 }
                 
                 if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
@@ -427,10 +468,13 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
             }
             
             if (rank_flag != 0) {
-                
+            
+                // 慣性半径内に存在する状態のうち、最高ランクのもので座標決定 //
                 for (time = 0; time < MITIGATION; time++) {
                     
                     calculate (part, locus_list[locus], start_number, part_now->gr_list[0], particle_number);
+                    
+                    if (time % WRITE_INTERVAL == 0 && rank == 4) write_coordinate (part, time, part[locus_list[locus]].pastis_no, particle_number, rank);
                 }
                 
                 for (loop = start_number; loop < particle_number; loop++) {
@@ -449,10 +493,13 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
             }
             else {
                 
+                // 慣性半径内にいる状態がなければ、break → 0番目ローカスのランク(start_rank)を変えてやり直し //
                 printf ("\t There's no state of %d in gyration radius ( start_rank = %d)\n", part_now->pastis_no, start_rank);
-                exit(1);
+                break;
             }
         }
+        
+        write_optimal_coordinate (part, particle_number, start_rank);
     }
 }
 
