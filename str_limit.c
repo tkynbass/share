@@ -227,6 +227,19 @@ void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *
     }
 }
 
+void reverse_order (Particle *part, unsigned int locus_list[45], const unsigned int particle_number, const unsigned int locus_number) {
+    
+    Particle *tmp;
+    
+    for (loop = 0; loop < particle_number / 2.0; loop++) {
+        
+        tmp = &part[loop];
+        &part[loop] = &part[particle_number - loop];
+        &part[particle_number - loop] = tmp;
+    }
+    
+}
+
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
     double dist = 0.0;
@@ -463,6 +476,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         }
         
         part[locus_list[0]].gr_list[0] = start_rank;
+        printf ("\t [locus = %d] start_rank = %d \n", part_now->pastis_no, start_rank);
         
         for (locus = 1; locus < locus_number; locus++) {
             
@@ -530,6 +544,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                 break;
             }
         }
+        printf ("\n");
         
         write_optimal_coordinate (part, particle_number, start_rank);
         write_gr_list (part, locus_list, start_rank, locus_number);
@@ -541,7 +556,7 @@ int main ( int argc, char **argv ) {
     
     unsigned int locus, t = 0, l, particle_number, locus_number = 0, writing_flag;
     unsigned int *locus_list;
-    char output_file[256];
+    char output_file[256], *long_1 = "1long", *short_2 = "2short", *short_3 = "3short";
     
     Particle *part, *part_1;
     
@@ -552,6 +567,7 @@ int main ( int argc, char **argv ) {
     
     read_data (part, argv[1], argv[2], locus_list, &particle_number, &locus_number);
     
+    if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) reverse_order (part, locus_list, particle_number, locus_number);
     //free_useless_memory (&part, &locus_list, particle_number);
     
     rank_optimization (part, locus_list, locus_number, particle_number, writing_flag);
