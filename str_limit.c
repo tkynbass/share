@@ -350,7 +350,7 @@ void write_coordinate (Particle *part, const unsigned int time, const unsigned i
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
-        printf (" \n error \n");
+        printf (" \t error : cannot write coordinate. \n");
         
         exit (1);
     }
@@ -379,8 +379,7 @@ void write_optimal_coordinate (Particle *part, const unsigned int particle_numbe
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
-        printf (" \n error \n");
-        
+        printf (" \t error : cannot write optimal coordinate. \n");
         exit (1);
     }
     
@@ -398,6 +397,36 @@ void write_optimal_coordinate (Particle *part, const unsigned int particle_numbe
     fclose (fpw);
 }
 
+void write_gr_list (Particle *part, const unsigned int locus_list[45], const unsigned int start_rank, const unsigned int locus_number) {
+    
+    FILE *fpw;
+    Particle *part_1;
+    char filename[128];
+    unsigned int count = 0;
+    
+    sprintf (filename, "gr_list_s%d.txt", start_rank);
+    
+    if ( (fpw = fopen (filename, "w")) == NULL ) {
+        
+        printf ("\t error : cannot write gr_list \n");
+        exit(1);
+    }
+    
+    for (unsigned int locus = 0; locus < locus_number; locus++) {
+        
+        count = 0;
+        part_1 = &part[locus_list[locus]];
+        fprintf (fpw, "%d", part_1->pastis_no);
+        
+        while (part_1->gr_list[count] != 99) {
+            
+            fprintf (fpw, " %d", part_1->gr_list[count]);
+            count++;
+        }
+        fprintf (fpw, "\n");
+    }
+    
+}
 
 void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number) {
     
@@ -432,6 +461,9 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
                 }
             }
         }
+        
+        part[locus_list[0]].gr_list[0] = start_rank;
+        
         for (locus = 1; locus < locus_number; locus++) {
             
             gyration_radius = 0.5 * NUCLEOSOME_LENGTH * sqrt( GYRATION_N * (locus_list[locus] - locus_list[locus - 1]));
@@ -443,26 +475,28 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
             
             for (rank = 0; rank < RANK; rank++) {
                 
-                for (time = 0; time < MITIGATION; time++) {
+                if (part_now->spb_mean[rank] != 0 && part_now->nucleolus_mean[rank] != 0) {
                     
-                    calculate (part, locus_list[locus], start_number, rank, particle_number);
+                    for (time = 0; time < MITIGATION; time++) {
+                        
+                        calculate (part, locus_list[locus], start_number, rank, particle_number);
+                    }
+                    
+                    if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
+                        
+                        part_now->gr_list[rank_flag] = rank;
+                        rank_flag++;
+                    }
+                    
+                    for (loop = start_number; loop < particle_number; loop++) {
+                        
+                        part_1 = &part[loop];
+                        
+                        part_1->position[X] = part_1->position_state[X];
+                        part_1->position[Y] = part_1->position_state[Y];
+                        part_1->position[Z] = part_1->position_state[Z];
+                    }
                 }
-                
-                if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
-                    
-                    part_now->gr_list[rank_flag] = rank;
-                    rank_flag++;
-                }
-                
-                for (loop = start_number; loop < particle_number; loop++) {
-                    
-                    part_1 = &part[loop];
-                    
-                    part_1->position[X] = part_1->position_state[X];
-                    part_1->position[Y] = part_1->position_state[Y];
-                    part_1->position[Z] = part_1->position_state[Z];
-                }
-                
             }
             
             if (rank_flag != 0) {
@@ -500,16 +534,6 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         write_optimal_coordinate (part, particle_number, start_rank);
     }
 }
-
-/*
-void write_rank_state (Particle *part) {
-    
-    FILE *fpw;
-    
-    char filename[] = "rank"
-}
-*/
-
 
 
 int main ( int argc, char **argv ) {
