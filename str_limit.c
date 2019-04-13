@@ -150,8 +150,6 @@ void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *
         exit (1);
     }
     
-    fgets (dummy, 256, fpr);
-    
     while (fscanf (fpr, "%d ", &part[number].pastis_no) != EOF) {
         
         part_1 = &part[number];
@@ -230,12 +228,12 @@ void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *
 void reverse_order (Particle *part, unsigned int locus_list[45], const unsigned int particle_number, const unsigned int locus_number) {
     
     Particle tmp;
-    unsigned int locus_count = 0;
+    unsigned int loop, locus_count = 0;
     
     printf ("\t part[locus_list[0]].spb_mean[0] = %lf\n", part[locus_list[0]].spb_mean[0]);
     
     // コンパイルは通った 本当に変わってるか確認 //
-    for (unsigned int loop = 0; loop <  (particle_number - 1) / 2.0; loop++) {
+    for (loop = 0; loop <  (particle_number - 1) / 2.0; loop++) {
         
         tmp = part[loop];
         part[loop] = part[particle_number -1 - loop];
@@ -393,7 +391,7 @@ void write_coordinate (Particle *part, const unsigned int time, const unsigned i
     fclose (fpw);
 }
 
-void write_optimal_coordinate (Particle *part, const unsigned int particle_number, const unsigned int start_rank) {
+void write_optimal_coordinate (Particle *part, const unsigned int particle_number, const unsigned int start_rank, const unsigned int order_flag) {
     
     unsigned int loop, rank;
     
@@ -413,7 +411,8 @@ void write_optimal_coordinate (Particle *part, const unsigned int particle_numbe
     
     for (loop = 0; loop < particle_number; loop++) {
         
-        part_1 = &part[loop];
+        if (order_flag == 0) part_1 = &part[loop];
+        else part_1 = &part[particle_number - 1 - loop];
         
         if (part_1->gr_list != NULL) rank = part_1->gr_list[0];
         else rank = 99;
@@ -425,7 +424,7 @@ void write_optimal_coordinate (Particle *part, const unsigned int particle_numbe
     fclose (fpw);
 }
 
-void write_gr_list (Particle *part, const unsigned int locus_list[45], const unsigned int start_rank, const unsigned int locus_number) {
+void write_gr_list (Particle *part, const unsigned int locus_list[45], const unsigned int start_rank, const unsigned int locus_number, const unsigned int order_flag) {
     
     FILE *fpw;
     Particle *part_1;
@@ -443,7 +442,10 @@ void write_gr_list (Particle *part, const unsigned int locus_list[45], const uns
     for (unsigned int locus = 0; locus < locus_number; locus++) {
         
         count = 0;
-        part_1 = &part[locus_list[locus]];
+        
+        if (order_flag == 0) part_1 = &part[locus]];
+        else part_1 = &part[locus_list[locus_number - 1 - locus]];
+        
         fprintf (fpw, "%d", part_1->pastis_no);
         
         while (part_1->gr_list[count] != 99) {
@@ -456,7 +458,8 @@ void write_gr_list (Particle *part, const unsigned int locus_list[45], const uns
     
 }
 
-void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number, const unsigned int writing_flag) {
+void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number, const unsigned int writing_flag
+                        , const unsigned int order_flag) {
     
     unsigned int time, rank_flag = 0, start_number, start_rank, rank, locus, loop;
     double gyration_radius;
@@ -561,15 +564,15 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         }
         printf ("\n");
         
-        write_optimal_coordinate (part, particle_number, start_rank);
-        write_gr_list (part, locus_list, start_rank, locus_number);
+        write_optimal_coordinate (part, particle_number, start_rank, order_flag);
+        write_gr_list (part, locus_list, start_rank, locus_number, order_flag);
     }
 }
 
 
 int main ( int argc, char **argv ) {
     
-    unsigned int locus, t = 0, l, particle_number, locus_number = 0, writing_flag;
+    unsigned int locus, t = 0, l, particle_number, locus_number = 0, writing_flag, order_flag = 0;
     unsigned int *locus_list;
     char output_file[256], *long_1 = "1long", *short_2 = "2short", *short_3 = "3short";
     
@@ -582,10 +585,14 @@ int main ( int argc, char **argv ) {
     
     read_data (part, argv[1], argv[2], locus_list, &particle_number, &locus_number);
     
-    if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) reverse_order (part, locus_list, particle_number, locus_number);
+    if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) {
+        
+        reverse_order (part, locus_list, particle_number, locus_number);
+        order_flag = 1;
+    }
     //free_useless_memory (&part, &locus_list, particle_number);
     
-    rank_optimization (part, locus_list, locus_number, particle_number, writing_flag);
+    rank_optimization (part, locus_list, locus_number, particle_number, writing_flag, order_flag);
 
     for (locus = 0; locus < locus_number; locus++) {
         
