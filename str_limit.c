@@ -229,14 +229,29 @@ void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *
 
 void reverse_order (Particle *part, unsigned int locus_list[45], const unsigned int particle_number, const unsigned int locus_number) {
     
-    Particle *tmp;
+    Particle tmp;
+    unsigned int locus_count = 0;
     
-    for (loop = 0; loop < particle_number / 2.0; loop++) {
+    printf ("\t part[locus_list[0]].spb_mean[0] = %lf\n", part[locus_list[0]].spb_mean[0]);
+    
+    // コンパイルは通った 本当に変わってるか確認 //
+    for (unsigned int loop = 0; loop <  (particle_number - 1) / 2.0; loop++) {
         
-        tmp = &part[loop];
-        &part[loop] = &part[particle_number - loop];
-        &part[particle_number - loop] = tmp;
+        tmp = part[loop];
+        part[loop] = part[particle_number -1 - loop];
+        part[particle_number - loop] = tmp;
     }
+    
+    for (loop = 0; loop < particle_number; loop++) {
+        
+        if (part[loop].gr_list != NULL) {
+            
+            locus_list[locus_count] = loop;
+            locus_count++ ;
+        }
+    }
+    
+    printf ("\t part[locus_list[locus_number -1]].spb_mean[0] = %lf\n", part[locus_list[locus_number -1]].spb_mean[0]);
     
 }
 
