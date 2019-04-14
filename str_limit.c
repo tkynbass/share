@@ -283,15 +283,15 @@ void reverse_order (Particle **part, unsigned int locus_list[45], const unsigned
     // コンパイルは通った 本当に変わってるか確認 //
     for (loop = 0; loop <  particle_number / 2.0; loop++) {
         
-        if (part[loop].gr_list != NULL) {
+        if ( (*part)[loop].gr_list != NULL) {
             
             secure_sub_memory (&part_tmp [particle_number - 1 - loop]);
         }
         
-        part_tmp [particle_number - 1 - loop] = part [loop];
+        part_tmp [particle_number - 1 - loop] = (*part) [loop];
     }
     
-    free (part);
+    free ( *part);
     
     *part = part_tmp;
 }
@@ -632,7 +632,7 @@ int main ( int argc, char **argv ) {
     
     if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) {
         
-        reverse_order (part, locus_list, particle_number, locus_number);
+        reverse_order ( &part, locus_list, particle_number, locus_number);
         order_flag = 1;
     }
     
