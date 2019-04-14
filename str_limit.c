@@ -225,6 +225,16 @@ void read_data (Particle *part, char *cycle_status, char *arm_id, unsigned int *
     }
 }
 
+/*
+void swap_function (Particle **part_1, Particle **part_2) {
+    
+    Particle **tmp;
+    
+    *tmp = *part_1;
+    *part_1 = *part_2;
+    *part_2 = *tmp;
+}
+
 void reverse_order (Particle *part, unsigned int locus_list[45], const unsigned int particle_number, const unsigned int locus_number) {
     
     Particle tmp;
@@ -234,10 +244,8 @@ void reverse_order (Particle *part, unsigned int locus_list[45], const unsigned 
     
     // コンパイルは通った 本当に変わってるか確認 //
     for (loop = 0; loop <  (particle_number - 1) / 2.0; loop++) {
-        
-        tmp = part[loop];
-        part[loop] = part[particle_number -1 - loop];
-        part[particle_number - loop] = tmp;
+
+        swap_function (&part[loop], &part[particle_number - 1 - loop]);
     }
     
     for (loop = 0; loop < particle_number; loop++) {
@@ -251,6 +259,41 @@ void reverse_order (Particle *part, unsigned int locus_list[45], const unsigned 
     
     printf ("\t part[locus_list[locus_number -1]].spb_mean[0] = %lf\n", part[locus_list[locus_number -1]].spb_mean[0]);
     
+}
+*/
+void reverse_order (Particle **part, unsigned int locus_list[45], const unsigned int particle_number, const unsigned int locus_number) {
+    
+    unsigned int loop, locus_count = 0, i_tmp;
+    
+    Particle *part_tmp = (Particle *) malloc ( particle_number * sizeof (Particle));
+    if (part_tmp == NULL) {
+        
+        printf ("\t error : cannot secure the memory of tmp\n");
+        exit (1);
+    }
+    
+    // 逆順用のlocus_list作成
+    for (loop = 0; loop < locus_number / 2.0; loop++) {
+        
+        i_tmp = particle_number - 1 - locus_list[loop];
+        locus_list [loop] = particle_number - 1 - locus_list[locus_number - 1 - loop];
+        locus_list [locus_number - 1 - loop] = i_tmp;
+    }
+
+    // コンパイルは通った 本当に変わってるか確認 //
+    for (loop = 0; loop <  particle_number / 2.0; loop++) {
+        
+        if (part[loop].gr_list != NULL) {
+            
+            secure_sub_memory (&part_tmp [particle_number - 1 - loop]);
+        }
+        
+        part_tmp [particle_number - 1 - loop] = part [loop];
+    }
+    
+    free (part);
+    
+    *part = part_tmp;
 }
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
@@ -443,7 +486,7 @@ void write_gr_list (Particle *part, const unsigned int locus_list[45], const uns
         
         count = 0;
         
-        if (order_flag == 0) part_1 = &part[locus]];
+        if (order_flag == 0) part_1 = &part[locus];
         else part_1 = &part[locus_list[locus_number - 1 - locus]];
         
         fprintf (fpw, "%d", part_1->pastis_no);
@@ -494,7 +537,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         }
         
         part[locus_list[0]].gr_list[0] = start_rank;
-        printf ("\t [locus = %d] start_rank = %d \n", part_now->pastis_no, start_rank);
+        printf ("\t [locus = %d] start_rank = %d \n", part[locus_list[0]].pastis_no, start_rank);
         
         for (locus = 1; locus < locus_number; locus++) {
             
@@ -585,11 +628,16 @@ int main ( int argc, char **argv ) {
     
     read_data (part, argv[1], argv[2], locus_list, &particle_number, &locus_number);
     
+    printf ("\t part[locus_list[0]].spb_mean[0] = %lf\n", part[locus_list[0]].spb_mean[0]);
+    
     if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) {
         
         reverse_order (part, locus_list, particle_number, locus_number);
         order_flag = 1;
     }
+    
+    printf ("\t part[locus_list[locus_number -1]].spb_mean[0] = %lf\n", part[locus_list[locus_number -1]].spb_mean[0]);
+    
     //free_useless_memory (&part, &locus_list, particle_number);
     
     rank_optimization (part, locus_list, locus_number, particle_number, writing_flag, order_flag);
