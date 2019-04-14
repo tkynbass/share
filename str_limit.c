@@ -280,8 +280,7 @@ void reverse_order (Particle **part, unsigned int locus_list[45], const unsigned
         locus_list [locus_number - 1 - loop] = i_tmp;
     }
 
-    // コンパイルは通った 本当に変わってるか確認 //
-    for (loop = 0; loop <  particle_number / 2.0; loop++) {
+    for (loop = 0; loop <  particle_number; loop++) {
         
         if ( (*part)[loop].gr_list != NULL) {
             
@@ -607,7 +606,7 @@ void rank_optimization (Particle *part, unsigned int locus_list[45], const unsig
         }
         printf ("\n");
         
-        write_optimal_coordinate (part, particle_number, start_rank, order_flag);
+        if (locus < locus_number - 1) write_optimal_coordinate (part, particle_number, start_rank, order_flag);
         write_gr_list (part, locus_list, start_rank, locus_number, order_flag);
     }
 }
@@ -628,7 +627,9 @@ int main ( int argc, char **argv ) {
     
     read_data (part, argv[1], argv[2], locus_list, &particle_number, &locus_number);
     
-    printf ("\t part[locus_list[0]].spb_mean[0] = %lf\n", part[locus_list[0]].spb_mean[0]);
+    printf ("\t particle_number = %d \n\t locus_number = %d \n", particle_number, locus_number);
+    
+    //printf ("\t part[locus_list[0]].spb_mean[0] = %lf\n", part[locus_list[0]].spb_mean[0]);
     
     if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) {
         
@@ -636,7 +637,7 @@ int main ( int argc, char **argv ) {
         order_flag = 1;
     }
     
-    printf ("\t part[locus_list[locus_number -1]].spb_mean[0] = %lf\n", part[locus_list[locus_number -1]].spb_mean[0]);
+    //printf ("\t part[locus_list[locus_number -1]].spb_mean[0] = %lf\n", part[locus_list[locus_number -1]].spb_mean[0]);
     
     //free_useless_memory (&part, &locus_list, particle_number);
     
