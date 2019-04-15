@@ -485,7 +485,7 @@ void write_gr_list (Particle *part, const unsigned int locus_list[45], const uns
         
         count = 0;
         
-        if (order_flag == 0) part_1 = &part[locus];
+        if (order_flag == 0) part_1 = &part[locus_list[locus]];
         else part_1 = &part[locus_list[locus_number - 1 - locus]];
         
         fprintf (fpw, "%d", part_1->pastis_no);
