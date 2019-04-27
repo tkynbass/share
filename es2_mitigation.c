@@ -55,7 +55,7 @@ const double spb_pos[] = { 1.7128 * LENGTH, 0.0, 0.0};
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]);
 
 typedef struct particle {           //構造体の型宣言
-    CHAIN chr_no;
+    unsigned int chr_no;
     int pastis_no;
     double position[DIMENSION];
     double position_new[DIMENSION];
@@ -79,8 +79,7 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
     }
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++) {
-        
-        ( *part )[loop].pastis_no = -1;
+
         ( *part )[loop].list = (unsigned int *) malloc (NUMBER_MAX * sizeof (unsigned int));
         
         if ( ( *part )[loop].list = NULL) {
@@ -107,6 +106,8 @@ void read_data (Particle *part){       //初期値設定
     Particle *part_1;
     FILE *fpr;
     
+    for ( loop = 0; loop < NUMBER_MAX; loop++) part[loop].pastis_no = -1;
+    
     // Input the coordinates of Pastis //
     for ( unsigned int arm = 0; arm < 6; arm++ ){
         
@@ -125,9 +126,11 @@ void read_data (Particle *part){       //初期値設定
             fscanf (fpr, "%d %lf %lf %lf\n", &part_1->chr_no,
                     &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
             
+            /*
             part_1->position[X] *= PASTIS_SCALING;
             part_1->position[Y] *= PASTIS_SCALING;
             part_1->position[Z] *= PASTIS_SCALING;
+            */
         }
     }
     
@@ -204,12 +207,12 @@ void completion_coordinate (Particle *part) {
         if ( data_flag == 0 && part[loop].pastis_no < 0 ) {
             
             start = loop;
-            flag == 1;
+            data_flag = 1;
         }
         else if ( data_flag == 1 && part[loop].pastis_no >= 0) {
             
             end = loop;
-            flag == 0;
+            data_flag = 0;
 
             part_2 = &part [start - 1];
             part_3 = &part [end];
