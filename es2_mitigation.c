@@ -106,8 +106,15 @@ void read_data (Particle *part){       //初期値設定
     Particle *part_1;
     FILE *fpr;
     
-    for ( loop = 0; loop < NUMBER_MAX; loop++) part[loop].pastis_no = -1;
-    
+    for ( loop = 0; loop < NUMBER_MAX; loop++)  {
+        
+        part[loop].pastis_no = -1;
+        
+        if ( loop <= 1115 ) part[loop].chr_no = A;
+        else if ( loop <= 2023) part[loop].chr_no = B;
+        else part[loop].chr_no = C;
+    }
+
     // Input the coordinates of Pastis //
     for ( unsigned int arm = 0; arm < 6; arm++ ){
         
@@ -126,11 +133,9 @@ void read_data (Particle *part){       //初期値設定
             fscanf (fpr, "%d %lf %lf %lf\n", &part_1->chr_no,
                     &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
             
-            /*
             part_1->position[X] *= PASTIS_SCALING;
             part_1->position[Y] *= PASTIS_SCALING;
             part_1->position[Z] *= PASTIS_SCALING;
-            */
         }
     }
     
@@ -149,7 +154,7 @@ void completion_coordinate (Particle *part) {
     int end_list[] = { 2, 1115, 1120, 2036, 2515 };
     
     //　端のデータ補完 //
-    for ( loop = 0; loop < sizeof (start_list) / sizeof start_list[0] ; loop++) {
+    for ( loop = 0; loop < sizeof (start_list) / sizeof (start_list[0]) ; loop++) {
         
         if ( start_list [loop] == 0 || start_list [loop] == 1116 || start_list [loop] == 2024) {
             
@@ -204,7 +209,7 @@ void completion_coordinate (Particle *part) {
     // 穴埋め（セントロメア等含む）のデータ補完 //
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
         
-        if ( data_flag == 0 && part[loop].pastis_no < 0 ) {
+        if ( data_flag == 0 && part[loop].pastis_no < 0 && part[loop].position[X] != 0.0000 ) {
             
             start = loop;
             data_flag = 1;
