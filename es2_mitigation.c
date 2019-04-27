@@ -209,7 +209,7 @@ void completion_coordinate (Particle *part) {
     // 穴埋め（セントロメア等含む）のデータ補完 //
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
         
-        if ( data_flag == 0 && part[loop].pastis_no < 0 && part[loop].position[X] != 0.0000 ) {
+        if ( data_flag == 0 && part[loop].pastis_no < 0 && part[loop].position[X] == 0.0000 ) {
             
             start = loop;
             data_flag = 1;
