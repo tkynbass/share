@@ -80,7 +80,7 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++) {
         
-        ( *part )[loop] = -1;
+        ( *part )[loop].pastis_no = -1;
         ( *part )[loop].list = (unsigned int *) malloc (NUMBER_MAX * sizeof (unsigned int));
         
         if ( ( *part )[loop].list = NULL) {
@@ -208,7 +208,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-
+/*
 //　ばねによる力 part_1 粒子側の力計算//
 void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) {
     
@@ -217,7 +217,7 @@ void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) 
     double f;
     
     //dist_0 = 自然長 //
-    dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
+    
     dist = Euclid_norm (part_1->position, part_2->position);
     
     f = bond * (dist_0 - dist) / dist;
@@ -305,7 +305,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
     }
     
 }
-
+*/
 void write_coordinate (Particle *part, const unsigned int time) {
     
     unsigned int loop;
