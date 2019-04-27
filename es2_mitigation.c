@@ -44,7 +44,7 @@
 
 typedef enum chain {
     A, B, C
-} CHAIN;
+}CHAIN;
 
 typedef enum type {
     Normal, Centromere, Telomere
@@ -121,7 +121,8 @@ void read_data (Particle *part){       //初期値設定
         while (fscanf (fpr, "%d ", &number) != EOF) {
             
             part_1 = &part[number];
-            fscanf (fpr, "%s %lf %lf %lf\n", &part_1->chr_no,
+            part_1->pastis_no = number;
+            fscanf (fpr, "%d %lf %lf %lf\n", &part_1->chr_no,
                     &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
             
             part_1->position[X] *= PASTIS_SCALING;
@@ -141,9 +142,10 @@ void completion_coordinate (Particle *part) {
     Particle *part_1, *part_2, *part_3;
     
     // データ補完 //
-    int start_list[] = { 0, 4, 750, 1112, 1116, 1436, 2015, 2024, 2237, 2508 };
-    int end_list[] = { 2, 9, 757, 1115, 1120, 1444, 2022, 2036, 2252, 2515 };
+    int start_list[] = { 0, 1112, 1116, 2024, 2508 };
+    int end_list[] = { 2, 1115, 1120, 2036, 2515 };
     
+    //　端のデータ補完 //
     for ( loop = 0; loop < sizeof (start_list) / sizeof start_list[0] ; loop++) {
         
         if ( start_list [loop] == 0 || start_list [loop] == 1116 || start_list [loop] == 2024) {
@@ -176,6 +178,7 @@ void completion_coordinate (Particle *part) {
                 part_1->position[Z] = part_2->position[Z] + ( part_2->position[Z] - part_3->position[Z]) / distance;
             }
         }
+        /*
         else {
             
             part_2 = &part [start_list [loop] - 1];
@@ -191,10 +194,37 @@ void completion_coordinate (Particle *part) {
                 part_1->position [Y] = part_2->position [Y] + (part_2->position[Y] - part_3->position[Y]) / division * (loop_2 + 1);
                 part_1->position [Z] = part_2->position [Z] + (part_2->position[Z] - part_3->position[Z]) / division * (loop_2 + 1);
             }
-        }
-        
-        
+        }*/
     }
+    
+    unsigned int data_flag = 0, start, end;
+    // 穴埋め（セントロメア等含む）のデータ補完 //
+    for ( loop = 0; loop < NUMBER_MAX; loop++) {
+        
+        if ( data_flag == 0 && part[loop].pastis_no < 0 ) {
+            
+            start = loop;
+            flag == 1;
+        }
+        else if ( data_flag == 1 && part[loop].pastis_no >= 0) {
+            
+            end = loop;
+            flag == 0;
+
+            part_2 = &part [start - 1];
+            part_3 = &part [end];
+            
+            for ( loop_2 = 0; loop_2 < end - start; loop_2 ++) {
+                
+                part_1 = &part [start + loop_2];
+                
+                part_1->position [X] = part_2->position [X] + (part_3->position[X] - part_2->position[X]) / (end - start + 1) * (loop_2 + 1);
+                part_1->position [Y] = part_2->position [Y] + (part_3->position[Y] - part_2->position[Y]) / (end - start + 1) * (loop_2 + 1);
+                part_1->position [Z] = part_2->position [Z] + (part_3->position[Z] - part_2->position[Z]) / (end - start + 1) * (loop_2 + 1);
+            }
+        }
+    }
+    
 }
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
@@ -343,7 +373,7 @@ int main ( int argc, char **argv ) {
     
     Particle *part, *part_1, spb;
     
-    secure_main_memory (&part, &spb);
+    secure_main_memory (&part, spb);
     
     read_data (part);
     
