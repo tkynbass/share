@@ -19,6 +19,7 @@
 
 #define M_A ( 1.85131596e+6 )   // g/mol/particle
 #define N_A ( 6.022140857e+23 )
+#define PASTIS_SCALING ( 1.8e-6 / 75 / LENGTH)
 
 #define NUMBER_MAX ( 2516 )    //粒子数
 #define PARTICLE_MASS ( 1.0)    //染色体粒子の質量 Kg
@@ -55,7 +56,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
 
 typedef struct particle {           //構造体の型宣言
     CHAIN chr_no;
-    unsigned int pastis_no;
+    int pastis_no = -1;
     double position[DIMENSION];
     double position_new[DIMENSION];
     double position_old[DIMENSION];
@@ -99,7 +100,7 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
 void read_data (Particle *part){       //初期値設定
 
     unsigned int loop, number = 0, i_dummy;
-    char dummy[256], pastis_data[128], hmm_data[128], **arm_list = {"1long", "1short", "2short", "2long", "3short", "3long"};
+    char chain, dummy[256], pastis_data[128], hmm_data[128], **arm_list = {"1long", "1short", "2short", "2long", "3short", "3long"};
     double d_dummy, enlarge_ratio;
     
     Particle *part_1;
@@ -119,79 +120,81 @@ void read_data (Particle *part){       //初期値設定
         while (fscanf (fpr, "%d ", &number) != EOF) {
             
             part_1 = &part[number];
-            fscanf (fpr, "%s %lf %lf %lf\n", dummy,
+            fscanf (fpr, "%s %lf %lf %lf\n", &part_1->chr_no,
                     &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
-            number++;
-        }
-    }
-    
-    
-    
-    fclose (fpr);
-    
-    // HMMの平均データ読み込み //
-    sprintf (hmm_data, "hmm_%s_%s.txt", cycle_status, arm_id);
-    
-    if ((fpr = fopen(hmm_data, "r")) == NULL){
-        
-        printf ("\n\terror : cannot read hmm data.\n");
-        
-        exit (1);
-    }
-
-    unsigned int pastis_no;
-    number = 0;
-    while (fscanf (fpr, "%d %d", &pastis_no, &i_dummy) != EOF) {
-        
-        while (pastis_no != part[number].pastis_no) {
             
-            number++;
+            part_1->position[X] *= PASTIS_SCALING;
+            part_1->position[Y] *= PASTIS_SCALING;
+            part_1->position[Z] *= PASTIS_SCALING;
         }
-        
-        part_1 = &part[number];
-        secure_sub_memory (part_1);
-        
-        for (loop = 0; loop < RANK; loop++) {
-            
-            fscanf (fpr, " %lf %lf", &part_1->nucleolus_mean[loop], &part_1->spb_mean[loop]);
-            
-            // spb, nucleollus mean のスケール調節 //
-            part_1->nucleolus_mean[loop] *= LENGTH;
-            part_1->spb_mean[loop] *= LENGTH;
-        }
-        fgets (dummy, 256, fpr);
-        
-        locus_list[ (*locus_number) ] = number;
-        (*locus_number)++;
     }
     
     fclose (fpr);
     
-    /*
-    loop = 0;
-    while (locus_list[loop] != 0) {
-        
-        part_1 = &part[locus_list[loop]];
-        printf ("\t%d status[0] %lf %lf, status[RANK-1] %lf %lf \n", part_1->pastis_no, part_1->spb_mean[0], part_1->nucleolus_mean[0],
-                part_1->spb_mean[RANK-1], part_1->nucleolus_mean[RANK-1]);
-        loop++;
-    }*/
-    
-    for (loop = 0; loop < *particle_number; loop++) {
-        
-        part_1 = &part[loop];
-        
-        // 初期座標の保存
-        part_1->position_init[X] = part_1->position[X];
-        part_1->position_init[Y] = part_1->position[Y];
-        part_1->position_init[Z] = part_1->position[Z];
-     
-        part_1->position_state[X] = part_1->position[X];
-        part_1->position_state[Y] = part_1->position[Y];
-        part_1->position_state[Z] = part_1->position[Z];
-    }
 }
 
+void completion_coordinate (Particle *part) {
+    
+    unsigned int loop, loop_2, division;
+    double distance;
+    Particle *part_1, *part_2, *part_3;
+    
+    // データ補完 //
+    int start_list = { 0, 4, 750, 1112, 1116, 1436, 2015, 2024, 2237, 2508 };
+    int end_list = { 2, 9, 757, 1115, 1120, 1444, 2022, 2036, 2252, 2515 };
+    
+    for ( loop = 0; loop < sizeof (start_list) / sizeof start_list[0] ; loop++) {
+        
+        if ( start_list [loop] == 0 || start_list [loop] == 1116 || start_list [loop] == 2024) {
+            
+            for ( loop_2 = 0; loop_2 <= end_list [loop] - start_list [loop]; loop_2 ++ ) {
+                
+                part_1 = &part [end_list [loop] - loop_2];
+                part_2 = &part [end_list [loop] - loop_2 + 1];
+                part_3 = &part [end_list [loop] - loop_2 + 2];
+                
+                distance = Euclid_norm ( part_2->position, part_3->position );
+                
+                part_1->position[X] = part_2->position[X] + ( part_2->position[X] - part_3->position[X]) / distance;
+                part_1->position[Y] = part_2->position[Y] + ( part_2->position[Y] - part_3->position[Y]) / distance;
+                part_1->position[Z] = part_2->position[Z] + ( part_2->position[Z] - part_3->position[Z]) / distance;
+            }
+        }
+        else if ( start_list [loop] == 1112 || start_list [loop] == 2508) {
+            
+            for ( loop_2 = 0; loop_2 <= end_list [loop] - start_list [loop]; loop_2 ++ ) {
+                
+                part_1 = &part [start_list [loop] + loop_2];
+                part_2 = &part [start_list [loop] + loop_2 - 1];
+                part_3 = &part [start_list [loop] + loop_2 - 2];
+                
+                distance = Euclid_norm ( part_2->position, part_3->position );
+                
+                part_1->position[X] = part_2->position[X] + ( part_2->position[X] - part_3->position[X]) / distance;
+                part_1->position[Y] = part_2->position[Y] + ( part_2->position[Y] - part_3->position[Y]) / distance;
+                part_1->position[Z] = part_2->position[Z] + ( part_2->position[Z] - part_3->position[Z]) / distance;
+            }
+        }
+        else {
+            
+            part_2 = &part [start_list [loop] - 1];
+            part_3 = &part [end_list [loop] + 1];
+            
+            division = end_list [loop] - start_list [loop] + 2;
+            
+            for ( loop_2 = 0; start_list [loop] + loop_2 <= end_list [loop]; loop_2++ ){
+                
+                part_1 = &part [start_list [loop] + loop_2];
+    
+                part_1->position [X] = part_2->position [X] + (part_2->position[X] - part_3->position[X]) / division * (loop_2 + 1);
+                part_1->position [Y] = part_2->position [Y] + (part_2->position[Y] - part_3->position[Y]) / division * (loop_2 + 1);
+                part_1->position [Z] = part_2->position [Z] + (part_2->position[Z] - part_3->position[Z]) / division * (loop_2 + 1);
+            }
+        }
+        
+        
+    }
+}
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
@@ -302,7 +305,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
     
 }
 
-void write_coordinate (Particle *part, const unsigned int time, const unsigned int locus, const unsigned int particle_number, const unsigned int rank) {
+void write_coordinate (Particle *part, const unsigned int time) {
     
     unsigned int loop;
     
@@ -312,7 +315,7 @@ void write_coordinate (Particle *part, const unsigned int time, const unsigned i
     
     char result[128], str[128];
     
-    sprintf (result, "l%d_r%d_t%d.txt", locus, rank, time);
+    sprintf (result, "result_%d.txt", time);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -321,232 +324,38 @@ void write_coordinate (Particle *part, const unsigned int time, const unsigned i
         exit (1);
     }
     
-    for (loop = 0; loop < particle_number; loop++) {
+    for (loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
-        fprintf (fpw, "%d %d %lf %lf %lf\n", loop, part_1->pastis_no, part_1->position[X],
+        fprintf (fpw, "%d %d %d %lf %lf %lf\n", loop, part_1->pastis_no, part_1->chr_no, part_1->position[X],
                  part_1->position[Y], part_1->position[Z]);
     }
     
     fclose (fpw);
-}
-
-void write_optimal_coordinate (Particle *part, const unsigned int particle_number, const unsigned int start_rank, const unsigned int order_flag) {
-    
-    unsigned int loop, rank;
-    
-    Particle *part_1;
-    
-    FILE *fpw;
-    
-    char result[128], str[128];
-    
-    sprintf (result, "optimal_s%d.txt", start_rank);
-    
-    if ((fpw = fopen (result, "w")) == NULL) {
-        
-        printf (" \t error : cannot write optimal coordinate. \n");
-        exit (1);
-    }
-    
-    for (loop = 0; loop < particle_number; loop++) {
-        
-        if (order_flag == 0) part_1 = &part[loop];
-        else part_1 = &part[particle_number - 1 - loop];
-        
-        if (part_1->gr_list != NULL) rank = part_1->gr_list[0];
-        else rank = 99;
-        
-        fprintf (fpw, "%d %d %d %lf %lf %lf\n", loop, part_1->pastis_no, rank, part_1->position[X],
-                 part_1->position[Y], part_1->position[Z]);
-    }
-    
-    fclose (fpw);
-}
-
-void write_gr_list (Particle *part, const unsigned int locus_list[45], const unsigned int start_rank, const unsigned int locus_number, const unsigned int order_flag) {
-    
-    FILE *fpw;
-    Particle *part_1;
-    char filename[128];
-    unsigned int count = 0;
-    
-    sprintf (filename, "gr_list_s%d.txt", start_rank);
-    
-    if ( (fpw = fopen (filename, "w")) == NULL ) {
-        
-        printf ("\t error : cannot write gr_list \n");
-        exit(1);
-    }
-    
-    for (unsigned int locus = 0; locus < locus_number; locus++) {
-        
-        count = 0;
-        
-        if (order_flag == 0) part_1 = &part[locus_list[locus]];
-        else part_1 = &part[locus_list[locus_number - 1 - locus]];
-        
-        fprintf (fpw, "%d", part_1->pastis_no);
-        
-        while (part_1->gr_list[count] != 99) {
-            
-            fprintf (fpw, " %d", part_1->gr_list[count]);
-            count++;
-        }
-        fprintf (fpw, "\n");
-    }
-    
-}
-
-void rank_optimization (Particle *part, unsigned int locus_list[45], const unsigned int locus_number, const unsigned int particle_number, const unsigned int writing_flag
-                        , const unsigned int order_flag) {
-    
-    unsigned int time, rank_flag = 0, start_number, start_rank, rank, locus, loop;
-    double gyration_radius;
-    
-    Particle *part_now, *part_old,  *part_1;
-    
-    for (unsigned int start_rank = 0; start_rank < RANK; start_rank++) {
-        
-        // 0番目のローカスにポテンシャルをかけ、全体を移動
-        for (time = 0; time < MITIGATION; time++) {
-            
-            calculate (part, locus_list[0], 0, start_rank, particle_number);
-        }
-        
-        for (loop = 0; loop < particle_number; loop++) {
-            
-            part_1 = &part[loop];
-            
-            // 0番目ローカス計算後の座標を保存 //
-            part_1->position_state[X] = part_1->position[X];
-            part_1->position_state[Y] = part_1->position[Y];
-            part_1->position_state[Z] = part_1->position[Z];
-            
-            // gr_listの初期化 //
-            if (part_1->gr_list != NULL) {
-                
-                for (rank = 0; rank < RANK; rank++) {
-                    
-                    part_1->gr_list[rank] = 99;
-                }
-            }
-        }
-        
-        part[locus_list[0]].gr_list[0] = start_rank;
-        printf ("\t [locus = %d] start_rank = %d \n", part[locus_list[0]].pastis_no, start_rank);
-        
-        for (locus = 1; locus < locus_number; locus++) {
-            
-            gyration_radius = 0.5 * NUCLEOSOME_LENGTH * sqrt( GYRATION_N * (locus_list[locus] - locus_list[locus - 1]));
-            part_now = &part[locus_list[locus]];
-            part_old = &part[locus_list[locus - 1]];
-            
-            rank_flag = 0;
-            start_number = locus_list[locus - 1] + 1;
-            
-            for (rank = 0; rank < RANK; rank++) {
-                
-                if (part_now->spb_mean[rank] != 0 && part_now->nucleolus_mean[rank] != 0) {
-                    
-                    for (time = 0; time < MITIGATION; time++) {
-                        
-                        calculate (part, locus_list[locus], start_number, rank, particle_number);
-                    }
-                    
-                    if (Euclid_norm (part_now->position, part_old->position) < gyration_radius ) {
-                        
-                        part_now->gr_list[rank_flag] = rank;
-                        rank_flag++;
-                    }
-                    
-                    for (loop = start_number; loop < particle_number; loop++) {
-                        
-                        part_1 = &part[loop];
-                        
-                        part_1->position[X] = part_1->position_state[X];
-                        part_1->position[Y] = part_1->position_state[Y];
-                        part_1->position[Z] = part_1->position_state[Z];
-                    }
-                }
-            }
-            
-            if (rank_flag != 0) {
-            
-                // 慣性半径内に存在する状態のうち、最高ランクのもので座標決定 //
-                for (time = 0; time < MITIGATION; time++) {
-                    
-                    calculate (part, locus_list[locus], start_number, part_now->gr_list[0], particle_number);
-                    
-                    if (time % WRITE_INTERVAL == 0 && writing_flag == 1) write_coordinate (part, time, part_now->pastis_no, particle_number, part_now->gr_list[0]);
-                }
-                
-                for (loop = start_number; loop < particle_number; loop++) {
-                    
-                    part_1 = &part[loop];
-                    
-                    part_1->position_state[X] = part_1->position[X];
-                    part_1->position_state[Y] = part_1->position[Y];
-                    part_1->position_state[Z] = part_1->position[Z];
-                }
-                
-                printf ("\t [locus = %d] Total %d states = { ", part_now->pastis_no, rank_flag);
-                
-                for ( loop = 0; loop < rank_flag; loop++) printf ("%d ", part_now->gr_list[loop]);
-                printf ("}\n");
-            }
-            else {
-                
-                // 慣性半径内にいる状態がなければ、break → 0番目ローカスのランク(start_rank)を変えてやり直し //
-                printf ("\t There's no state of %d in gyration radius ( start_rank = %d)\n", part_now->pastis_no, start_rank);
-                break;
-            }
-        }
-        printf ("\n");
-        
-        if (locus < locus_number - 1) write_optimal_coordinate (part, particle_number, start_rank, order_flag);
-        write_gr_list (part, locus_list, start_rank, locus_number, order_flag);
-    }
 }
 
 
 int main ( int argc, char **argv ) {
     
     unsigned int locus, t = 0, l, particle_number, locus_number = 0, writing_flag, order_flag = 0;
-    unsigned int *locus_list;
     char output_file[256];
     
     Particle *part, *part_1. spb;
     
-    secure_main_memory (&part, &spb, &locus_list);
+    secure_main_memory (&part, &spb);
     
     read_data (part);
     
-    printf ("\t particle_number = %d \n\t locus_number = %d \n", particle_number, locus_number);
+    completion_coordinate (part);
     
-    //printf ("\t part[locus_list[0]].spb_mean[0] = %lf\n", part[locus_list[0]].spb_mean[0]);
+    write_coordinate (part, 0);
     
-    if ( strcmp (long_1, argv[2]) == 0 || strcmp (short_2, argv[2]) == 0 || strcmp (short_3, argv[2]) == 0 ) {
+    for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
         
-        reverse_order ( &part, locus_list, particle_number, locus_number);
-        order_flag = 1;
-    }
-    
-    //printf ("\t part[locus_list[locus_number -1]].spb_mean[0] = %lf\n", part[locus_list[locus_number -1]].spb_mean[0]);
-    
-    //free_useless_memory (&part, &locus_list, particle_number);
-    
-    rank_optimization (part, locus_list, locus_number, particle_number, writing_flag, order_flag);
-
-    for (locus = 0; locus < locus_number; locus++) {
-        
-        part_1 = &part[locus_list[locus]];
-        free (part_1->spb_mean);
-        free (part_1->nucleolus_mean);
-        free (part_1->gr_list);
+        part_1 = &part [loop];
+        free (part_1->list);
     }
     free (part);
-    free (locus_list);
     
     return ( 0 );
 }
