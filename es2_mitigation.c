@@ -56,7 +56,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
 
 typedef struct particle {           //構造体の型宣言
     CHAIN chr_no;
-    int pastis_no = -1;
+    int pastis_no;
     double position[DIMENSION];
     double position_new[DIMENSION];
     double position_old[DIMENSION];
@@ -80,9 +80,10 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++) {
         
-        part[loop].list = (unsigned int *) malloc (NUMBER_MAX * sizeof (unsigned int));
+        ( *part )[loop] = -1;
+        ( *part )[loop].list = (unsigned int *) malloc (NUMBER_MAX * sizeof (unsigned int));
         
-        if (part[loop].list = NULL) {
+        if ( ( *part )[loop].list = NULL) {
             
             printf ("\n error : can not secure the memory part.list \n");
             exit (1);
@@ -100,7 +101,7 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
 void read_data (Particle *part){       //初期値設定
 
     unsigned int loop, number = 0, i_dummy;
-    char chain, dummy[256], pastis_data[128], hmm_data[128], **arm_list = {"1long", "1short", "2short", "2long", "3short", "3long"};
+    char chain, dummy[256], pastis_data[128], hmm_data[128], *arm_list[] = {"1long", "1short", "2short", "2long", "3short", "3long"};
     double d_dummy, enlarge_ratio;
     
     Particle *part_1;
@@ -140,8 +141,8 @@ void completion_coordinate (Particle *part) {
     Particle *part_1, *part_2, *part_3;
     
     // データ補完 //
-    int start_list = { 0, 4, 750, 1112, 1116, 1436, 2015, 2024, 2237, 2508 };
-    int end_list = { 2, 9, 757, 1115, 1120, 1444, 2022, 2036, 2252, 2515 };
+    int start_list[] = { 0, 4, 750, 1112, 1116, 1436, 2015, 2024, 2237, 2508 };
+    int end_list[] = { 2, 9, 757, 1115, 1120, 1444, 2022, 2036, 2252, 2515 };
     
     for ( loop = 0; loop < sizeof (start_list) / sizeof start_list[0] ; loop++) {
         
@@ -337,10 +338,10 @@ void write_coordinate (Particle *part, const unsigned int time) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int locus, t = 0, l, particle_number, locus_number = 0, writing_flag, order_flag = 0;
+    unsigned int loop;
     char output_file[256];
     
-    Particle *part, *part_1. spb;
+    Particle *part, *part_1, spb;
     
     secure_main_memory (&part, &spb);
     
