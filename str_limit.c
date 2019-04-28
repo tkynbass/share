@@ -308,7 +308,7 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
 
 
 //　ばねによる力 part_1 粒子側の力計算//
-void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) {
+void spring (Particle *part_1, const Particle *part_2, const double bond) {
     
     double dist, dist_0;
     
