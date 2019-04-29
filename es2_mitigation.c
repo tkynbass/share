@@ -5,6 +5,8 @@
 
 //  Pastis構造 5kbp のデータ補完,緩和
 //
+// 核小体との相互作用の加え方を考え直す必要あり (4/28)
+
 // 2019/04/26
 //
 
@@ -36,9 +38,29 @@
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
+#define LIST_INTERVAL ( 500 )   // リスト化の間隔
+
+#define BOND_DISTANCE ( 2.0 * PARTICLE_RADIUS * 0.8 )   // １個隣ばねの自然長
+
+#define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100)  //SPBの粘性
+
+// Ellipsoid axes parameter of nucleus & nucleolus //
+
+#define MEMBRANE_AXIS_1 ( 1.889011e-6 / LENGTH )
+#define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
+#define MEMBRANE_AXIS_3 ( 0.75 * MEMBRANE_AXIS_1 )
+
+#define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_2 ( 0.8 * NUCLEOLUS_AXIS_1 )
+#define NUCLEOLUS_AXIS_3 ( 0.9 * NUCLEOLUS_AXIS_1 )
+
+const unsigned int CENT_LIST[] = { 754, 2414 };
+const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
+const unsigned int rDNA_LIST[] = { 2024, 2515};
+const double ORIGIN[] = { 0.0, 0.0, 0.0};
 
 //#define POTENTIAL_DELTA (1.0e-7)
 
@@ -47,21 +69,18 @@ typedef enum chain {
 }CHAIN;
 
 typedef enum type {
-    Normal, Centromere, Telomere
+    Normal, Centromere, Telomere, rDNA
 }TYPE;
 
-const double nucleolus_pos[] = { 0.0, 0.0, 0.0};
-const double spb_pos[] = { 1.7128 * LENGTH, 0.0, 0.0};
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]);
 
 typedef struct particle {           //構造体の型宣言
-    unsigned int chr_no;
     int pastis_no;
+    CHAIN chr_no;
+    TYPE particle_type;
     double position[DIMENSION];
     double position_new[DIMENSION];
     double position_old[DIMENSION];
-    //double *nucleolus_mean;
-    //double *spb_mean;
     double force[DIMENSION];
     unsigned int list_no;
     unsigned int *list;
@@ -82,7 +101,7 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
 
         ( *part )[loop].list = (unsigned int *) malloc (NUMBER_MAX * sizeof (unsigned int));
         
-        if ( ( *part )[loop].list = NULL) {
+        if ( ( *part )[loop].list == NULL) {
             
             printf ("\n error : can not secure the memory part.list \n");
             exit (1);
@@ -97,7 +116,7 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
     
 }
 
-void read_data (Particle *part){       //初期値設定
+void read_pastis_data (Particle *part){       //初期値設定
 
     unsigned int loop, number = 0, i_dummy;
     char chain, dummy[256], pastis_data[128], hmm_data[128], *arm_list[] = {"1long", "1short", "2short", "2long", "3short", "3long"};
@@ -122,7 +141,6 @@ void read_data (Particle *part){       //初期値設定
         if ((fpr = fopen(pastis_data, "r")) == NULL){
             
             printf ("\n\terror : cannot read coordinate.\n");
-            
             exit (1);
         }
         
@@ -133,6 +151,7 @@ void read_data (Particle *part){       //初期値設定
             fscanf (fpr, "%d %lf %lf %lf\n", &part_1->chr_no,
                     &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
             
+            // pastisのスケールを核小体・核膜とのスケーリングに合わせる
             part_1->position[X] *= PASTIS_SCALING;
             part_1->position[Y] *= PASTIS_SCALING;
             part_1->position[Z] *= PASTIS_SCALING;
@@ -149,7 +168,7 @@ void completion_coordinate (Particle *part) {
     double distance;
     Particle *part_1, *part_2, *part_3;
     
-    // データ補完 //
+    // 各染色体両端のデータ補完 //
     int start_list[] = { 0, 1112, 1116, 2024, 2508 };
     int end_list[] = { 2, 1115, 1120, 2036, 2515 };
     
@@ -186,23 +205,6 @@ void completion_coordinate (Particle *part) {
                 part_1->position[Z] = part_2->position[Z] + ( part_2->position[Z] - part_3->position[Z]) / distance;
             }
         }
-        /*
-        else {
-            
-            part_2 = &part [start_list [loop] - 1];
-            part_3 = &part [end_list [loop] + 1];
-            
-            division = end_list [loop] - start_list [loop] + 2;
-            
-            for ( loop_2 = 0; start_list [loop] + loop_2 <= end_list [loop]; loop_2++ ){
-                
-                part_1 = &part [start_list [loop] + loop_2];
-    
-                part_1->position [X] = part_2->position [X] + (part_2->position[X] - part_3->position[X]) / division * (loop_2 + 1);
-                part_1->position [Y] = part_2->position [Y] + (part_2->position[Y] - part_3->position[Y]) / division * (loop_2 + 1);
-                part_1->position [Z] = part_2->position [Z] + (part_2->position[Z] - part_3->position[Z]) / division * (loop_2 + 1);
-            }
-        }*/
     }
     
     unsigned int data_flag = 0, start, end;
@@ -235,6 +237,19 @@ void completion_coordinate (Particle *part) {
     
 }
 
+// particle_type labeling //
+void type type_labeling (Particle *part) {
+    
+    unsigned int loop;
+    
+    for ( loop = 0; loop < NUMBER_MAX; loop++ ) part [loop].particle_type = Normal;
+    
+    for ( loop = 0; loop < sizeof (CENT_LIST) / sizeof (CENT_LIST[0]); loop++ ) part [CENT_LIST [loop]].particle_type = Centromere;
+    for ( loop = 0; loop < sizeof (TELO_LIST) / sizeof (TELO_LIST[0]); loop++ ) part [TELO_LIST [loop]].particle_type = Telomere;
+    for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) part [rDNA_LIST [loop]].particle_type = rDNA;
+}
+
+
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
     double dist = 0.0;
@@ -246,38 +261,113 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
     return (sqrt(dist));
 }
 
-/*
-//　ばねによる力 part_1 粒子側の力計算//
-void spring (Particle *part_1, const Particle *part_2, const unsigned int bond) {
+//  内積計算    //
+double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
-    double dist, dist_0;
+    return ( pos_1[X] * pos_2[X] + pos_1[Y] * pos_2[Y] + pos_1[Z] * pos_2[Z]);
+}
+
+//　ばねによる力 part_1側の力計算//
+void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
-    double f;
+    // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
+    const double bonding_power[] = { 1.0, 1.0, 1.0e-4, 1.0e-6 };
     
+    double dist_0;
     //dist_0 = 自然長 //
+    if ( interval != 0 ) dist_0 = BOND_DISTANCE * interval;
+    else dist_0 =  PARTICLE_RADIUS + SPB_RADIUS;
     
-    dist = Euclid_norm (part_1->position, part_2->position);
+    double dist = Euclid_norm (part_1->position, part_2->position);
     
-    f = bond * (dist_0 - dist) / dist;
+    double f = bonding_power[interval] * (dist_0 - dist) / dist;
     
     part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
     part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
     part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
 }
 
-void hmm_potential (Particle *part_1, const unsigned int rank) {
+
+// membrane interaction
+void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E: exclude */ ) {
     
-    double spb_dist = Euclid_norm (part_1->position, spb_pos);
-    double nucleolus_dist = Euclid_norm (part_1->position, nucleolus_pos);
+    double dist = Euclid_norm (part_1->position, ORIGIN);
     
-    double spb_f = HMM_BOND * (part_1->spb_mean[rank] - spb_dist);
-    double nucleolus_f = HMM_BOND * (part_1->nucleolus_mean[rank] - nucleolus_dist);
+    double ellipsoid_dist = part_1->position[X] * part_1->position[X] / ( MEMBRANE_AXIS_1 * MEMBRANE_AXIS_1 )
+    + part_1->position[Y] * part_1->position[Y] / ( MEMBRANE_AXIS_2 * MEMBRANE_AXIS_2 )
+    + part_1->position[Z] * part_1->position[Z] / ( MEMBRANE_AXIS_3 * MEMBRANE_AXIS_3 );
     
-    part_1->force[X] += spb_f * (part_1->position[X] - spb_pos[X]) + nucleolus_f * (part_1->position[X] - nucleolus_pos[X]);
-    part_1->force[Y] += spb_f * (part_1->position[Y] - spb_pos[Y]) + nucleolus_f * (part_1->position[Y] - nucleolus_pos[Y]);
-    part_1->force[Z] += spb_f * (part_1->position[Z] - spb_pos[Z]) + nucleolus_f * (part_1->position[Z] - nucleolus_pos[Z]);
+    if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
+        
+        // 法線ベクトル
+        double normal_vector[] = { 2.0 * part_1->position[X] / ( MEMBRANE_AXIS_1 * MEMBRANE_AXIS_1),
+            2.0 * part_1->position[Y] / ( MEMBRANE_AXIS_2 * MEMBRANE_AXIS_2),
+            2.0 * part_1->position[Z] / ( MEMBRANE_AXIS_3 * MEMBRANE_AXIS_3) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+        
+        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
+                                                                  + part_1->position[Y] * normal_vector[Y]
+                                                                  + part_1->position[Z] * normal_vector[Z]);
+        
+        part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+        part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+        part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
+    }
 }
 
+void rotate_position_z ( double pos[DIMENSION], const double theta ) {
+   
+   double pos_new[DIMENSION];
+   
+   pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
+   pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
+   
+   pos[X] = pos_new[X];
+   pos[Y] = pos_new[Y];
+}
+
+// nucleolus interaction
+void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
+    
+    //static double nuc_pos[] = { -25.0, 0.0, 0.0 };
+    
+    //位置座標をz軸まわりに-10度回転
+    rotate_position_z (part_1->position, - PI / 18);
+    
+    //核小体中心から粒子へのベクトル
+    double nuc_to_pos[] = { part_1->position[X] - nuc_pos[X],
+        part_1->position[Y] - nuc_pos[Y],
+        part_1->position[Z] - nuc_pos[Z]};
+    
+    
+    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 )
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1 )
+    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2 );
+    
+    if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
+        
+        // 法線ベクトル
+        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3),
+            2.0 * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1),
+            2.0 * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+        
+        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector);
+        
+        rotate_position_z (normal_vector, PI / 6.0);
+        
+        part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+        part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+        part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
+    }
+    
+    rotate_position_z (part_1->position, PI / 18);
+}
+
+                           
+/*
 void calculate (Particle *part, const unsigned int target_locus, const unsigned start_number, const unsigned int rank, const unsigned int particle_number) {
     
     int loop;
@@ -344,6 +434,61 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
     
 }
 */
+
+// 各stepごとの座標計算 //
+void calculation (Particle *part, Particle spb) {
+    
+    unsigned int loop;
+    Particle *part_1, *part_2, *part_3;
+    
+    // 力の初期化 //
+    for ( loop = 0; loop < NUMBER_MAX; loop++) {
+        
+        part_1 = &part[loop];
+        
+        part_1->force[X] = 0.0;
+        part_1->force[Y] = 0.0;
+        part_1->force[Z] = 0.0;
+    }
+    
+    // セントロメア、テロメア、rDNAの　相互作用
+    for ( loop = 0; loop < sizeof (CENT_LIST) / sizeof (CENT_LIST[0]); loop++ ) membrane_interaction ( &part [TELO_LIST [loop]], 'F' );
+    for ( loop = 0; loop < sizeof (TELO_LIST) / sizeof (TELO_LIST[0]); loop++ ) spring ( &part [CENT_LIST [loop]], &spb, 0 );
+    for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) nucleolus_interaction (&part [rDNA_LIST [loop]], 'F');
+    
+    for ( loop = 0; loop < NUMBER_MAX; loop++ ){
+        
+        part_1 = &part [loop];
+        
+        switch (part_1->particle_type) {
+            case Normal:
+                
+                spring (part_1, &part [loop + 1]);
+                spring (part_1, &part [loop - 1]);
+                
+                
+                break;
+            
+            case Centromere:
+                
+                break;
+                
+            case Telomere:
+                
+                break;
+                
+            case rDNA:
+                
+                break;
+                
+            default:
+                printf ("\t Labeling error occured. \n");
+                exit(1);
+        }
+    }
+    
+}
+
 void write_coordinate (Particle *part, const unsigned int time) {
     
     unsigned int loop;
@@ -383,12 +528,16 @@ int main ( int argc, char **argv ) {
     
     secure_main_memory (&part, spb);
     
-    read_data (part);
+    read_pastis_data (part);
     
     completion_coordinate (part);
+    type_labeling (part);
     
     write_coordinate (part, 0);
     
+    calculation (part, spb);
+    
+    // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part [loop];
