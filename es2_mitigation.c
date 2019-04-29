@@ -406,7 +406,7 @@ void make_ve_list (Particle *part, Particle *part_1, const unsigned int target) 
 }
 
 // Volume exclusion between particles //
-void particle_exclusion (Particle * part, Particle *part_1) {
+void particle_exclusion (Particle *part, Particle *part_1) {
     
     unsigned int loop;
     double dist, f;
@@ -497,7 +497,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
 */
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, Particle spb, const unsigned int mitigation ) {
+void calculation (Particle *part, Particle *spb, const unsigned int mitigation ) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -578,7 +578,7 @@ void calculation (Particle *part, Particle spb, const unsigned int mitigation ) 
                         break;
                 }
                 
-                spb_exclude (part_1, &spb);
+                spb_exclude (part_1, spb);
                 nucleolus_interaction (part_1, 'E');
                 membrane_interaction (part_1, 'E');
                 
@@ -627,7 +627,7 @@ void calculation (Particle *part, Particle spb, const unsigned int mitigation ) 
                         break;
                 }
                 
-                spb_exclude (part_1, &spb);
+                spb_exclude (part_1, spb);
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, 'E');
                 
@@ -657,7 +657,7 @@ void calculation (Particle *part, Particle spb, const unsigned int mitigation ) 
                         break;
                 }
                 
-                spb_exclude (part_1, &spb);
+                spb_exclude (part_1, spb);
                 membrane_interaction (part_1, 'E');
                 nucleolus_interaction (part_1, 'F');
                 
@@ -669,7 +669,7 @@ void calculation (Particle *part, Particle spb, const unsigned int mitigation ) 
         }
         
         if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
-        particle_exclusion (part, *part_1);
+        particle_exclusion (part, part_1);
     }
     
 }
