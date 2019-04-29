@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include<math.h>
 #include<string.h>
-#include <omp.h>
+//#include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 7.0e-8 )   //長さの単位 (粒子径)
@@ -33,12 +33,12 @@
 #define K_BOND_3 ( 1.0e-0 )     //3つ隣
 
 #define DELTA ( 1.0e-11 )  //刻み幅
-#define MITIGATION (1.0e+6)
-#define WRITE_INTERVAL (1000)
+#define MITIGATION_INTERVAL (1.0e+6)
+#define LIST_INTERVAL ( 500 )   // リスト化の間隔
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
-#define LIST_INTERVAL ( 500 )   // リスト化の間隔
+
 
 #define BOND_DISTANCE ( 2.0 * PARTICLE_RADIUS * 0.8 )   // １個隣ばねの自然長
 
@@ -238,7 +238,7 @@ void completion_coordinate (Particle *part) {
 }
 
 // particle_type labeling //
-void type type_labeling (Particle *part) {
+void type_labeling (Particle *part) {
     
     unsigned int loop;
     
@@ -271,7 +271,7 @@ double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSIO
 void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
     // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
-    const double bonding_power[] = { 1.0, 1.0, 1.0e-4, 1.0e-6 };
+    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2, K_BOND_3 };
     
     double dist_0;
     //dist_0 = 自然長 //
@@ -288,7 +288,7 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
 }
 
 
-// membrane interaction
+// membrane interaction //
 void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E: exclude */ ) {
     
     double dist = Euclid_norm (part_1->position, ORIGIN);
@@ -316,6 +316,7 @@ void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E
     }
 }
 
+// rotate function about z axis for nucleolus interaction //
 void rotate_position_z ( double pos[DIMENSION], const double theta ) {
    
    double pos_new[DIMENSION];
@@ -327,7 +328,7 @@ void rotate_position_z ( double pos[DIMENSION], const double theta ) {
    pos[Y] = pos_new[Y];
 }
 
-// nucleolus interaction
+// nucleolus interaction //
 void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     
     //static double nuc_pos[] = { -25.0, 0.0, 0.0 };
@@ -366,6 +367,66 @@ void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     rotate_position_z (part_1->position, PI / 18);
 }
 
+void spb_exclude (Particle *part_1, Particle *spb) {
+    
+    //spb_exclude
+    double dist = Euclid_norm (part_1->position, spb->position);
+    double f = K_EXCLUDE * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
+    
+    if ( dist < PARTICLE_RADIUS + SPB_RADIUS) {
+        
+        part_1->force[X] += f * (part_1->position[X] - spb->position[X]);
+        part_1->force[Y] += f * (part_1->position[Y] - spb->position[Y]);
+        part_1->force[Z] += f * (part_1->position[Z] - spb->position[Z]);
+    }
+}
+
+//　ひも同士のリスト化 //
+void make_ve_list (Particle *part, Particle *part_1, const unsigned int target) {
+    
+    unsigned int loop, list_count = 0;
+    double dist;
+    Particle *part_2;
+    
+    part_1->list_no = 0;
+    
+    for ( loop = 0; loop < NUMBER_MAX; loop++ ){
+        
+        part_2 = &part[loop];
+        dist = Euclid_norm ( part_1->position, part_2->position);
+        
+        // 1個隣 そうでなくてもテロメア同士 (番号は隣だが染色体No.が異なる) //
+        if ( dist < 5.0 * BOND_DISTANCE && (abs (target - loop) > 1 || part_1->chr_no != part_2->chr_no ) ) {
+            
+            list_count++;
+            part_1->list_no = list_count;
+            part_1->list [list_count] = loop;
+        }
+    }
+}
+
+// Volume exclusion between particles //
+void particle_exclusion (Particle * part, Particle *part_1) {
+    
+    unsigned int loop;
+    double dist, f;
+    Particle *part_2;
+    
+    for ( loop = 1; loop <= part_1->list_no; loop++) {
+        
+        part_2 = &part [part_1->list [loop]];
+        dist = Euclid_norm (part_1->position, part_2->position);
+        
+        if ( dist < 2.0 * PARTICLE_RADIUS ){
+            
+            f = K_EXCLUDE * (2.0 * PARTICLE_RADIUS - dist) / dist;
+            
+            part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+            part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+            part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+        }
+    }
+}
                            
 /*
 void calculate (Particle *part, const unsigned int target_locus, const unsigned start_number, const unsigned int rank, const unsigned int particle_number) {
@@ -436,7 +497,7 @@ void calculate (Particle *part, const unsigned int target_locus, const unsigned 
 */
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, Particle spb) {
+void calculation (Particle *part, Particle spb, const unsigned int mitigation ) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -451,11 +512,13 @@ void calculation (Particle *part, Particle spb) {
         part_1->force[Z] = 0.0;
     }
     
-    // セントロメア、テロメア、rDNAの　相互作用
+    /*
+    // セントロメア、テロメア、rDNAの　相互作用 //
     for ( loop = 0; loop < sizeof (CENT_LIST) / sizeof (CENT_LIST[0]); loop++ ) membrane_interaction ( &part [TELO_LIST [loop]], 'F' );
     for ( loop = 0; loop < sizeof (TELO_LIST) / sizeof (TELO_LIST[0]); loop++ ) spring ( &part [CENT_LIST [loop]], &spb, 0 );
     for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) nucleolus_interaction (&part [rDNA_LIST [loop]], 'F');
-    
+    */
+     
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
         
         part_1 = &part [loop];
@@ -463,21 +526,140 @@ void calculation (Particle *part, Particle spb) {
         switch (part_1->particle_type) {
             case Normal:
                 
-                spring (part_1, &part [loop + 1]);
-                spring (part_1, &part [loop - 1]);
+                // spring 1 //
+                spring (part_1, &part [loop + 1], 1);
+                spring (part_1, &part [loop - 1], 1);
                 
+                // spring 2 //
+                switch (loop)  {
+                        
+                    case TELO_LIST[0] + 1:
+                    case TELO_LIST[2] + 1:
+                    case rDNA_LIST[0] + 1:
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        break;
+                        
+                    case TELO_LIST[1] - 1:
+                    case TELO_LIST[3] - 1:
+                    case rDNA_LIST[1] - 1:
+                        
+                        spring (part_1, &part[loop - 2], 2);
+                        break;
+                    
+                    default:
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        spring (part_1, &part[loop - 2], 2);
+                        break;
+                }
+                
+                // spring 3 //
+                switch (loop) {
+                    
+                    case TELO_LIST[0] + 2:
+                    case TELO_LIST[2] + 2:
+                    case rDNA_LIST[0] + 2:
+                        
+                        spring (part_1, &part[loop + 3], 3);
+                        break;
+                    
+                    case TELO_LIST[1] - 2:
+                    case TELO_LIST[3] - 2:
+                    case rDNA_LIST[1] - 2:
+                        
+                        spring (part_1, &part[loop - 3], 3);
+                        break;
+                    
+                    default:
+                        
+                        spring (part_1, &part[loop + 3], 3);
+                        spring (part_1, &part[loop - 3], 3);
+                        break;
+                }
+                
+                spb_exclude (part_1, &spb);
+                nucleolus_interaction (part_1, 'E');
+                membrane_interaction (part_1, 'E');
                 
                 break;
             
             case Centromere:
                 
+                spring (part_1, &part[loop + 1], 1);
+                spring (part_1, &part[loop - 1], 1);
+                
+                spring (part_1, &part[loop + 2], 2);
+                spring (part_1, &part[loop - 2], 2);
+                
+                spring (part_1, &part[loop + 3], 3);
+                spring (part_1, &part[loop - 3], 3);
+                
+                nucleolus_interaction (part_1, 'E');
+                membrane_interaction (part_1, 'E');
+                spring (part_1, &spb, 0);
+                
                 break;
                 
             case Telomere:
                 
+                switch (loop) {
+                    case TELO_LIST[0]:
+                    case TELO_LIST[2]:
+                        
+                        spring (part_1, &part[loop + 1], 1);
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        
+                        spring (part_1, &part[loop + 3], 3);
+                        
+                        break;
+                        
+                    case TELO_LIST[1]:
+                    case TELO_LIST[3]:
+                        
+                        spring (part_1, &part[loop - 1], 1);
+                        
+                        spring (part_1, &part[loop - 2], 2);
+                        
+                        spring (part_1, &part[loop - 3], 3);
+                        
+                        break;
+                }
+                
+                spb_exclude (part_1, &spb);
+                membrane_interaction (part_1, 'F');
+                nucleolus_interaction (part_1, 'E');
+                
                 break;
                 
             case rDNA:
+                
+                switch (loop) {
+                    case rDNA_LIST[0]:
+                        
+                        spring (part_1, &part[loop + 1], 1);
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        
+                        spring (part_1, &part[loop + 3], 3);
+                        
+                        break;
+                        
+                    default:
+                        
+                        spring (part_1, &part[loop + 1], 1);
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        
+                        spring (part_1, &part[loop + 3], 3);
+                
+                        break;
+                }
+                
+                spb_exclude (part_1, &spb);
+                membrane_interaction (part_1, 'E');
+                nucleolus_interaction (part_1, 'F');
                 
                 break;
                 
@@ -485,6 +667,9 @@ void calculation (Particle *part, Particle spb) {
                 printf ("\t Labeling error occured. \n");
                 exit(1);
         }
+        
+        if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+        particle_exclusion (part, *part_1);
     }
     
 }
@@ -521,7 +706,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop;
+    unsigned int loop, mitigation;
     char output_file[256];
     
     Particle *part, *part_1, spb;
@@ -535,7 +720,15 @@ int main ( int argc, char **argv ) {
     
     write_coordinate (part, 0);
     
-    calculation (part, spb);
+    for ( unsigned int time = 1; time < calculation_max; time++) {
+        
+        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+            
+            calculation (part, &spb, mitigation);
+        }
+        
+    }
+    calculation (part, spb, );
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
