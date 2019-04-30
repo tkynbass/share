@@ -31,6 +31,7 @@
 #define K_BOND ( 1.0e-0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e-0 )     //3つ隣
+#define K_EXCLUDE ( 1.0e-0)
 
 #define DELTA ( 1.0e-11 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+6)
@@ -421,9 +422,9 @@ void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     rotate_about_z (part_1->position, - PI / 18);
     
     //核小体中心から粒子へのベクトル
-    double nuc_to_pos[] = { part_1->position[X] - nuc_pos[X],
-        part_1->position[Y] - nuc_pos[Y],
-        part_1->position[Z] - nuc_pos[Z]};
+    double nuc_to_pos[] = { part_1->position[X] - NUCLEOLUS_POS[X],
+        part_1->position[Y] - NUCLEOLUS_POS[Y],
+        part_1->position[Z] - NUCLEOLUS_POS[Z]};
     
     
     double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 )
