@@ -12,8 +12,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include<math.h>
-#include<string.h>
+#include <math.h>
+#include <string.h>
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
@@ -63,7 +63,7 @@ const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
 const unsigned int rDNA_LIST[] = { 2024, 2515};
 const double ORIGIN[] = { 0.0, 0.0, 0.0};
 const double SPB_POS[] = { 0.9e-6 / LENGTH, 0.85e-6 / LENGTH, 1.0e-6 / LENGTH };
-const double NUCLEOLUS_POS[] = { -0.25e-6 / LENGTH, -0,365e-6 / LENGTH, 0.3e-6 / LENGTH};
+const double NUCLEOLUS_POS[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
 
 //#define POTENTIAL_DELTA (1.0e-7)
 
@@ -782,6 +782,7 @@ int main ( int argc, char **argv ) {
     direction_initialization (part);
     write_init_coordinate (part);
     
+    /*
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
@@ -789,7 +790,7 @@ int main ( int argc, char **argv ) {
             //calculation (part, &spb, mitigation);
         }
         
-    }
+    }*/
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
