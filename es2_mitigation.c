@@ -34,7 +34,7 @@
 
 #define DELTA ( 1.0e-11 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+6)
-#define LIST_INTERVAL ( 500 )   // リスト化の間隔
+#define LIST_INTERVAL ( 1000 )   // リスト化の間隔
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
@@ -57,10 +57,12 @@
 #define NUCLEOLUS_AXIS_2 ( 0.8 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.9 * NUCLEOLUS_AXIS_1 )
 
-const unsigned int CENT_LIST[] = { 754, 2414 };
+const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
 const unsigned int rDNA_LIST[] = { 2024, 2515};
 const double ORIGIN[] = { 0.0, 0.0, 0.0};
+const double SPB_POS[] = { 0.9e-6 / LENGTH, 0.85e-6 / LENGTH, 1.0e-6 / LENGTH };
+const double NUCLEOLUS_POS[] = { -0.25e-6 / LENGTH, -0,365e-6 / LENGTH, 0.3e-6 / LENGTH};
 
 //#define POTENTIAL_DELTA (1.0e-7)
 
@@ -72,6 +74,15 @@ typedef enum type {
     Normal, Centromere, Telomere, rDNA
 }TYPE;
 
+// 染色体末端粒子のリスト UP:上流 DOWN:下流 //
+typedef enum chr_end {
+    
+    TELO1_UP = 0, TELO1_DOWN = 1115,
+    TELO2_UP = 1116, TELO2_DOWN = 2023,
+    rDNA_UP = 2024, rDNA_DOWN = 2515
+    
+}CHR_END;
+
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]);
 
 typedef struct particle {           //構造体の型宣言
@@ -81,6 +92,8 @@ typedef struct particle {           //構造体の型宣言
     double position[DIMENSION];
     double position_new[DIMENSION];
     double position_old[DIMENSION];
+    double velocity[DIMENSION];
+    double velocity_h[DIMENSION];
     double force[DIMENSION];
     unsigned int list_no;
     unsigned int *list;
@@ -118,8 +131,8 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
 
 void read_pastis_data (Particle *part){       //初期値設定
 
-    unsigned int loop, number = 0, i_dummy;
-    char chain, dummy[256], pastis_data[128], hmm_data[128], *arm_list[] = {"1long", "1short", "2short", "2long", "3short", "3long"};
+    unsigned int loop, number = 0;
+    char dummy[256], pastis_data[128], *arm_list[] = {"1long", "1short", "2short", "2long", "3short", "3long"};
     double d_dummy, enlarge_ratio;
     
     Particle *part_1;
@@ -132,6 +145,13 @@ void read_pastis_data (Particle *part){       //初期値設定
         if ( loop <= 1115 ) part[loop].chr_no = A;
         else if ( loop <= 2023) part[loop].chr_no = B;
         else part[loop].chr_no = C;
+        
+        // velocity_h initialization //
+        part_1 = &part[loop];
+        
+        part_1->velocity_h[X] = 0.0;
+        part_1->velocity_h[Y] = 0.0;
+        part_1->velocity_h[Z] = 0.0;
     }
 
     // Input the coordinates of Pastis //
@@ -160,6 +180,31 @@ void read_pastis_data (Particle *part){       //初期値設定
     
     fclose (fpr);
     
+}
+
+void read_coordinate (Particle *part, const unsigned int start) {
+    
+    unsigned int loop, number;
+    char dummy[256], input_file[256];
+    FILE *fpr;
+    
+    sprint (input_file, "result_%d.txt", start);
+    if ((fpr = fopen (input_file, "r")) == NULL){
+        
+        printf ("\t erroe : cannot read coordinate data.\n");
+        exit (1);
+    }
+    
+    while (fscanf (fpr, "%d ", &number) != EOF) {
+        
+        part_1 = &part[number];
+        
+        fscanf (fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z],
+                &part_1->velocity_h[X], &part_1->velocity_h[Y], &part_1->velocity_h[Z]);
+    }
+    
+    fclose (fpr)
 }
 
 void completion_coordinate (Particle *part) {
@@ -267,6 +312,56 @@ double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSIO
     return ( pos_1[X] * pos_2[X] + pos_1[Y] * pos_2[Y] + pos_1[Z] * pos_2[Z]);
 }
 
+// rotate function about z axis //
+void rotate_about_z ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
+    pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
+    
+    pos[X] = pos_new[X];
+    pos[Y] = pos_new[Y];
+}
+
+// rotate function about y axis x-z平面での回転 //
+void rotate_about_y ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Z];
+    pos_new[Z] = sin (theta) * pos[X] + cos (theta) * pos[Z];
+    
+    pos[X] = pos_new[X];
+    pos[Z] = pos_new[Z];
+}
+
+// 核小体方向が構造と合うように回転 //
+void direction_initialization (Particle *part) {
+    
+    Particle *part_1;
+    
+    double nuc_init[] = {-15.523414 -7.284596 45.333157};
+    double r = Euclid_norm (nuc_init, ORIGIN);
+    
+    double phi = acos ( nuc_init[Z] / r );
+    double theta = acos ( nuc_init[X] / ( r * sin(phi))) * ( nuc_init[Y] / fabs(nuc_init[Y]));
+    
+    double phi_new = acos ( NUCLEOLUS_POS[Z] / r );
+    double theta_new = acos ( NUCLEOLUS_POS[X] / ( r * sin (phi_new))) * ( NUCLEOLUS_POS[Y] / fabs(NUCLEOLUS_POS[Y]));
+    
+    for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
+        
+        part_1 = &part[loop];
+        
+        rotate_about_z (part_1->position, -theta);
+        rotate_about_y (part_1->position, phi);
+        
+        rotate_about_y (part_1->position, -phi_new);
+        rotate_about_z (part_1->position, theta_new);
+    }
+}
+
 //　ばねによる力 part_1側の力計算//
 void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
@@ -316,25 +411,13 @@ void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E
     }
 }
 
-// rotate function about z axis for nucleolus interaction //
-void rotate_position_z ( double pos[DIMENSION], const double theta ) {
-   
-   double pos_new[DIMENSION];
-   
-   pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
-   pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
-   
-   pos[X] = pos_new[X];
-   pos[Y] = pos_new[Y];
-}
-
 // nucleolus interaction //
 void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     
     //static double nuc_pos[] = { -25.0, 0.0, 0.0 };
     
     //位置座標をz軸まわりに-10度回転
-    rotate_position_z (part_1->position, - PI / 18);
+    rotate_about_z (part_1->position, - PI / 18);
     
     //核小体中心から粒子へのベクトル
     double nuc_to_pos[] = { part_1->position[X] - nuc_pos[X],
@@ -357,19 +440,19 @@ void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
         
         double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector);
         
-        rotate_position_z (normal_vector, PI / 6.0);
+        rotate_about_z (normal_vector, PI / 6.0);
         
         part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
         part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
         part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
     }
     
-    rotate_position_z (part_1->position, PI / 18);
+    rotate_about_z (part_1->position, PI / 18);
 }
 
-void spb_exclude (Particle *part_1, Particle *spb) {
+void spb_exclusion (Particle *part_1, Particle *spb) {
     
-    //spb_exclude
+    // spb_exclusion //
     double dist = Euclid_norm (part_1->position, spb->position);
     double f = K_EXCLUDE * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
     
@@ -427,74 +510,6 @@ void particle_exclusion (Particle *part, Particle *part_1) {
         }
     }
 }
-                           
-/*
-void calculate (Particle *part, const unsigned int target_locus, const unsigned start_number, const unsigned int rank, const unsigned int particle_number) {
-    
-    int loop;
-    
-    Particle *part_1;
-    
-    for ( loop = start_number; loop < particle_number; loop++) {
-        
-        part_1 = &part[loop];
-        
-        part_1->force[X] = 0.0;
-        part_1->force[Y] = 0.0;
-        part_1->force[Z] = 0.0;
-    }
-    
-#pragma omp parallel for private (part_1) num_threads (8)
-    for ( loop = start_number; loop < particle_number; loop++) {
-        
-        part_1 = &part[loop];
-        
-        // 隣同士 //
-        if ( loop != 0 && loop != particle_number - 1 ) {
-            
-            spring (part_1, &part[loop-1], K_BOND);
-            spring (part_1, &part[loop+1], K_BOND);
-        }
-        else if ( loop == 0) spring (part_1, &part[loop+1], K_BOND);
-        else spring (part_1, &part[loop-1], K_BOND);
-        
-        // 2個隣 //
-        if ( 2 <= loop && loop+2 <= particle_number-1) {
-            
-            spring (part_1, &part[loop-2], K_BOND_2);
-            spring (part_1, &part[loop+2], K_BOND_2);
-        }
-        else if ( loop <= 2 ) spring (part_1, &part[loop+2], K_BOND_2);
-        else spring (part_1, &part[loop-2], K_BOND_2);
-        
-        // 3個隣 //
-        if ( 3 <= loop && loop+3 <= particle_number-1) {
-            
-            spring (part_1, &part[loop-3], K_BOND_3);
-            spring (part_1, &part[loop+3], K_BOND_3);
-        }
-        else if ( loop <= 3) spring (part_1, &part[loop+3], K_BOND_3);
-        else spring (part_1, &part[loop-3], K_BOND_3);
-        
-        if (loop == target_locus) hmm_potential (part_1, rank);
-
-        part_1->position_new[X] = part_1->position[X] + DELTA * part_1->force[X];
-        part_1->position_new[Y] = part_1->position[Y] + DELTA * part_1->force[Y];
-        part_1->position_new[Z] = part_1->position[Z] + DELTA * part_1->force[Z];
-    }
-    
-    // position の更新 //
-    for ( loop = start_number; loop < particle_number; loop++) {
-        
-        part_1 = &part[loop];
-        
-        part_1->position[X] = part_1->position_new[X];
-        part_1->position[Y] = part_1->position_new[Y];
-        part_1->position[Z] = part_1->position_new[Z];
-    }
-    
-}
-*/
 
 // 各stepごとの座標計算 //
 void calculation (Particle *part, Particle *spb, const unsigned int mitigation ) {
@@ -502,10 +517,14 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
     
-    // 力の初期化 //
+    // 位置の計算 & 力の初期化 //
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
+        
+        part_1->position[X] += DELTA * part_1->velocity_h[X];
+        part_1->position[Y] += DELTA * part_1->velocity_h[Y];
+        part_1->position[Z] += DELTA * part_1->velocity_h[Z];
         
         part_1->force[X] = 0.0;
         part_1->force[Y] = 0.0;
@@ -533,16 +552,16 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                 // spring 2 //
                 switch (loop)  {
                         
-                    case TELO_LIST[0] + 1:
-                    case TELO_LIST[2] + 1:
-                    case rDNA_LIST[0] + 1:
+                    case TELO1_UP + 1:
+                    case TELO2_UP + 1:
+                    case rDNA_UP + 1:
                         
                         spring (part_1, &part[loop + 2], 2);
                         break;
                         
-                    case TELO_LIST[1] - 1:
-                    case TELO_LIST[3] - 1:
-                    case rDNA_LIST[1] - 1:
+                    case TELO1_DOWN - 1:
+                    case TELO2_DOWN - 1:
+                    case rDNA_DOWN - 1:
                         
                         spring (part_1, &part[loop - 2], 2);
                         break;
@@ -557,16 +576,16 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                 // spring 3 //
                 switch (loop) {
                     
-                    case TELO_LIST[0] + 2:
-                    case TELO_LIST[2] + 2:
-                    case rDNA_LIST[0] + 2:
+                    case TELO1_UP + 2:
+                    case TELO2_UP + 2:
+                    case rDNA_UP + 2:
                         
                         spring (part_1, &part[loop + 3], 3);
                         break;
                     
-                    case TELO_LIST[1] - 2:
-                    case TELO_LIST[3] - 2:
-                    case rDNA_LIST[1] - 2:
+                    case TELO1_DOWN - 2:
+                    case TELO2_DOWN - 2:
+                    case rDNA_DOWN - 2:
                         
                         spring (part_1, &part[loop - 3], 3);
                         break;
@@ -578,7 +597,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         break;
                 }
                 
-                spb_exclude (part_1, spb);
+                spb_exclusion (part_1, spb);
                 nucleolus_interaction (part_1, 'E');
                 membrane_interaction (part_1, 'E');
                 
@@ -597,15 +616,15 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                 
                 nucleolus_interaction (part_1, 'E');
                 membrane_interaction (part_1, 'E');
-                spring (part_1, &spb, 0);
+                spring (part_1, spb, 0);
                 
                 break;
                 
             case Telomere:
                 
                 switch (loop) {
-                    case TELO_LIST[0]:
-                    case TELO_LIST[2]:
+                    case TELO1_UP:
+                    case TELO2_UP:
                         
                         spring (part_1, &part[loop + 1], 1);
                         
@@ -615,8 +634,8 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         
                         break;
                         
-                    case TELO_LIST[1]:
-                    case TELO_LIST[3]:
+                    case TELO1_DOWN:
+                    case TELO2_DOWN:
                         
                         spring (part_1, &part[loop - 1], 1);
                         
@@ -627,7 +646,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         break;
                 }
                 
-                spb_exclude (part_1, spb);
+                spb_exclusion (part_1, spb);
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, 'E');
                 
@@ -636,7 +655,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
             case rDNA:
                 
                 switch (loop) {
-                    case rDNA_LIST[0]:
+                    case rDNA_UP:
                         
                         spring (part_1, &part[loop + 1], 1);
                         
@@ -646,7 +665,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         
                         break;
                         
-                    default:
+                    case rDNA_DOWN:
                         
                         spring (part_1, &part[loop + 1], 1);
                         
@@ -657,7 +676,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         break;
                 }
                 
-                spb_exclude (part_1, spb);
+                spb_exclusion (part_1, spb);
                 membrane_interaction (part_1, 'E');
                 nucleolus_interaction (part_1, 'F');
                 
@@ -670,8 +689,46 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
         
         if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
         particle_exclusion (part, part_1);
+        
+        part_1->velocity[X] = ( 2.0 * PARTICLE_MASS * part_1->velocity_h[X] + DELTA * part_1->force[X] ) / ( 2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
+        part_1->velocity[Y] = ( 2.0 * PARTICLE_MASS * part_1->velocity_h[Y] + DELTA * part_1->force[Y] ) / ( 2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
+        part_1->velocity[Z] = ( 2.0 * PARTICLE_MASS * part_1->velocity_h[Z] + DELTA * part_1->force[Z] ) / ( 2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
+        
+        part_1->velocity_h[X] = part_1->velocity[X] + DELTA * ( part_1->force[X] - PARTICLE_MYU * part_1->velocity[X] ) / (2.0 * PARTICLE_MASS);
+        part_1->velocity_h[Y] = part_1->velocity[Y] + DELTA * ( part_1->force[Y] - PARTICLE_MYU * part_1->velocity[Y] ) / (2.0 * PARTICLE_MASS);
+        part_1->velocity_h[Z] = part_1->velocity[Z] + DELTA * ( part_1->force[Z] - PARTICLE_MYU * part_1->velocity[Z] ) / (2.0 * PARTICLE_MASS);
     }
     
+}
+
+// 初期データの出力 //
+void write_init_coordinate (Particle *part) {
+    
+    unsigned int loop;
+    
+    Particle *part_1;
+    
+    FILE *fpw;
+    
+    char result[128], str[128];
+    
+    sprintf (result, "result_init.txt");
+    
+    if ((fpw = fopen (result, "w")) == NULL) {
+        
+        printf (" \t error : cannot write coordinate. \n");
+        
+        exit (1);
+    }
+    
+    for (loop = 0; loop < NUMBER_MAX; loop++) {
+        
+        part_1 = &part[loop];
+        fprintf (fpw, "%d %d %d %d %lf %lf %lf 0.0 0.0 0.0\n", loop, part_1->pastis_no, part_1->chr_no, part_1->particle_type, part_1->position[X],
+                 part_1->position[Y], part_1->position[Z]);
+    }
+    
+    fclose (fpw);
 }
 
 void write_coordinate (Particle *part, const unsigned int time) {
@@ -696,8 +753,9 @@ void write_coordinate (Particle *part, const unsigned int time) {
     for (loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
-        fprintf (fpw, "%d %d %d %lf %lf %lf\n", loop, part_1->pastis_no, part_1->chr_no, part_1->position[X],
-                 part_1->position[Y], part_1->position[Z]);
+        fprintf (fpw, "%d %d %d %d %lf %lf %lf %lf %lf %lf\n", loop, part_1->pastis_no, part_1->chr_no, part_1->particle_type,
+                 part_1->position[X],part_1->position[Y], part_1->position[Z],
+                 part_1->velocity_h[X], part_1->velocity_h[Y], part_1->velocity_h[Z]);
     }
     
     fclose (fpw);
@@ -706,10 +764,12 @@ void write_coordinate (Particle *part, const unsigned int time) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation;
+    unsigned int loop, mitigation, calculation_max;
     char output_file[256];
     
     Particle *part, *part_1, spb;
+
+    direction_initialization (part);
     
     secure_main_memory (&part, spb);
     
@@ -718,17 +778,16 @@ int main ( int argc, char **argv ) {
     completion_coordinate (part);
     type_labeling (part);
     
-    write_coordinate (part, 0);
+    write_init_coordinate (part, 0);
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
-            calculation (part, &spb, mitigation);
+            //calculation (part, &spb, mitigation);
         }
         
     }
-    calculation (part, spb, );
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
