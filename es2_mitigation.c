@@ -187,8 +187,9 @@ void read_coordinate (Particle *part, const unsigned int start) {
     unsigned int loop, number;
     char dummy[256], input_file[256];
     FILE *fpr;
+    Particle *part_1;
     
-    sprint (input_file, "result_%d.txt", start);
+    sprintf (input_file, "result_%d.txt", start);
     if ((fpr = fopen (input_file, "r")) == NULL){
         
         printf ("\t erroe : cannot read coordinate data.\n");
@@ -204,7 +205,7 @@ void read_coordinate (Particle *part, const unsigned int start) {
                 &part_1->velocity_h[X], &part_1->velocity_h[Y], &part_1->velocity_h[Z]);
     }
     
-    fclose (fpr)
+    fclose (fpr);
 }
 
 void completion_coordinate (Particle *part) {
@@ -341,7 +342,7 @@ void direction_initialization (Particle *part) {
     
     Particle *part_1;
     
-    double nuc_init[] = {-15.523414 -7.284596 45.333157};
+    double nuc_init[] = {-15.523414, -7.284596, 45.333157};
     double r = Euclid_norm (nuc_init, ORIGIN);
     
     double phi = acos ( nuc_init[Z] / r );
@@ -778,7 +779,7 @@ int main ( int argc, char **argv ) {
     completion_coordinate (part);
     type_labeling (part);
     
-    write_init_coordinate (part, 0);
+    write_init_coordinate (part);
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
