@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include<math.h>
 #include<string.h>
-//#include <omp.h>
+#include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 7.0e-8 )   //長さの単位 (粒子径)
@@ -344,13 +344,14 @@ void direction_initialization (Particle *part) {
     Particle *part_1;
     
     double nuc_init[] = {-15.523414, -7.284596, 45.333157};
-    double r = Euclid_norm (nuc_init, ORIGIN);
     
+    double r = Euclid_norm (nuc_init, ORIGIN);
     double phi = acos ( nuc_init[Z] / r );
     double theta = acos ( nuc_init[X] / ( r * sin(phi))) * ( nuc_init[Y] / fabs(nuc_init[Y]));
     
-    double phi_new = acos ( NUCLEOLUS_POS[Z] / r );
-    double theta_new = acos ( NUCLEOLUS_POS[X] / ( r * sin (phi_new))) * ( NUCLEOLUS_POS[Y] / fabs(NUCLEOLUS_POS[Y]));
+    double r_new = Euclid_norm (NUCLEOLUS_POS, ORIGIN);
+    double phi_new = acos ( NUCLEOLUS_POS[Z] / r_new );
+    double theta_new = acos ( NUCLEOLUS_POS[X] / ( r_new * sin (phi_new))) * ( NUCLEOLUS_POS[Y] / fabs(NUCLEOLUS_POS[Y]));
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
         
@@ -770,8 +771,6 @@ int main ( int argc, char **argv ) {
     char output_file[256];
     
     Particle *part, *part_1, spb;
-
-    direction_initialization (part);
     
     secure_main_memory (&part, spb);
     
@@ -780,6 +779,7 @@ int main ( int argc, char **argv ) {
     completion_coordinate (part);
     type_labeling (part);
     
+    direction_initialization (part);
     write_init_coordinate (part);
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
