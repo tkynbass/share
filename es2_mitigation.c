@@ -17,7 +17,7 @@
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
-#define LENGTH ( 7.0e-8 )   //長さの単位 (粒子径)
+#define LENGTH ( 6.0e-8 )   //長さの単位 (粒子径)
 
 #define M_A ( 1.85131596e+6 )   // g/mol/particle
 #define N_A ( 6.022140857e+23 )
@@ -33,9 +33,10 @@
 #define K_BOND_3 ( 1.0e-0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e-0)
 
-#define DELTA ( 1.0e-11 )  //刻み幅
+#define DELTA ( 1.0e-6 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+6)
-#define LIST_INTERVAL ( 1000 )   // リスト化の間隔
+#define LIST_INTERVAL ( 50 )   // リスト化の間隔
+#define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
 #define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
@@ -57,6 +58,8 @@
 #define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH )
 #define NUCLEOLUS_AXIS_2 ( 0.8 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.9 * NUCLEOLUS_AXIS_1 )
+
+#define Y_TRANSLATION ( 1.5 * MEMBRANE_AXIS_2 )
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
@@ -296,6 +299,20 @@ void type_labeling (Particle *part) {
     for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) part [rDNA_LIST [loop]].particle_type = rDNA;
 }
 
+void y_axis_direction_translation (Particle *part) {
+    
+    Particle *part_1;
+    
+    for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
+        
+        part_1 = &part[loop];
+        
+        part_1->position[X] += Y_TRANSLATION;
+        part_1->position[Y] += Y_TRANSLATION;
+        part_1->position[Z] += Y_TRANSLATION;
+    }
+}
+
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
@@ -417,16 +434,13 @@ void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E
 // nucleolus interaction //
 void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     
-    //static double nuc_pos[] = { -25.0, 0.0, 0.0 };
-    
-    //位置座標をz軸まわりに-10度回転
-    rotate_about_z (part_1->position, - PI / 18);
-    
     //核小体中心から粒子へのベクトル
-    double nuc_to_pos[] = { part_1->position[X] - NUCLEOLUS_POS[X],
+    double nuc_to_pos[DIMENSION] = { part_1->position[X] - NUCLEOLUS_POS[X],
         part_1->position[Y] - NUCLEOLUS_POS[Y],
         part_1->position[Z] - NUCLEOLUS_POS[Z]};
     
+    //位置座標をz軸まわりに-10度回転
+    rotate_about_z (nuc_to_pos, - PI / 18);
     
     double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 )
     + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1 )
@@ -443,14 +457,12 @@ void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
         
         double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector);
         
-        rotate_about_z (normal_vector, PI / 6.0);
+        rotate_about_z (normal_vector, - PI / 18.0);
         
         part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
         part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
         part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
     }
-    
-    rotate_about_z (part_1->position, PI / 18);
 }
 
 void spb_exclusion (Particle *part_1, Particle *spb) {
@@ -482,7 +494,7 @@ void make_ve_list (Particle *part, Particle *part_1, const unsigned int target) 
         dist = Euclid_norm ( part_1->position, part_2->position);
         
         // 1個隣 そうでなくてもテロメア同士 (番号は隣だが染色体No.が異なる) //
-        if ( dist < 5.0 * BOND_DISTANCE && (abs (target - loop) > 1 || part_1->chr_no != part_2->chr_no ) ) {
+        if ( dist < LIST_RADIUS && (abs (target - loop) > 1 || part_1->chr_no != part_2->chr_no ) ) {
             
             list_count++;
             part_1->list_no = list_count;
@@ -524,23 +536,18 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
-        
+        /*
         part_1->position[X] += DELTA * part_1->velocity_h[X];
         part_1->position[Y] += DELTA * part_1->velocity_h[Y];
         part_1->position[Z] += DELTA * part_1->velocity_h[Z];
-        
+        */
+         
         part_1->force[X] = 0.0;
         part_1->force[Y] = 0.0;
         part_1->force[Z] = 0.0;
     }
-    
-    /*
-    // セントロメア、テロメア、rDNAの　相互作用 //
-    for ( loop = 0; loop < sizeof (CENT_LIST) / sizeof (CENT_LIST[0]); loop++ ) membrane_interaction ( &part [TELO_LIST [loop]], 'F' );
-    for ( loop = 0; loop < sizeof (TELO_LIST) / sizeof (TELO_LIST[0]); loop++ ) spring ( &part [CENT_LIST [loop]], &spb, 0 );
-    for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) nucleolus_interaction (&part [rDNA_LIST [loop]], 'F');
-    */
-     
+
+#pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
         
         part_1 = &part [loop];
@@ -693,6 +700,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
         if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
         particle_exclusion (part, part_1);
         
+        /*
         part_1->velocity[X] = ( 2.0 * PARTICLE_MASS * part_1->velocity_h[X] + DELTA * part_1->force[X] ) / ( 2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
         part_1->velocity[Y] = ( 2.0 * PARTICLE_MASS * part_1->velocity_h[Y] + DELTA * part_1->force[Y] ) / ( 2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
         part_1->velocity[Z] = ( 2.0 * PARTICLE_MASS * part_1->velocity_h[Z] + DELTA * part_1->force[Z] ) / ( 2.0 * PARTICLE_MASS + PARTICLE_MYU * DELTA);
@@ -700,8 +708,17 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
         part_1->velocity_h[X] = part_1->velocity[X] + DELTA * ( part_1->force[X] - PARTICLE_MYU * part_1->velocity[X] ) / (2.0 * PARTICLE_MASS);
         part_1->velocity_h[Y] = part_1->velocity[Y] + DELTA * ( part_1->force[Y] - PARTICLE_MYU * part_1->velocity[Y] ) / (2.0 * PARTICLE_MASS);
         part_1->velocity_h[Z] = part_1->velocity[Z] + DELTA * ( part_1->force[Z] - PARTICLE_MYU * part_1->velocity[Z] ) / (2.0 * PARTICLE_MASS);
+        */
     }
     
+    for ( loop = 0; loop < NUMBER_MAX; loop++ ) {
+        
+        part_1 = &part[loop];
+        
+        part_1->position[X] += DELTA * part_1->force[X];
+        part_1->position[Y] += DELTA * part_1->force[Y];
+        part_1->position[Z] += DELTA * part_1->force[Z];
+    }
 }
 
 // 初期データの出力 //
@@ -756,9 +773,8 @@ void write_coordinate (Particle *part, const unsigned int time) {
     for (loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
-        fprintf (fpw, "%d %d %d %d %lf %lf %lf %lf %lf %lf\n", loop, part_1->pastis_no, part_1->chr_no, part_1->particle_type,
-                 part_1->position[X],part_1->position[Y], part_1->position[Z],
-                 part_1->velocity_h[X], part_1->velocity_h[Y], part_1->velocity_h[Z]);
+        fprintf (fpw, "%d %d %d %d %lf %lf %lf\n", loop, part_1->pastis_no, part_1->chr_no, part_1->particle_type,
+                 part_1->position[X],part_1->position[Y], part_1->position[Z];
     }
     
     fclose (fpw);
@@ -778,19 +794,21 @@ int main ( int argc, char **argv ) {
     
     completion_coordinate (part);
     type_labeling (part);
-    
     direction_initialization (part);
+    y_axis_direction_translation (part);
+    
     write_init_coordinate (part);
     
-    /*
+    
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
-            //calculation (part, &spb, mitigation);
+            calculation (part, &spb, mitigation);
         }
         
-    }*/
+        write_coordinate (part, time);
+    }
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
