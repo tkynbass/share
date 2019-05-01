@@ -149,12 +149,13 @@ void read_pastis_data (Particle *part){       //初期値設定
         else if ( loop <= 2023) part[loop].chr_no = B;
         else part[loop].chr_no = C;
         
+        /*
         // velocity_h initialization //
         part_1 = &part[loop];
         
         part_1->velocity_h[X] = 0.0;
         part_1->velocity_h[Y] = 0.0;
-        part_1->velocity_h[Z] = 0.0;
+        part_1->velocity_h[Z] = 0.0;*/
     }
 
     // Input the coordinates of Pastis //
@@ -202,10 +203,14 @@ void read_coordinate (Particle *part, const unsigned int start) {
     while (fscanf (fpr, "%d ", &number) != EOF) {
         
         part_1 = &part[number];
-        
+        /*
         fscanf (fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z],
                 &part_1->velocity_h[X], &part_1->velocity_h[Y], &part_1->velocity_h[Z]);
+        */
+        
+        fscanf (fpr, "%d %d %d %lf %lf %lf\n", &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
     }
     
     fclose (fpr);
