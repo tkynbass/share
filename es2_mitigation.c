@@ -305,11 +305,7 @@ void y_axis_direction_translation (Particle *part) {
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
         
-        part_1 = &part[loop];
-        
-        part_1->position[X] += Y_TRANSLATION;
-        part_1->position[Y] += Y_TRANSLATION;
-        part_1->position[Z] += Y_TRANSLATION;
+        part[loop].position[Y] += Y_TRANSLATION;
     }
 }
 
@@ -677,11 +673,11 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         
                     case rDNA_DOWN:
                         
-                        spring (part_1, &part[loop + 1], 1);
+                        spring (part_1, &part[loop - 1], 1);
                         
-                        spring (part_1, &part[loop + 2], 2);
+                        spring (part_1, &part[loop - 2], 2);
                         
-                        spring (part_1, &part[loop + 3], 3);
+                        spring (part_1, &part[loop - 3], 3);
                 
                         break;
                 }
@@ -774,7 +770,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
         
         part_1 = &part[loop];
         fprintf (fpw, "%d %d %d %d %lf %lf %lf\n", loop, part_1->pastis_no, part_1->chr_no, part_1->particle_type,
-                 part_1->position[X],part_1->position[Y], part_1->position[Z];
+                 part_1->position[X],part_1->position[Y], part_1->position[Z]);
     }
     
     fclose (fpw);
@@ -783,7 +779,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, calculation_max;
+    unsigned int loop, mitigation, calculation_max = atoi (argv[1]);
     char output_file[256];
     
     Particle *part, *part_1, spb;
