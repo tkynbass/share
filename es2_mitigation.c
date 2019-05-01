@@ -105,7 +105,7 @@ typedef struct particle {           //構造体の型宣言
 
 enum label{ X, Y, Z};
 
-void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 //
+void secure_main_memory (Particle **part) {   // メモリ確保 //
     
     if ( (*part = (Particle *)malloc(NUMBER_MAX * sizeof(Particle))) == NULL) {
         
@@ -122,12 +122,6 @@ void secure_main_memory (Particle **part, Particle spb) {   // メモリ確保 /
             printf ("\n error : can not secure the memory part.list \n");
             exit (1);
         }
-    }
-    
-    if ( (spb.list = (unsigned int *) malloc (NUMBER_MAX * sizeof (unsigned int))) == NULL) {
-        
-        printf("\n error : can not secure the memory of spb.list \n");
-        exit(1);
     }
     
 }
@@ -387,19 +381,33 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
     // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
     const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2, K_BOND_3 };
-    
-    double dist_0;
+    double dist, f, dist_0;
+
     //dist_0 = 自然長 //
-    if ( interval != 0 ) dist_0 = BOND_DISTANCE * interval;
-    else dist_0 =  PARTICLE_RADIUS + SPB_RADIUS;
+    if ( interval != 0 ) {
+        
+        dist_0 = BOND_DISTANCE * interval;
+        dist = Euclid_norm (part_1->position, part_2->position);
+        
+        f = bonding_power[interval] * (dist_0 - dist) / dist;
+        
+        part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+        part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+        part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+        
+    }
+    else {
+        
+        dist_0 =  PARTICLE_RADIUS + SPB_RADIUS;
     
-    double dist = Euclid_norm (part_1->position, part_2->position);
-    
-    double f = bonding_power[interval] * (dist_0 - dist) / dist;
-    
-    part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
-    part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-    part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+        dist = Euclid_norm (part_1->position, SPB_POS);
+        
+        f = bonding_power[interval] * (dist_0 - dist) / dist;
+        
+        part_1->force[X] += f * (part_1->position[X] - SPB_POS[X]);
+        part_1->force[Y] += f * (part_1->position[Y] - SPB_POS[Y]);
+        part_1->force[Z] += f * (part_1->position[Z] - SPB_POS[Z]);
+    }
 }
 
 
@@ -465,17 +473,17 @@ void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     }
 }
 
-void spb_exclusion (Particle *part_1, Particle *spb) {
+void spb_exclusion (Particle *part_1) {
     
     // spb_exclusion //
-    double dist = Euclid_norm (part_1->position, spb->position);
+    double dist = Euclid_norm (part_1->position, SPB_POS);
     double f = K_EXCLUDE * ( SPB_RADIUS + PARTICLE_RADIUS - dist) / dist;
     
     if ( dist < PARTICLE_RADIUS + SPB_RADIUS) {
         
-        part_1->force[X] += f * (part_1->position[X] - spb->position[X]);
-        part_1->force[Y] += f * (part_1->position[Y] - spb->position[Y]);
-        part_1->force[Z] += f * (part_1->position[Z] - spb->position[Z]);
+        part_1->force[X] += f * (part_1->position[X] -  SPB_POS[X]);
+        part_1->force[Y] += f * (part_1->position[Y] -  SPB_POS[Y]);
+        part_1->force[Z] += f * (part_1->position[Z] -  SPB_POS[Z]);
     }
 }
 
@@ -527,7 +535,7 @@ void particle_exclusion (Particle *part, Particle *part_1) {
 }
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, Particle *spb, const unsigned int mitigation ) {
+void calculation (Particle *part, const unsigned int mitigation ) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -607,7 +615,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         break;
                 }
                 
-                spb_exclusion (part_1, spb);
+                spb_exclusion (part_1);
                 nucleolus_interaction (part_1, 'E');
                 membrane_interaction (part_1, 'E');
                 
@@ -626,7 +634,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                 
                 nucleolus_interaction (part_1, 'E');
                 membrane_interaction (part_1, 'E');
-                spring (part_1, spb, 0);
+                spring (part_1, NULL, 0);
                 
                 break;
                 
@@ -656,7 +664,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         break;
                 }
                 
-                spb_exclusion (part_1, spb);
+                spb_exclusion (part_1);
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, 'E');
                 
@@ -686,7 +694,7 @@ void calculation (Particle *part, Particle *spb, const unsigned int mitigation )
                         break;
                 }
                 
-                spb_exclusion (part_1, spb);
+                spb_exclusion (part_1);
                 membrane_interaction (part_1, 'E');
                 nucleolus_interaction (part_1, 'F');
                 
@@ -786,9 +794,9 @@ int main ( int argc, char **argv ) {
     unsigned int loop, mitigation, calculation_max = atoi (argv[1]);
     char output_file[256];
     
-    Particle *part, *part_1, spb;
+    Particle *part, *part_1;
     
-    secure_main_memory (&part, spb);
+    secure_main_memory (&part);
     
     read_pastis_data (part);
     
@@ -804,7 +812,7 @@ int main ( int argc, char **argv ) {
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
-            calculation (part, &spb, mitigation);
+            calculation (part, mitigation);
         }
         
         write_coordinate (part, time);
