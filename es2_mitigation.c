@@ -91,13 +91,12 @@ double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]
 
 typedef struct particle {           //構造体の型宣言
     int pastis_no;
-    CHAIN chr_no;
-    TYPE particle_type;
+    unsigned int chr_no;
+    unsigned int particle_type;
     double position[DIMENSION];
     double position_new[DIMENSION];
-    double position_old[DIMENSION];
     double velocity[DIMENSION];
-    double velocity_h[DIMENSION];
+    //double velocity_h[DIMENSION];
     double force[DIMENSION];
     unsigned int list_no;
     unsigned int *list;
