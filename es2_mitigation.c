@@ -354,7 +354,8 @@ void direction_initialization (Particle *part) {
     
     Particle *part_1;
     
-    double nuc_init[] = {-15.523414, -7.284596, 45.333157};
+    double nuc_init[] = {-15.523414 * PASTIS_SCALING, -7.284596 * PASTIS_SCALING, 45.333157* PASTIS_SCALING};
+    double start_origin[] = { 0.0, Y_TRANSLATION, 0.0 };
     
     // z-y平面に関して反転 //
     for ( unsigned int loop = 0; loop < NUMBER_MAX; loop++) part[loop].position[X] *= -1;
@@ -364,9 +365,9 @@ void direction_initialization (Particle *part) {
     double phi = acos ( nuc_init[Z] / r );
     double theta = acos ( nuc_init[X] / ( r * sin(phi))) * ( nuc_init[Y] / fabs(nuc_init[Y]));
     
-    double r_new = Euclid_norm (NUCLEOLUS_POS, ORIGIN);
-    double phi_new = acos ( NUCLEOLUS_POS[Z] / r_new );
-    double theta_new = acos ( NUCLEOLUS_POS[X] / ( r_new * sin (phi_new))) * ( NUCLEOLUS_POS[Y] / fabs(NUCLEOLUS_POS[Y]));
+    double r_new = Euclid_norm (NUCLEOLUS_POS, start_origin);
+    double phi_new = acos (( NUCLEOLUS_POS[Z] / r_new );
+    double theta_new = acos ( NUCLEOLUS_POS[X] / ( r_new * sin (phi_new))) * ( (NUCLEOLUS_POS[Y] - start_origin[Y]) / fabs ((NUCLEOLUS_POS[Y] - start_origin[Y])));
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
         
@@ -811,9 +812,9 @@ int main ( int argc, char **argv ) {
     
     completion_coordinate (part);
     type_labeling (part);
-    y_axis_direction_translation (part);
-    direction_initialization (part);
     
+    direction_initialization (part);
+    y_axis_direction_translation (part);
     
     write_init_coordinate (part);
     
