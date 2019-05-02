@@ -810,10 +810,11 @@ int main ( int argc, char **argv ) {
     
     write_init_coordinate (part);
     
+    printf ("\n\t DELTA = %1.2e , mitigation = %1.2e \n\n", DELTA, MITIGATION_INTERVAL);
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
-        printf ("\t Now calculating...  time = %d \n", time);
+        printf ("\t Now calculating...  time = %d \r", time);
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
