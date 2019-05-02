@@ -811,8 +811,9 @@ int main ( int argc, char **argv ) {
     
     completion_coordinate (part);
     type_labeling (part);
-    direction_initialization (part);
     y_axis_direction_translation (part);
+    direction_initialization (part);
+    
     
     write_init_coordinate (part);
     
