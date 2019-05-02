@@ -567,7 +567,7 @@ void calculation (Particle *part, const unsigned int mitigation ) {
                 spring (part_1, &part [loop + 1], 1);
                 spring (part_1, &part [loop - 1], 1);
                 
-                // spring 2 //
+                // spring 2 & 3 //
                 switch (loop)  {
                         
                     case TELO1_UP + 1:
@@ -575,40 +575,43 @@ void calculation (Particle *part, const unsigned int mitigation ) {
                     case rDNA_UP + 1:
                         
                         spring (part_1, &part[loop + 2], 2);
-                        break;
                         
+                        spring (part_1, &part[loop + 3], 3);
+                        break;
+                    
+                    case TELO1_UP + 2:
+                    case TELO2_UP + 2:
+                    case rDNA_UP + 2:
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        spring (part_1, &part[loop - 2], 2);
+                        
+                        spring (part_1, &part[loop + 3], 3);
+                        break;
+                    
                     case TELO1_DOWN - 1:
                     case TELO2_DOWN - 1:
                     case rDNA_DOWN - 1:
                         
                         spring (part_1, &part[loop - 2], 2);
+                        
+                        spring (part_1, &part[loop - 3], 3);
+                        break;
+                        
+                    case TELO1_DOWN - 2:
+                    case TELO2_DOWN - 2:
+                    case rDNA_DOWN - 2:
+                        
+                        spring (part_1, &part[loop + 2], 2);
+                        spring (part_1, &part[loop - 2], 2);
+                        
+                        spring (part_1, &part[loop - 3], 3);
                         break;
                     
                     default:
                         
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
-                        break;
-                }
-                
-                // spring 3 //
-                switch (loop) {
-                    
-                    case TELO1_UP + 2:
-                    case TELO2_UP + 2:
-                    case rDNA_UP + 2:
-                        
-                        spring (part_1, &part[loop + 3], 3);
-                        break;
-                    
-                    case TELO1_DOWN - 2:
-                    case TELO2_DOWN - 2:
-                    case rDNA_DOWN - 2:
-                        
-                        spring (part_1, &part[loop - 3], 3);
-                        break;
-                    
-                    default:
                         
                         spring (part_1, &part[loop + 3], 3);
                         spring (part_1, &part[loop - 3], 3);
