@@ -819,6 +819,8 @@ int main ( int argc, char **argv ) {
         }
         
         write_coordinate (part, time);
+        
+        printf ("\t Now calculating...  time = %d \n", time);
     }
     
     // メモリ解放 //
