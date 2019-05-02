@@ -29,13 +29,13 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e-0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e-4 )     //2つ隣
+#define K_BOND_2 ( 1.0e-0 )     //2つ隣
 #define K_BOND_3 ( 1.0e-0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e-0)
 
-#define DELTA ( 1.0e-5 )  //刻み幅
+#define DELTA ( 1.0e-4 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+4)
-#define LIST_INTERVAL ( 50 )   // リスト化の間隔
+#define LIST_INTERVAL ( 10 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
@@ -358,6 +358,7 @@ void direction_initialization (Particle *part) {
     
     // z-y平面に関して反転 //
     for ( unsigned int loop = 0; loop < NUMBER_MAX; loop++) part[loop].position[X] *= -1;
+    nuc_init[X] *= -1;
     
     double r = Euclid_norm (nuc_init, ORIGIN);
     double phi = acos ( nuc_init[Z] / r );
