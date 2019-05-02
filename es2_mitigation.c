@@ -33,7 +33,7 @@
 #define K_BOND_3 ( 1.0e-0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e-0)
 
-#define DELTA ( 1.0e-6 )  //刻み幅
+#define DELTA ( 1.0e-5 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+4)
 #define LIST_INTERVAL ( 50 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
@@ -356,6 +356,9 @@ void direction_initialization (Particle *part) {
     
     double nuc_init[] = {-15.523414, -7.284596, 45.333157};
     
+    // z-y平面に関して反転 //
+    for ( unsigned int loop = 0; loop < NUMBER_MAX; loop++) part[loop].position[X] *= -1;
+    
     double r = Euclid_norm (nuc_init, ORIGIN);
     double phi = acos ( nuc_init[Z] / r );
     double theta = acos ( nuc_init[X] / ( r * sin(phi))) * ( nuc_init[Y] / fabs(nuc_init[Y]));
@@ -374,6 +377,8 @@ void direction_initialization (Particle *part) {
         rotate_about_y (part_1->position, -phi_new);
         rotate_about_z (part_1->position, theta_new);
     }
+    
+    
 }
 
 //　ばねによる力 part_1側の力計算//
@@ -815,6 +820,7 @@ int main ( int argc, char **argv ) {
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
         printf ("\t Now calculating...  time = %d \r", time);
+        fflush (stdout);
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
