@@ -34,7 +34,7 @@
 #define K_EXCLUDE ( 1.0e-0)
 
 #define DELTA ( 1.0e-6 )  //刻み幅
-#define MITIGATION_INTERVAL (1.0e+6)
+#define MITIGATION_INTERVAL (1.0e+4)
 #define LIST_INTERVAL ( 50 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
@@ -813,14 +813,14 @@ int main ( int argc, char **argv ) {
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
+        printf ("\t Now calculating...  time = %d \n", time);
+        
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
             calculation (part, mitigation);
         }
         
         write_coordinate (part, time);
-        
-        printf ("\t Now calculating...  time = %d \n", time);
     }
     
     // メモリ解放 //
