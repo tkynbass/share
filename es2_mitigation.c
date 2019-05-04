@@ -416,7 +416,7 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     }
 }
 
-void change_mem_al (double mem_al[3], const unsigned int time) {
+void change_mem_al (Particle *part, double mem_al[3], const unsigned int time) {
     
     static double delta;
     
@@ -603,7 +603,6 @@ void calculation (Particle *part, const unsigned int mitigation, double mem_al[3
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
-    double mem_al[3]
     
     // 位置の計算 & 力の初期化 //
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
@@ -620,7 +619,7 @@ void calculation (Particle *part, const unsigned int mitigation, double mem_al[3
         part_1->force[Z] = 0.0;
     }
 
-#pragma omp parallel for private (part_1) num_threads (8)
+    #pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
         
         part_1 = &part [loop];
@@ -884,7 +883,7 @@ int main ( int argc, char **argv ) {
         printf ("\t Now calculating...  time = %d \r", time);
         fflush (stdout);
         
-        change_mem_al (mem_al, time);
+        change_mem_al (part, mem_al, time);
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
