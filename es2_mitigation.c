@@ -56,10 +56,11 @@
 #define MEMBRANE_AXIS_3 ( 0.75 * MEMBRANE_AXIS_1 )
 
 #define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH )
-#define NUCLEOLUS_AXIS_2 ( 0.8 * NUCLEOLUS_AXIS_1 )
-#define NUCLEOLUS_AXIS_3 ( 0.9 * NUCLEOLUS_AXIS_1 )
+#define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
+#define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
 #define Y_TRANSLATION ( 1.5 * MEMBRANE_AXIS_2 )
+#define INIT_MEM_AL1 ( MEMBRANE_AXIS_1 + Y_TRANSLATION )
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
@@ -366,7 +367,7 @@ void direction_initialization (Particle *part) {
     double theta = acos ( nuc_init[X] / ( r * sin(phi))) * ( nuc_init[Y] / fabs(nuc_init[Y]));
     
     double r_new = Euclid_norm (NUCLEOLUS_POS, start_origin);
-    double phi_new = acos (( NUCLEOLUS_POS[Z] / r_new );
+    double phi_new = acos ( NUCLEOLUS_POS[Z] / r_new );
     double theta_new = acos ( NUCLEOLUS_POS[X] / ( r_new * sin (phi_new))) * ( (NUCLEOLUS_POS[Y] - start_origin[Y]) / fabs ((NUCLEOLUS_POS[Y] - start_origin[Y])));
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
@@ -379,8 +380,6 @@ void direction_initialization (Particle *part) {
         rotate_about_y (part_1->position, -phi_new);
         rotate_about_z (part_1->position, theta_new);
     }
-    
-    
 }
 
 //　ばねによる力 part_1側の力計算//
@@ -417,9 +416,67 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     }
 }
 
+void change_mem_al (double mem_al[3], const unsigned int time) {
+    
+    static double delta;
+    
+    if (time == 1) {
+        
+        delta = 0;
+        
+        double y_max = 0.0;
+        for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ) {
+            
+            if ( part[loop].position[Y] > y_max ) y_max = part[loop].position[Y];
+        }
+        
+        // 核小体 主成分の初期値 //
+        mem_al[X] = y_max;
+        mem_al[Y] = 0.85 * mem_al[X];
+        mem_al[Z] = 0.75 * mem_al[X];
+        
+        delta = ( INIT_MEM_AL1 - MEMBRANE_AXIS_1 ) / 100;
+    }
+    else {
+        
+        if ( mem_al[X] > MEMBRANE_AXIS_1) {
+            
+            mem_al[X] -= delta;
+            mem_al[Y] = 0.85 * mem_al[X];
+            mem_al[Z] = 0.75 * mem_al[X];
+        }
+    }
+}
 
 // membrane interaction //
-void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E: exclude */ ) {
+void membrane_interaction_change ( Particle *part_1, char interaction_type /* F: fix, E: exclude */, const double mem_al[3] ) {
+    
+    double dist = Euclid_norm (part_1->position, ORIGIN);
+    
+    double ellipsoid_dist = part_1->position[X] * part_1->position[X] / ( mem_al[0] * mem_al[0] )
+    + part_1->position[Y] * part_1->position[Y] / ( mem_al[1] * mem_al[1] )
+    + part_1->position[Z] * part_1->position[Z] / ( mem_al[2] * mem_al[2] );
+    
+    if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
+        
+        // 法線ベクトル
+        double normal_vector[] = { 2.0 * part_1->position[X] / ( mem_al[0] * mem_al[0]),
+            2.0 * part_1->position[Y] / ( mem_al[1] * mem_al[1]),
+            2.0 * part_1->position[Z] / ( mem_al[2] * mem_al[2]) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+        
+        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
+                                                                  + part_1->position[Y] * normal_vector[Y]
+                                                                  + part_1->position[Z] * normal_vector[Z]);
+        
+        part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
+        part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
+        part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
+    }
+}
+
+void membrane_interaction_fix ( Particle *part_1, char interaction_type /* F: fix, E: exclude */) {
     
     double dist = Euclid_norm (part_1->position, ORIGIN);
     
@@ -457,15 +514,15 @@ void nucleolus_interaction ( Particle *part_1, const char interaction_type ) {
     //位置座標をz軸まわりに-10度回転
     rotate_about_z (nuc_to_pos, - PI / 18);
     
-    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 )
-    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1 )
+    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1 )
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 )
     + nuc_to_pos[Z] * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2 );
     
     if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
         
         // 法線ベクトル
-        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3),
-            2.0 * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1),
+        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1),
+            2.0 * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3),
             2.0 * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2) };
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
@@ -542,10 +599,11 @@ void particle_exclusion (Particle *part, Particle *part_1) {
 }
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, const unsigned int mitigation ) {
+void calculation (Particle *part, const unsigned int mitigation, double mem_al[3] ) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
+    double mem_al[3]
     
     // 位置の計算 & 力の初期化 //
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
@@ -627,7 +685,7 @@ void calculation (Particle *part, const unsigned int mitigation ) {
                 
                 spb_exclusion (part_1);
                 nucleolus_interaction (part_1, 'E');
-                membrane_interaction (part_1, 'E');
+                membrane_interaction_change (part_1, 'E', mem_al);
                 
                 break;
             
@@ -643,7 +701,7 @@ void calculation (Particle *part, const unsigned int mitigation ) {
                 spring (part_1, &part[loop - 3], 3);
                 
                 nucleolus_interaction (part_1, 'E');
-                membrane_interaction (part_1, 'E');
+                membrane_interaction_change (part_1, 'E', mem_al);
                 spring (part_1, NULL, 0);
                 
                 break;
@@ -675,7 +733,7 @@ void calculation (Particle *part, const unsigned int mitigation ) {
                 }
                 
                 spb_exclusion (part_1);
-                membrane_interaction (part_1, 'F');
+                membrane_interaction_change (part_1, 'F', mem_al);
                 nucleolus_interaction (part_1, 'E');
                 
                 break;
@@ -705,7 +763,7 @@ void calculation (Particle *part, const unsigned int mitigation ) {
                 }
                 
                 spb_exclusion (part_1);
-                membrane_interaction (part_1, 'E');
+                membrane_interaction_change (part_1, 'E', mem_al);
                 nucleolus_interaction (part_1, 'F');
                 
                 break;
@@ -803,6 +861,7 @@ int main ( int argc, char **argv ) {
     
     unsigned int loop, mitigation, calculation_max = atoi (argv[1]);
     char output_file[256];
+    double mem_al[3];
     
     Particle *part, *part_1;
     
@@ -825,9 +884,11 @@ int main ( int argc, char **argv ) {
         printf ("\t Now calculating...  time = %d \r", time);
         fflush (stdout);
         
+        change_mem_al (mem_al, time);
+        
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
-            calculation (part, mitigation);
+            calculation (part, mitigation, mem_al);
         }
         
         write_coordinate (part, time);
