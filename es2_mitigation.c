@@ -28,14 +28,14 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e-0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e-0 )     //2つ隣
-#define K_BOND_3 ( 1.0e-0 )     //3つ隣
-#define K_EXCLUDE ( 1.0e-0)
+#define K_BOND ( 1.0e+1 )       //1つ隣　ばね定数
+#define K_BOND_2 ( 1.0e+1 )     //2つ隣
+#define K_BOND_3 ( 1.0e+1 )     //3つ隣
+#define K_EXCLUDE ( 1.0e+1 )
 
 #define DELTA ( 1.0e-4 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+4)
-#define LIST_INTERVAL ( 10 )   // リスト化の間隔
+#define LIST_INTERVAL ( 500 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
@@ -874,7 +874,7 @@ int main ( int argc, char **argv ) {
     direction_initialization (part);
     y_axis_direction_translation (part);
     
-    write_init_coordinate (part);
+    write_coordinate (part, 0);
     
     printf ("\n\t DELTA = %1.2e , mitigation = %1.2e \n\n", DELTA, MITIGATION_INTERVAL);
     
