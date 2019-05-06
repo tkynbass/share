@@ -29,8 +29,8 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e+1 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e+1 )     //2つ隣
-#define K_BOND_3 ( 1.0e+1 )     //3つ隣
+#define K_BOND_2 ( 1.0e+0 )     //2つ隣
+#define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+1 )
 
 #define DELTA ( 1.0e-4 )  //刻み幅
@@ -96,6 +96,7 @@ typedef struct particle {           //構造体の型宣言
     unsigned int particle_type;
     double position[DIMENSION];
     double position_new[DIMENSION];
+    double position_init[DIMENSION];
     double velocity[DIMENSION];
     //double velocity_h[DIMENSION];
     double force[DIMENSION];
@@ -174,6 +175,10 @@ void read_pastis_data (Particle *part){       //初期値設定
             part_1->position[X] *= PASTIS_SCALING;
             part_1->position[Y] *= PASTIS_SCALING;
             part_1->position[Z] *= PASTIS_SCALING;
+            
+            part_1->position_init[X] = part_1->position[X];
+            part_1->position_init[Y] = part_1->position[Y];
+            part_1->position_init[Z] = part_1->position[Z];
         }
     }
     
@@ -390,16 +395,31 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     double dist, f, dist_0;
 
     //dist_0 = 自然長 //
+    /*
     if ( interval != 0 ) {
         
-        dist_0 = BOND_DISTANCE * interval;
-        dist = Euclid_norm (part_1->position, part_2->position);
-        
-        f = bonding_power[interval] * (dist_0 - dist) / dist;
-        
-        part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
-        part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-        part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+        if ( part_1->pastis_no >= 0 && part_2->pastis_no >= 0 ) {
+            
+            dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
+            dist = Euclid_norm (part_1->position, part_2->position);
+            
+            f = bonding_power[interval] * (dist_0 - dist) / dist;
+            
+            part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+            part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+            part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+        }
+        else {
+            
+            dist_0 = BOND_DISTANCE * interval;
+            dist = Euclid_norm (part_1->position, part_2->position);
+            
+            f = bonding_power[interval] * (dist_0 - dist) / dist;
+            
+            part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+            part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+            part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+        }
         
     }
     else {
@@ -413,6 +433,49 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
         part_1->force[X] += f * (part_1->position[X] - SPB_POS[X]);
         part_1->force[Y] += f * (part_1->position[Y] - SPB_POS[Y]);
         part_1->force[Z] += f * (part_1->position[Z] - SPB_POS[Z]);
+    }
+    */
+    
+    switch (interval) {
+        case 0:
+            
+            dist_0 =  PARTICLE_RADIUS + SPB_RADIUS;
+            
+            dist = Euclid_norm (part_1->position, SPB_POS);
+            
+            f = bonding_power[interval] * (dist_0 - dist) / dist;
+            
+            part_1->force[X] += f * (part_1->position[X] - SPB_POS[X]);
+            part_1->force[Y] += f * (part_1->position[Y] - SPB_POS[Y]);
+            part_1->force[Z] += f * (part_1->position[Z] - SPB_POS[Z]);
+            break;
+            
+        case 1:
+            
+            dist_0 = BOND_DISTANCE * interval;
+            dist = Euclid_norm (part_1->position, part_2->position);
+            
+            f = bonding_power[interval] * (dist_0 - dist) / dist;
+            
+            part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+            part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+            part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+            break;
+            
+        default:
+            
+            if ( part_1->pastis_no >= 0 && part_2->pastis_no >= 0 ) {
+                
+                dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
+                dist = Euclid_norm (part_1->position, part_2->position);
+                
+                f = bonding_power[interval] * (dist_0 - dist) / dist;
+                
+                part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+                part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+                part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
+            }
+            break;
     }
 }
 
