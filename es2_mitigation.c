@@ -524,6 +524,7 @@ void change_mem_al (Particle *part, double mem_al[3], const unsigned int time) {
     if (time == 1) {
         
         printf ("\t Change mem_al ? ( yes-1 : no-0) : ");
+        fflush (stdout);
         scanf ("%d", &flag);
         
         if (flag == 1){
@@ -994,10 +995,10 @@ int main ( int argc, char **argv ) {
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
+        change_mem_al (part, mem_al, time);
+        
         printf ("\t Now calculating...  time = %d \r", time);
         fflush (stdout);
-        
-        change_mem_al (part, mem_al, time);
         
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
