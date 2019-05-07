@@ -60,8 +60,8 @@
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
 #define X_TRANSLATION ( -5.0 )
-#define Y_TRANSLATION ( 15.0 )
-#define Z_TRANSLATION ( -10.0 )
+#define Y_TRANSLATION ( 30.0 )
+#define Z_TRANSLATION ( -14.0 )
 #define INIT_MEM_AL1 ( MEMBRANE_AXIS_1 + Y_TRANSLATION )
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
@@ -967,6 +967,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
                  part_1->position[X],part_1->position[Y], part_1->position[Z]);
     }
     
+    printf ("Radius 1.1e\n", PARTICLE_RADIUS);
     fclose (fpw);
 }
 
@@ -991,7 +992,7 @@ int main ( int argc, char **argv ) {
     
     write_coordinate (part, 0);
     
-    printf ("\n\t DELTA = %1.2e , mitigation = %1.2e \n\n", DELTA, MITIGATION_INTERVAL);
+    printf ("\n\t PARTICLE_RADIUS = %1.1e, DELTA = %1.1e, mitigation = %1.1e \n\n", PARTICLE_RADIUS, DELTA, MITIGATION_INTERVAL);
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
