@@ -519,25 +519,39 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
 void change_mem_al (Particle *part, double mem_al[3], const unsigned int time) {
     
     static double delta;
+    static unsigned int flag;
     
     if (time == 1) {
         
-        delta = 0;
+        printf ("\t Change mem_al ? ( yes-1 : no-0) : ");
+        scanf ("%d", &flag);
         
-        double y_max = 0.0;
-        for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ) {
+        if (flag == 1){
+        
+            delta = 0;
             
-            if ( part[loop].position[Y] > y_max ) y_max = part[loop].position[Y];
+            double y_max = 0.0;
+            for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ) {
+                
+                if ( part[loop].position[Y] > y_max ) y_max = part[loop].position[Y];
+            }
+            
+            // 核小体 主成分の初期値 //
+            mem_al[X] = y_max;
+            mem_al[Y] = 0.85 * mem_al[X];
+            mem_al[Z] = 0.75 * mem_al[X];
+            
+            delta = ( INIT_MEM_AL1 - MEMBRANE_AXIS_1 ) / 100;
+        }
+        else {
+            
+            mem_al[X] = MEMBRANE_AXIS_1;
+            mem_al[Y] = MEMBRANE_AXIS_2;
+            mem_al[Z] = MEMBRANE_AXIS_3;
         }
         
-        // 核小体 主成分の初期値 //
-        mem_al[X] = y_max;
-        mem_al[Y] = 0.85 * mem_al[X];
-        mem_al[Z] = 0.75 * mem_al[X];
-        
-        delta = ( INIT_MEM_AL1 - MEMBRANE_AXIS_1 ) / 100;
     }
-    else {
+    else if (flag == 1) {
         
         if ( mem_al[X] > MEMBRANE_AXIS_1) {
             
