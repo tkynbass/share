@@ -355,6 +355,18 @@ void rotate_about_y ( double pos[DIMENSION], const double theta ) {
     pos[Z] = pos_new[Z];
 }
 
+// rotate function about x axis y-z平面での回転 //
+void rotate_about_x ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[Y] = cos (theta) * pos[Y] - sin (theta) * pos[Z];
+    pos_new[Z] = sin (theta) * pos[Y] + cos (theta) * pos[Z];
+    
+    pos[Y] = pos_new[Y];
+    pos[Z] = pos_new[Z];
+}
+
 // 核小体方向が構造と合うように回転 //
 void direction_initialization (Particle *part) {
     
@@ -381,7 +393,7 @@ void direction_initialization (Particle *part) {
         part_1 = &part[loop];
         
         rotate_about_z (part_1->position, theta);
-        rotate_about_y (part_1->position, phi);
+        rotate_about_x (part_1->position, phi);
         
         //rotate_about_y (part_1->position, -phi_new);
         //rotate_about_z (part_1->position, theta_new);
