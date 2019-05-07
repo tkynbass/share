@@ -28,7 +28,7 @@
 #define PARTICLE_RADIUS ( 1.0 )     //粒子の半径
 #define PI ( M_PI )
 
-#define K_BOND ( 1.0e+1 )       //1つ隣　ばね定数
+#define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e+0 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+1 )
@@ -59,7 +59,9 @@
 #define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
-#define Y_TRANSLATION ( 1.5 * MEMBRANE_AXIS_2 )
+#define X_TRANSLATION ( -5.0 )
+#define Y_TRANSLATION ( 15.0 )
+#define Z_TRANSLATION ( -10.0 )
 #define INIT_MEM_AL1 ( MEMBRANE_AXIS_1 + Y_TRANSLATION )
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
@@ -303,13 +305,17 @@ void type_labeling (Particle *part) {
     for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) part [rDNA_LIST [loop]].particle_type = rDNA;
 }
 
-void y_axis_direction_translation (Particle *part) {
+void parallel_translation (Particle *part) {
     
     Particle *part_1;
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
         
-        part[loop].position[Y] += Y_TRANSLATION;
+        part_1 = &part[loop];
+        
+        part_1->position[X] += X_TRANSLATION;
+        part_1->position[Y] += Y_TRANSLATION;
+        part_1->position[Z] += Z_TRANSLATION;
     }
 }
 
@@ -408,10 +414,12 @@ void direction_initialization (Particle *part) {
         
         part_1 = &part[loop];
         
+        // SPB方向のベクトルをx軸正の方向に合わせる //
         rotate_about_y (part_1->position, -theta);
         rotate_about_z (part_1->position, phi - PI / 2.0);
         
-        //rotate_about_z (part_1->position, PI / 2.0 - phi_new);
+        rotate_about_x (part_1->position, - PI / 3.0);
+        rotate_about_z (part_1->position, - PI / 7.0);
         rotate_about_y (part_1->position, theta_new);
     }
 }
@@ -964,7 +972,7 @@ int main ( int argc, char **argv ) {
     type_labeling (part);
     
     direction_initialization (part);
-    y_axis_direction_translation (part);
+    parallel_translation (part);
     
     write_coordinate (part, 0);
     
