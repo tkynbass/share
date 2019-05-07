@@ -411,7 +411,7 @@ void direction_initialization (Particle *part) {
         rotate_about_y (part_1->position, -theta);
         rotate_about_z (part_1->position, phi - PI / 2.0);
         
-        rotate_about_z (part_1->position, PI / 2.0 - phi_new);
+        //rotate_about_z (part_1->position, PI / 2.0 - phi_new);
         rotate_about_y (part_1->position, theta_new);
     }
 }
