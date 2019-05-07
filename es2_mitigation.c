@@ -403,16 +403,16 @@ void direction_initialization (Particle *part) {
     double phi_new = acos ( SPB_POS[Z] / r_new );
     double theta_new = acos ( SPB_POS[X] / ( r_new * sin (phi_new))) * ( (SPB_POS[Y] - start_origin[Y]) / fabs ((SPB_POS[Y] - start_origin[Y])));
     */
-    
+
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
         
         part_1 = &part[loop];
         
-        rotate_about_z (part_1->position, -theta);
-        rotate_about_x (part_1->position, phi - PI / 2.0);
+        rotate_about_y (part_1->position, -theta);
+        rotate_about_z (part_1->position, phi - PI / 2.0);
         
-        //rotate_about_y (part_1->position, -phi_new);
-        //rotate_about_z (part_1->position, theta_new);
+        rotate_about_z (part_1->position, PI / 2.0 - phi_new);
+        rotate_about_y (part_1->position, theta_new);
     }
 }
 
