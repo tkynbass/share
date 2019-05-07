@@ -33,9 +33,9 @@
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+1 )
 
-#define DELTA ( 1.0e-4 )  //刻み幅
-#define MITIGATION_INTERVAL (1.0e+4)
-#define LIST_INTERVAL ( 500 )   // リスト化の間隔
+#define DELTA ( 1.0e-3 )  //刻み幅
+#define MITIGATION_INTERVAL (1.0e+3)
+#define LIST_INTERVAL ( 50 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
@@ -967,7 +967,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
                  part_1->position[X],part_1->position[Y], part_1->position[Z]);
     }
     
-    printf ("Radius 1.1e\n", PARTICLE_RADIUS);
+    printf ("Radius 1.1e\n", LENGTH);
     fclose (fpw);
 }
 
