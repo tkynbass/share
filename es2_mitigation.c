@@ -371,29 +371,45 @@ void rotate_about_x ( double pos[DIMENSION], const double theta ) {
 void direction_initialization (Particle *part) {
     
     Particle *part_1;
-    
-    double nuc_init[] = {-15.523414 * PASTIS_SCALING, -7.284596 * PASTIS_SCALING, 45.333157* PASTIS_SCALING};
+    double cent_gravity [] = { 0.0, 0.0, 0.0 };
+
     double start_origin[] = { 0.0, Y_TRANSLATION, 0.0 };
+    
+    // セントロメアの重心を求める //
+    for (unsigned int loop = 0; loop < 3; loop++ ){
+        
+        part_1 = &part [CENT_LIST [loop]];
+        
+        cent_gravity[X] += part_1->position[X] / 3.0;
+        cent_gravity[Y] += part_1->position[Y] / 3.0;
+        cent_gravity[Z] += part_1->position[Z] / 3.0;
+    }
+    
     
     // z-y平面に関して反転 //
     //for ( unsigned int loop = 0; loop < NUMBER_MAX; loop++) part[loop].position[X] *= -1;
     //nuc_init[X] *= -1;
     
-    double r = Euclid_norm (nuc_init, ORIGIN);
-    double phi = acos ( nuc_init[Z] / r );
-    double theta = ( acos ( nuc_init[Y] / ( r * sin(phi))) - PI) * ( nuc_init[X] / fabs(nuc_init[X]));
-    phi = phi - PI / 2.0;
-                
-    double r_new = Euclid_norm (NUCLEOLUS_POS, start_origin);
-    double phi_new = acos ( NUCLEOLUS_POS[Z] / r_new );
-    double theta_new = acos ( NUCLEOLUS_POS[X] / ( r_new * sin (phi_new))) * ( (NUCLEOLUS_POS[Y] - start_origin[Y]) / fabs ((NUCLEOLUS_POS[Y] - start_origin[Y])));
+    double r = Euclid_norm (cent_gravity, ORIGIN);
+    double phi = acos ( cent_gravity[Y] / r );
+    double theta = acos ( cent_gravity[X] / ( r * sin(phi))) * ( cent_gravity[Z] / fabs (cent_gravity[Z]));
+    
+    double r_new = Euclid_norm (SPB_POS, ORIGIN);
+    double phi_new = acos ( SPB_POS[Y] / r_new );
+    double theta_new = acos ( SPB_POS[X] / ( r_new * sin (phi_new))) * ( SPB_POS[Z] / fabs (SPB_POS[Z]));
+    
+    /*
+    double r_new = Euclid_norm (SPB_POS, start_origin);
+    double phi_new = acos ( SPB_POS[Z] / r_new );
+    double theta_new = acos ( SPB_POS[X] / ( r_new * sin (phi_new))) * ( (SPB_POS[Y] - start_origin[Y]) / fabs ((SPB_POS[Y] - start_origin[Y])));
+    */
     
     for (unsigned int loop = 0; loop < NUMBER_MAX; loop++ ){
         
         part_1 = &part[loop];
         
-        rotate_about_z (part_1->position, theta);
-        rotate_about_x (part_1->position, phi);
+        rotate_about_z (part_1->position, -theta);
+        rotate_about_x (part_1->position, phi - PI / 2.0);
         
         //rotate_about_y (part_1->position, -phi_new);
         //rotate_about_z (part_1->position, theta_new);
