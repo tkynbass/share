@@ -364,13 +364,14 @@ void direction_initialization (Particle *part) {
     double start_origin[] = { 0.0, Y_TRANSLATION, 0.0 };
     
     // z-y平面に関して反転 //
-    for ( unsigned int loop = 0; loop < NUMBER_MAX; loop++) part[loop].position[X] *= -1;
-    nuc_init[X] *= -1;
+    //for ( unsigned int loop = 0; loop < NUMBER_MAX; loop++) part[loop].position[X] *= -1;
+    //nuc_init[X] *= -1;
     
     double r = Euclid_norm (nuc_init, ORIGIN);
     double phi = acos ( nuc_init[Z] / r );
-    double theta = acos ( nuc_init[X] / ( r * sin(phi))) * ( nuc_init[Y] / fabs(nuc_init[Y]));
-    
+    double theta = ( acos ( nuc_init[Y] / ( r * sin(phi))) - PI) * ( nuc_init[X] / fabs(nuc_init[X]));
+    phi = phi - PI / 2.0;
+                
     double r_new = Euclid_norm (NUCLEOLUS_POS, start_origin);
     double phi_new = acos ( NUCLEOLUS_POS[Z] / r_new );
     double theta_new = acos ( NUCLEOLUS_POS[X] / ( r_new * sin (phi_new))) * ( (NUCLEOLUS_POS[Y] - start_origin[Y]) / fabs ((NUCLEOLUS_POS[Y] - start_origin[Y])));
@@ -379,11 +380,11 @@ void direction_initialization (Particle *part) {
         
         part_1 = &part[loop];
         
-        rotate_about_z (part_1->position, -theta);
+        rotate_about_z (part_1->position, theta);
         rotate_about_y (part_1->position, phi);
         
-        rotate_about_y (part_1->position, -phi_new);
-        rotate_about_z (part_1->position, theta_new);
+        //rotate_about_y (part_1->position, -phi_new);
+        //rotate_about_z (part_1->position, theta_new);
     }
 }
 
