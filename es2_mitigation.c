@@ -204,10 +204,35 @@ void read_coordinate (Particle *part, const unsigned int start) {
     
     for ( loop = 0; loop < NUMBER_MAX; loop++) {
         
-        part_1 = &part[number];
+        part_1 = &part[loop];
         
         fscanf (fpr, "%d %d %d %d %lf %lf %lf\n", &i_dummy, &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
+    }
+    
+    fclose (fpr);
+    
+    // Input the coordinates of Pastis //
+    for ( unsigned int arm = 0; arm < 6; arm++ ){
+        
+        sprintf(pastis_data, "MDS_pos_%s.txt", arm_list[arm]);
+        if ((fpr = fopen(pastis_data, "r")) == NULL){
+            
+            printf ("\n\terror : cannot read coordinate.\n");
+            exit (1);
+        }
+        
+        while (fscanf (fpr, "%d ", &number) != EOF) {
+            
+            part_1 = &part[number];
+            fscanf (fpr, "%d %lf %lf %lf\n", &i_dummy,
+                    &part_1->position_init[X], &part_1->position_init[Y], &part_1->position_init[Z]);
+            
+            // pastisのスケールを核小体・核膜とのスケーリングに合わせる
+            part_1->position_init[X] *= PASTIS_SCALING;
+            part_1->position_init[Y] *= PASTIS_SCALING;
+            part_1->position_init[Z] *= PASTIS_SCALING;
+        }
     }
     
     fclose (fpr);
@@ -995,6 +1020,11 @@ int main ( int argc, char **argv ) {
         start = atoi (argv[1]);
         calculation_max = atoi (argv[2]);
         read_coordinate (part, start);
+    }
+    else {
+        
+        printf ("\t error : arguments number error \n");
+        exit (1);
     }
     
     printf ("\n\t PARTICLE_RADIUS = %1.1e, DELTA = %1.1e, mitigation = %1.1e \n\n", LENGTH, DELTA, MITIGATION_INTERVAL);
