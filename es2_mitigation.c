@@ -190,7 +190,7 @@ void read_pastis_data (Particle *part){       //初期値設定
 
 void read_coordinate (Particle *part, const unsigned int start) {
     
-    unsigned int loop, number;
+    unsigned int loop, number, i_dummy;
     char dummy[256], input_file[256];
     FILE *fpr;
     Particle *part_1;
@@ -202,16 +202,11 @@ void read_coordinate (Particle *part, const unsigned int start) {
         exit (1);
     }
     
-    while (fscanf (fpr, "%d ", &number) != EOF) {
+    for ( loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[number];
-        /*
-        fscanf (fpr, "%d %d %d %lf %lf %lf %lf %lf %lf\n", &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z],
-                &part_1->velocity_h[X], &part_1->velocity_h[Y], &part_1->velocity_h[Z]);
-        */
         
-        fscanf (fpr, "%d %d %d %lf %lf %lf\n", &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
+        fscanf (fpr, "%d %d %d %d %lf %lf %lf\n", &i_dummy, &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
     }
     
@@ -967,14 +962,13 @@ void write_coordinate (Particle *part, const unsigned int time) {
                  part_1->position[X],part_1->position[Y], part_1->position[Z]);
     }
     
-    printf ("Radius 1.1e\n", LENGTH);
+    fprintf (fpw, "Radius %1.1e\n", LENGTH);
     fclose (fpw);
 }
 
-
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, calculation_max = atoi (argv[1]);
+    unsigned int loop, mitigation, start, calculation_max;
     char output_file[256];
     double mem_al[3];
     
@@ -982,17 +976,28 @@ int main ( int argc, char **argv ) {
     
     secure_main_memory (&part);
     
-    read_pastis_data (part);
+    if ( argc == 2 ) {
+        
+        start = 0;
+        calculation_max = atoi (argv[1]);
+        read_pastis_data (part);
+        
+        completion_coordinate (part);
+        type_labeling (part);
+        
+        direction_initialization (part);
+        parallel_translation (part);
+        
+        write_coordinate (part, 0);
+    }
+    else if (argc == 3 ) {
+        
+        start = atoi (argv[1]);
+        calculation_max = atoi (argv[2]);
+        read_coordinate (part, start);
+    }
     
-    completion_coordinate (part);
-    type_labeling (part);
-    
-    direction_initialization (part);
-    parallel_translation (part);
-    
-    write_coordinate (part, 0);
-    
-    printf ("\n\t PARTICLE_RADIUS = %1.1e, DELTA = %1.1e, mitigation = %1.1e \n\n", PARTICLE_RADIUS, DELTA, MITIGATION_INTERVAL);
+    printf ("\n\t PARTICLE_RADIUS = %1.1e, DELTA = %1.1e, mitigation = %1.1e \n\n", LENGTH, DELTA, MITIGATION_INTERVAL);
     
     for ( unsigned int time = 1; time < calculation_max; time++) {
         
@@ -1006,7 +1011,7 @@ int main ( int argc, char **argv ) {
             calculation (part, mitigation, mem_al);
         }
         
-        write_coordinate (part, time);
+        write_coordinate (part, start + time);
     }
     
     // メモリ解放 //
