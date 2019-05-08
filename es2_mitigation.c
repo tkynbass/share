@@ -17,7 +17,7 @@
 #include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
-#define LENGTH ( 6.0e-8 )   //長さの単位 (粒子径)
+#define LENGTH ( 7.0e-8 )   //長さの単位 (粒子径)
 
 #define M_A ( 1.85131596e+6 )   // g/mol/particle
 #define N_A ( 6.022140857e+23 )
@@ -1009,6 +1009,8 @@ int main ( int argc, char **argv ) {
         
         completion_coordinate (part);
         type_labeling (part);
+        
+        write_coordinate (part, -1);
         
         direction_initialization (part);
         parallel_translation (part);
