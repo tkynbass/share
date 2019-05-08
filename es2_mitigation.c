@@ -191,7 +191,7 @@ void read_pastis_data (Particle *part){       //初期値設定
 void read_coordinate (Particle *part, const unsigned int start) {
     
     unsigned int loop, number, i_dummy;
-    char dummy[256], input_file[256];
+    char pastis_data[256], input_file[256], *arm_list[] = {"1long", "1short", "2short", "2long", "3short", "3long"};
     FILE *fpr;
     Particle *part_1;
     
