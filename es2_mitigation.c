@@ -999,7 +999,7 @@ int main ( int argc, char **argv ) {
     
     printf ("\n\t PARTICLE_RADIUS = %1.1e, DELTA = %1.1e, mitigation = %1.1e \n\n", LENGTH, DELTA, MITIGATION_INTERVAL);
     
-    for ( unsigned int time = 1; time < calculation_max; time++) {
+    for ( unsigned int time = 1; time <= calculation_max; time++) {
         
         change_mem_al (part, mem_al, time);
         
