@@ -181,6 +181,18 @@ void random_init_pos (Particle *part, dsfmt_t *dsfmt) {
     
 }
 
+// rotate function about z axis //
+void rotate_about_z ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
+    pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
+    
+    pos[X] = pos_new[X];
+    pos[Y] = pos_new[Y];
+}
+
 //　ばねによる力 part_1側の力計算//
 void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
@@ -352,7 +364,7 @@ void particle_exclusion (Particle *part, Particle *part_1) {
 }
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, const unsigned int mitigation, double mem_al[3] ) {
+void calculation (Particle *part, const unsigned int mitigation ) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -437,7 +449,7 @@ void calculation (Particle *part, const unsigned int mitigation, double mem_al[3
             
                 spb_exclusion (part_1);
                 nucleolus_interaction (part_1, 'E');
-                membrane_interaction_change (part_1, 'E', mem_al);
+                membrane_interaction_fix (part_1, 'E');
             
                 break;
             
@@ -453,7 +465,7 @@ void calculation (Particle *part, const unsigned int mitigation, double mem_al[3
                 spring (part_1, &part[loop - 3], 3);
             
                 nucleolus_interaction (part_1, 'E');
-                membrane_interaction_change (part_1, 'E', mem_al);
+                membrane_interaction_fix (part_1, 'E');
                 spring (part_1, NULL, 0);
             
                 break;
@@ -485,7 +497,7 @@ void calculation (Particle *part, const unsigned int mitigation, double mem_al[3
                 }
             
                 spb_exclusion (part_1);
-                membrane_interaction_change (part_1, 'F', mem_al);
+                membrane_interaction_fix (part_1, 'F');
                 nucleolus_interaction (part_1, 'E');
             
                 break;
@@ -515,7 +527,7 @@ void calculation (Particle *part, const unsigned int mitigation, double mem_al[3
                 }
             
                 spb_exclusion (part_1);
-                membrane_interaction_change (part_1, 'E', mem_al);
+                membrane_interaction_fix (part_1, 'E');
                 nucleolus_interaction (part_1, 'F');
             
                 break;
@@ -581,36 +593,36 @@ void write_coordinate (Particle *part, const unsigned int time) {
     fclose (fpw);
 }
 
-void write_coordinate (Particle *part) {
-
-    unsigned int loop, mitigation, start, calculation_max;
-    char output_file[256];
-    
-    Particle *part_1;
-    
-    FILE *fpw;
-    
-    char result[128], str[128];
-    
-    sprintf (result, "result_test.txt");
-    
-    if ((fpw = fopen (result, "w")) == NULL) {
-        
-        printf (" \t error : cannot write coordinate. \n");
-        
-        exit (1);
-    }
-    
-    for (loop = 0; loop < NUMBER_MAX; loop++) {
-        
-        part_1 = &part[loop];
-        fprintf (fpw, "%d 0 %d %d %lf %lf %lf\n", loop, part_1->chr_no, part_1->particle_type,
-                 part_1->position[X],part_1->position[Y], part_1->position[Z]);
-    }
-    
-    fprintf (fpw, "Radius %1.1e\n", LENGTH);
-    fclose (fpw);
-}
+//void check_coordinate (Particle *part) {
+//
+//    unsigned int loop, mitigation, start, calculation_max;
+//    char output_file[256];
+//    
+//    Particle *part_1;
+//    
+//    FILE *fpw;
+//    
+//    char result[128], str[128];
+//    
+//    sprintf (result, "result_test.txt");
+//    
+//    if ((fpw = fopen (result, "w")) == NULL) {
+//        
+//        printf (" \t error : cannot write coordinate. \n");
+//        
+//        exit (1);
+//    }
+//    
+//    for (loop = 0; loop < NUMBER_MAX; loop++) {
+//        
+//        part_1 = &part[loop];
+//        fprintf (fpw, "%d 0 %d %d %lf %lf %lf\n", loop, part_1->chr_no, part_1->particle_type,
+//                 part_1->position[X],part_1->position[Y], part_1->position[Z]);
+//    }
+//    
+//    fprintf (fpw, "Radius %1.1e\n", LENGTH);
+//    fclose (fpw);
+//}
 
 int main ( int argc, char **argv) {
     
@@ -621,6 +633,7 @@ int main ( int argc, char **argv) {
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand (&dsfmt, (unsigned)time (NULL));
     
+    unsigned int calculation_max = int (argv[1])
     
     secure_main_memory (&part);
     
@@ -637,9 +650,9 @@ int main ( int argc, char **argv) {
         printf ("\t Now calculating...  time = %d \r", time);
         fflush (stdout);
         
-        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+        for (unsigned int mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
             
-            calculation (part, mitigation, mem_al);
+            calculation (part, mitigation);
         }
         
         write_coordinate (part, time);
