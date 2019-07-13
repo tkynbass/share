@@ -24,6 +24,8 @@
 
 #define WRITE_INTERVAL (1.0e+3)
 
+#define K_KEEP (1.0e+1)
+
 const double MEM_POS [SIZE][DIMENSION] = {
     {MEMBRANE_AXIS_1, 0.0, 0.0}, { -MEMBRANE_AXIS_1, 0.0, 0.0},
     {0.0, MEMBRANE_AXIS_2, 0.0}, { 0.0, -MEMBRANE_AXIS_2, 0.0},
@@ -127,9 +129,9 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
             
             ncl->len_list[loop2] = Euclid_norm (ncl->position, nuc[ ncl->keep_list[loop2] ].position);
             
-            printf ("%4.2f ", ncl->len_list[loop2]);
+//            printf ("%4.2f ", ncl->len_list[loop2]);
         }
-        printf ("\n");
+//        printf ("\n");
     }
 }
 
@@ -142,20 +144,17 @@ void Def_max_min (const double dist_list[4], unsigned int *max, unsigned int *mi
     }
 }
 
-void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
+void Def_mem_pt (Nuc *nuc) {
     
-    unsigned int n_ax, m_ax, dim, nf_list[2][2], loop, mem_r, mem_l, max, min;
-    double mid_point[3], dist_list[4];
+    unsigned int n_ax, m_ax, mem_r, mem_l, max, min;
+    double dist_list[4];
     Nuc *nuc_r, *nuc_l;
     
-//     加えるポテンシャル種類の判別
+    //     加えるポテンシャル種類の判別
     for (n_ax = 0; n_ax <3; n_ax++) {
         
         nuc_r = &nuc[AXIS[n_ax][right]];
         nuc_l = &nuc[AXIS[n_ax][left]];
-
-        // 重心 (軸の中点)
-        for (dim = 0; dim < DIMENSION; dim++) mid_point[dim] = (nuc_r->position[dim] + nuc_l->position[dim]) / 2.0;
         
         for (m_ax = 0; m_ax < 3; m_ax++) {
             
@@ -217,10 +216,6 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
                     break;
             }
         }
-        
-        for (loop = 0; loop < SIZE; loop++) printf ("%d ", nuc[5].mem_pt[loop]);
-        printf ("\n");
-        fflush (stdout);
     }
     
 //    for (int loop=0; loop<SIZE; loop++) {
@@ -231,6 +226,41 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
 //        }
 //        printf ("\n");
 //    }
+}
+
+void Keep_ellipsoid (Nuc *nuc) {
+    
+    unsigned int lp, lp2;
+    double f, dist;
+    Nuc *ncl1, *ncl2;
+    
+    for ( lp = 0; lp < SIZE; lp++) {
+        
+        ncl1 = &nuc[lp];
+        for ( lp2 = 0; lp2 < SIZE-1; lp2++ ){
+            
+            ncl2 = &nuc [ncl1->keep_list[lp2]];
+            
+            dist = Euclid_norm (ncl1->position, ncl2->position);
+            f = - K_KEEP * (dist - ncl1->len_list [lp2]) / dist;
+            
+            ncl->force[X] += f * (ncl1->position[X] - ncl2->position[X]);
+            ncl->force[Y] += f * (ncl1->position[Y] - ncl2->position[Y]);
+            ncl->force[Z] += f * (ncl1->position[Z] - ncl2->position[Z]);
+        }
+    }
+    
+    
+}
+
+void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
+    
+    unsigned int n_ax, m_ax, dim, loop, mem_r, mem_l, max, min;
+    double dist_list[4];
+    
+    Def_mem_pt (nuc);
+
+    Keep_ellipsoid (nuc);
     
 }
 
