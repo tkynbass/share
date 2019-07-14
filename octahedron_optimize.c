@@ -22,7 +22,7 @@
 #define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
-#define WRITE_INTERVAL (1.0e+3)
+#define WRITE_INTERVAL (1.0e+5)
 
 #define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
@@ -619,6 +619,8 @@ int main ( int argc, char **argv ){
     // 構造体の初期化
     StructInitilization (nuc, spb);
     
+    printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
+    
     // 混合ガウスポテンシャルのパラメータ読み込み
     TermDIst_NucMem (NULL, 's');
     TermDIst_SpbMem (NULL, 's');
@@ -626,6 +628,8 @@ int main ( int argc, char **argv ){
     // 計算
     for ( time = 1; time <= calc_max; time++) {
 
+        printf ("\t Calculating now ...  time = %d\r", time);
+        fflush (stdout);
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
             Calculation (mitigation, nuc, spb);
