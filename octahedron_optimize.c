@@ -604,6 +604,7 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time) {
         ncl = &nuc [lp];
         fprintf (fpw, "%d %lf %lf %lf\n", lp, ncl->position[X], ncl->position[Y], ncl->position[Z]);
     }
+    fprintf (fpw, "spb %lf %lf %lf\n", spb->position[X], spb->position[Y], spb->position[Z]);
     
     fclose (fpw);
 }
