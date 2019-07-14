@@ -10,7 +10,7 @@
 
 #define DIMENSION (3)       // 次元
 #define LENGTH (7.0e-8)     // 長さ単位
-#define DELTA (1.0e-4)
+#define DELTA (1.0e-3)
 
 #define SIZE (6)    // 各構造体を構成する粒子数
 
@@ -24,7 +24,10 @@
 
 #define WRITE_INTERVAL (1.0e+3)
 
+#define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
+
+const double ORIGIN[] = {0.0, 0.0, 0.0};
 
 const double MEM_POS [SIZE][DIMENSION] = {
     {MEMBRANE_AXIS_1, 0.0, 0.0}, { -MEMBRANE_AXIS_1, 0.0, 0.0},
@@ -32,8 +35,14 @@ const double MEM_POS [SIZE][DIMENSION] = {
     {0.0, 0.0, MEMBRANE_AXIS_3}, { 0.0, 0.0, -MEMBRANE_AXIS_3}
 };
 
+// 軸番号と左右→粒子番号
 const unsigned int AXIS[3][2] = {
     {0, 1}, {2, 3}, {4,5}
+};
+
+// 粒子番号　→　軸番号
+const unsigned int AX_NUM [6] = {
+    0, 0, 1, 1, 2, 2
 };
 
 typedef struct nucleolus {           //核小体
@@ -115,8 +124,8 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
     }
     
     spb->position[X] = MEMBRANE_AXIS_1;
-    spb->position[Y] = 0.0;
-    spb->position[Z] = 0.0;
+    spb->position[Y] = 0.2;
+    spb->position[Z] = 0.2;
     
     // 核小体形状保存 自然長求める
     for ( loop = 0; loop < SIZE; loop++) {
@@ -144,7 +153,7 @@ void Def_max_min (const double dist_list[4], unsigned int *max, unsigned int *mi
     }
 }
 
-void Def_mem_pt (Nuc *nuc) {
+void Def_NucMem_pt (Nuc *nuc) {
     
     unsigned int n_ax, m_ax, mem_r, mem_l, max, min;
     double dist_list[4];
@@ -228,6 +237,64 @@ void Def_mem_pt (Nuc *nuc) {
 //    }
 }
 
+void Def_SpbMem_pt (Spb *spb) {
+    
+    unsigned int m_ax, mem_r, mem_l;
+    
+    for ( m_ax = 0; m_ax < 3; m_ax++) {
+        
+        mem_r = AXIS[m_ax][right];
+        mem_l = AXIS[m_ax][left];
+        
+        if (Euclid_norm (spb->position, MEM_POS [mem_r]) <= Euclid_norm (spb->position, MEM_POS [mem_l])) {
+            
+            spb->mem_pt[mem_r] = near;
+            spb->mem_pt[mem_l] = far;
+        }
+        else {
+            
+            spb->mem_pt[mem_r] = far;
+            spb->mem_pt[mem_l] = near;
+        }
+    }
+    
+//    for (unsigned int loop = 0; loop<SIZE; loop++)  printf ("%d ", spb->mem_pt[loop]);
+//    printf ("\n");
+}
+
+void Def_NucSpb_pt (Nuc *nuc, Spb *spb) {
+    
+    unsigned int n_ax;
+    Nuc *nuc_r, *nuc_l;
+    
+    for ( n_ax = 0; n_ax < 3; n_ax++) {
+        
+//        主成分両端粒子を参照
+        nuc_r = &nuc[ AXIS[n_ax][right] ];
+        nuc_l = &nuc[ AXIS[n_ax][left] ];
+        
+        if ( Euclid_norm (nuc_r->position, spb->position) <= Euclid_norm (nuc_l->position, spb->position)) {
+            
+            nuc_r->spb_pt = near;
+            nuc_l->spb_pt = far;
+            
+            spb->nuc_pt[ AXIS[n_ax][right] ] = near;
+            spb->nuc_pt[ AXIS[n_ax][left] ] = far;
+        }
+        else {
+            
+            nuc_r->spb_pt = far;
+            nuc_l->spb_pt = near;
+            
+            spb->nuc_pt[ AXIS[n_ax][right] ] = far;
+            spb->nuc_pt[ AXIS[n_ax][left] ] = near;
+        }
+    }
+//    for (unsigned int loop = 0; loop<SIZE; loop++)  printf ("%d ", spb->nuc_pt[loop]);
+//    printf ("\n");
+    
+}
+
 void Keep_ellipsoid (Nuc *nuc) {
     
     unsigned int lp, lp2;
@@ -244,48 +311,332 @@ void Keep_ellipsoid (Nuc *nuc) {
             dist = Euclid_norm (ncl1->position, ncl2->position);
             f = - K_KEEP * (dist - ncl1->len_list [lp2]) / dist;
             
-            ncl->force[X] += f * (ncl1->position[X] - ncl2->position[X]);
-            ncl->force[Y] += f * (ncl1->position[Y] - ncl2->position[Y]);
-            ncl->force[Z] += f * (ncl1->position[Z] - ncl2->position[Z]);
+            ncl1->force[X] += f * (ncl1->position[X] - ncl2->position[X]);
+            ncl1->force[Y] += f * (ncl1->position[Y] - ncl2->position[Y]);
+            ncl1->force[Z] += f * (ncl1->position[Z] - ncl2->position[Z]);
         }
+        
+        
     }
     
+}
+
+void TermDIst_NucMem (Nuc *nuc, const char option) {  // 核小体-核膜間の相互作用
     
+    unsigned int lp, lp2, type_lp, nuc_lp, mem_lp;
+    static double para_list [4][3][3][6];
+    double *par, dist, f, exp1, exp2;
+    char file_name[128], dummy[128], *type_list[] = {"nn", "nf", "fn", "ff"};
+    Nuc *ncl;
+    
+//    char directory[] = "/Users/tkym/Desktop/Imaris/analysis/pcc_Cut11-Gar2_wt";
+    
+    FILE *fpr;
+    
+    if ( option == 'c') {
+        
+        for (nuc_lp = 0; nuc_lp < SIZE; nuc_lp++) {
+            
+            ncl = &nuc [nuc_lp];
+            for (mem_lp = 0; mem_lp < SIZE; mem_lp++) {
+                
+                par = para_list [ncl->mem_pt [mem_lp]][AX_NUM[nuc_lp]][AX_NUM[mem_lp]];
+                dist = Euclid_norm (ncl->position, MEM_POS [mem_lp]);
+                exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
+                exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
+                
+                f = - ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+                    / ( dist * (exp1 + exp2));
+                
+                ncl->force[X] += f * (ncl->position[X] - MEM_POS[mem_lp][X]);
+                ncl->force[Y] += f * (ncl->position[Y] - MEM_POS[mem_lp][Y]);
+                ncl->force[Z] += f * (ncl->position[Z] - MEM_POS[mem_lp][Z]);
+            }
+        }
+        
+//        for (lp = 0; lp < DIMENSION; lp++) printf ("%lf\n", nuc[5].force[lp]);
+    }
+    else if (option == 's') { //    パラメータの読み込み
+        
+        for (type_lp = 0; type_lp <4; type_lp++) {
+            
+            sprintf (file_name, "pote_nm_%s.txt", type_list[type_lp]);
+            if ( (fpr = fopen (file_name, "r")) == NULL) {
+                
+                printf ("\t Cannot open %s \n", file_name);
+                exit(1);
+            }
+            
+            fgets (dummy, 256, fpr);    // column読み捨て
+            
+            for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
+                
+                for (mem_lp = 0; mem_lp < 3; mem_lp++) {
+                    
+                    par = para_list [type_lp][nuc_lp][mem_lp];
+                    fscanf (fpr, "%s\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", dummy,
+                            &par[0], &par[1], &par[2], &par[3], &par[4], &par[5]);
+                    
+                    par[0] /= par[2] * par[2] * par[2];
+                    par[2] = 1.0 / par[2];
+                    
+                    par[3] /= par[5] * par[5] * par[5];
+                    par[5] = 1.0 / par[5];
+                }
+            }
+        }
+    }
+//    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
+}
+void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互作用
+    
+    unsigned int lp, type_lp, mem_lp;
+    static double para_list [2][3][6];
+    double *par, dist, f, exp1, exp2;
+    char file_name[128], dummy[128], *type_list[] = {"near", "far"};
+    
+//    char directory[] = "/Users/tkym/Desktop/Imaris/analysis/Cut11-Sid4";
+    
+    FILE *fpr;
+    
+    if ( option == 'c') {
+        
+        for (mem_lp = 0; mem_lp < SIZE; mem_lp++) {
+            
+            par = para_list [spb->mem_pt [mem_lp]][AX_NUM[mem_lp]];
+            dist = Euclid_norm (spb->position, MEM_POS [mem_lp]);
+            exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
+            exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
+            
+            f = - ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            / ( dist * (exp1 + exp2));
+            
+            spb->force[X] += f * (spb->position[X] - MEM_POS[mem_lp][X]);
+            spb->force[Y] += f * (spb->position[Y] - MEM_POS[mem_lp][Y]);
+            spb->force[Z] += f * (spb->position[Z] - MEM_POS[mem_lp][Z]);
+        }
+        
+//        for (lp = 0; lp < DIMENSION; lp++) printf ("%lf\n", spb->force[lp]);
+    }
+    else if (option == 's') { //    パラメータの読み込み
+        
+        for (type_lp = 0; type_lp < 2; type_lp++) {
+            
+            sprintf (file_name, "pote_sm_%s.txt", type_list[type_lp]);
+            if ( (fpr = fopen (file_name, "r")) == NULL) {
+                
+                printf ("\t Cannot open %s \n", file_name);
+                exit(1);
+            }
+            
+            fgets (dummy, 256, fpr);    // column読み捨て
+                
+            for (mem_lp = 0; mem_lp < 3; mem_lp++) {
+                
+                par = para_list [type_lp][mem_lp];
+                fscanf (fpr, "%s\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", dummy,
+                        &par[0], &par[1], &par[2], &par[3], &par[4], &par[5]);
+                
+                par[0] /= par[2] * par[2] * par[2];
+                par[2] = 1.0 / par[2];
+                
+                par[3] /= par[5] * par[5] * par[5];
+                par[5] = 1.0 / par[5];
+            }
+        }
+//        for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[far][0][lp]);
+    }
+    //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
+}
+
+void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間の相互作用
+    
+    unsigned int lp, type_lp, nuc_lp;
+    static double para_list [2][3][6];
+    double *par, dist, f, exp1, exp2;
+    char file_name[128], dummy[128], *type_list[] = {"near", "far"};
+    Nuc *ncl;
+    
+//    char directory[] = "/Users/tkym/Desktop/Imaris/analysis/06-28decon";
+    
+    FILE *fpr;
+    
+    if ( option == 'c') {
+        
+        for (nuc_lp = 0; nuc_lp < SIZE; nuc_lp++) {
+            
+            ncl = &nuc [nuc_lp];
+            
+            par = para_list [spb->nuc_pt [nuc_lp]][AX_NUM[nuc_lp]];
+            dist = Euclid_norm (spb->position, ncl->position);
+            exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
+            exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
+            
+            f = - ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            / ( dist * (exp1 + exp2));
+            
+//            printf ("%c f = %lf\n", option, f);
+            
+            spb->force[X] += f * (spb->position[X] - ncl->position[X]);
+            spb->force[Y] += f * (spb->position[Y] - ncl->position[Y]);
+            spb->force[Z] += f * (spb->position[Z] - ncl->position[Z]);
+            
+            ncl->force[X] += f * (ncl->position[X] - spb->position[X]);
+            ncl->force[Y] += f * (ncl->position[Y] - spb->position[Y]);
+            ncl->force[Z] += f * (ncl->position[Z] - spb->position[Z]);
+        }
+        
+//        for (lp = 0; lp < DIMENSION; lp++) printf ("%lf\n", spb->force[lp]);
+    }
+    else if (option == 's') { //    パラメータの読み込み
+        
+        for (type_lp = 0; type_lp < 2; type_lp++) {
+            
+            sprintf (file_name, "pote_sn_%s.txt", type_list[type_lp]);
+            if ( (fpr = fopen (file_name, "r")) == NULL) {
+                
+                printf ("\t Cannot open %s \n", file_name);
+                exit(1);
+            }
+            
+            fgets (dummy, 256, fpr);    // column読み捨て
+            
+            for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
+                
+                par = para_list [type_lp][nuc_lp];
+                fscanf (fpr, "%s\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", dummy,
+                        &par[0], &par[1], &par[2], &par[3], &par[4], &par[5]);
+                
+                par[0] /= par[2] * par[2] * par[2];
+                par[2] = 1.0 / par[2];
+                
+                par[3] /= par[5] * par[5] * par[5];
+                par[5] = 1.0 / par[5];
+            }
+        }
+        
+        fclose(fpr);
+//        for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[far][0][lp]);
+    }
+    //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
+}
+void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION], char interaction_type /* F: fix, E: exclude */) {
+    
+    double dist = Euclid_norm (pos, ORIGIN);
+    
+    double ellipsoid_dist = pos[X] * pos[X] / ( MEMBRANE_AXIS_1 * MEMBRANE_AXIS_1 )
+    + pos[Y] * pos[Y] / ( MEMBRANE_AXIS_2 * MEMBRANE_AXIS_2 )
+    + pos[Z] * pos[Z] / ( MEMBRANE_AXIS_3 * MEMBRANE_AXIS_3 );
+    
+    if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
+        
+        // 法線ベクトル
+        double normal_vector[] = { 2.0 * pos[X] / ( MEMBRANE_AXIS_1 * MEMBRANE_AXIS_1),
+            2.0 * pos[Y] / ( MEMBRANE_AXIS_2 * MEMBRANE_AXIS_2),
+            2.0 * pos[Z] / ( MEMBRANE_AXIS_3 * MEMBRANE_AXIS_3) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+        
+        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( pos[X] * normal_vector[X]
+                                                                  + pos[Y] * normal_vector[Y]
+                                                                  + pos[Z] * normal_vector[Z]);
+        
+        force[X] += f * normal_vector[X] / normal_vector_norm;
+        force[Y] += f * normal_vector[Y] / normal_vector_norm;
+        force[Z] += f * normal_vector[Z] / normal_vector_norm;
+    }
 }
 
 void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     
-    unsigned int n_ax, m_ax, dim, loop, mem_r, mem_l, max, min;
-    double dist_list[4];
+    unsigned int lp, dim;
+    Nuc *ncl;
     
-    Def_mem_pt (nuc);
-
+    // 力の初期化
+    for ( lp = 0; lp < SIZE; lp++) {
+        ncl = &nuc[lp];
+        for (dim = 0; dim < DIMENSION; dim++) ncl->force[dim] = 0.0;
+    }
+    
+    for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
+    
+    Def_NucMem_pt (nuc);
+    Def_SpbMem_pt (spb);
+    Def_NucSpb_pt (nuc, spb);
+    
     Keep_ellipsoid (nuc);
     
+    TermDIst_NucMem (nuc, 'c');
+    TermDIst_SpbMem (spb, 'c');
+    TermDIst_NucSpb (nuc, spb, 'c');
+    
+    for (lp = 0; lp < SIZE; lp++) Membrane_interaction (nuc[lp].position, nuc[lp].force, 'E');
+    Membrane_interaction (spb->position, spb->force, 'F');
+    
+    for (lp = 0; lp < SIZE; lp++) {
+        
+        ncl = &nuc[lp];
+        
+        ncl->position[X] += DELTA * ncl->force[X];
+        ncl->position[Y] += DELTA * ncl->force[Y];
+        ncl->position[Z] += DELTA * ncl->force[Z];
+    }
+}
+
+void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time) {
+    
+    unsigned int lp;
+    char filename[128];
+    Nuc *ncl;
+    
+    FILE *fpw;
+    
+    sprintf (filename, "result_%d.txt", time);
+    
+    if ( (fpw = fopen (filename, "w")) == NULL) {
+        
+        printf ("\t Cannot open result file.\n");
+        exit(1);
+    }
+    
+    for (lp = 0; lp < SIZE; lp++) {
+        
+        ncl = &nuc [lp];
+        fprintf (fpw, "%d %lf %lf %lf\n", lp, ncl->position[X], ncl->position[Y], ncl->position[Z]);
+    }
+    
+    fclose (fpw);
 }
 
 int main ( int argc, char **argv ){
     
     Nuc *nuc;
     Spb *spb;
-//    unsigned int time, mitigation, calc_max = atoi (argv[1]);
-    unsigned int mitigation=0;
+    unsigned int time, mitigation, calc_max = atoi (argv[1]);
 
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
     // 構造体の初期化
     StructInitilization (nuc, spb);
-    // 計算
-//    for ( time = 1; time <= calc_max; time++) {
-//
-//        for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
-//
-//            Calculation (mitigation, nuc, spb);
-//        }
-//    }
-    Calculation (mitigation, nuc, spb);
     
-    // 書き込み
+    // 混合ガウスポテンシャルのパラメータ読み込み
+    TermDIst_NucMem (NULL, 's');
+    TermDIst_SpbMem (NULL, 's');
+    TermDIst_NucSpb (NULL, NULL, 's');
+    // 計算
+    for ( time = 1; time <= calc_max; time++) {
+
+        for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
+
+            Calculation (mitigation, nuc, spb);
+        }
+        
+        Write_coordinate (nuc, spb, time);
+    }
+//    Calculation (mitigation, nuc, spb);
+    
+    free (nuc);
+    free (spb);
     
     return (0);
 }
