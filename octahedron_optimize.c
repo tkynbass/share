@@ -591,7 +591,21 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     spb->position[Z] += DELTA * spb->force[Z];
 }
 
-void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time) {
+void Sum_force (Nuc +nuc, Spb *spb) {
+    
+    unsigned int lp, dim;
+    double sum_force = 0.0;
+
+    for (lp = 0; lp < SIZE; lp++) {
+        
+        for (dim = 0; dim < DIMENSION; dim++) sum_force += nuc[lp].force[dim];
+    }
+    for (dim = 0; dim < DIMENSION; dim++) sum_force += spb->force[dim];
+    
+    printf ("\t total force = %3.2e\r", sum_force);
+}
+
+void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time, const unsigned int sample_no) {
     
     unsigned int lp;
     char filename[128];
@@ -599,7 +613,7 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time) {
     
     FILE *fpw;
     
-    sprintf (filename, "result_%d.txt", time);
+    sprintf (filename, "%d/result_%d.txt", sample_no, time);
     
     if ( (fpw = fopen (filename, "w")) == NULL) {
         
@@ -622,6 +636,7 @@ int main ( int argc, char **argv ){
     Nuc *nuc;
     Spb *spb;
     unsigned int time, mitigation, calc_max = atoi (argv[1]);
+    unsigned int sample_no = atoi (argv[2]);
 
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
@@ -638,14 +653,17 @@ int main ( int argc, char **argv ){
     // 計算
     for ( time = 1; time <= calc_max; time++) {
 
-        printf ("\t Calculating now ...  time = %d\r", time);
-        fflush (stdout);
+        printf ("\t Calculating now ...  time = %d\t", time);
+        
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
             Calculation (mitigation, nuc, spb);
         }
         
-        Write_coordinate (nuc, spb, time);
+        Sum_force (nuc, spb);
+        fflush (stdout);
+        
+        Write_coordinate (nuc, spb, time, sample_no);
     }
 //    Calculation (mitigation, nuc, spb);
     
