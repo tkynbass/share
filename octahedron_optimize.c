@@ -591,7 +591,7 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     spb->position[Z] += DELTA * spb->force[Z];
 }
 
-void Sum_force (Nuc +nuc, Spb *spb) {
+void Sum_force (Nuc *nuc, Spb *spb) {
     
     unsigned int lp, dim;
     double sum_force = 0.0;
@@ -602,7 +602,7 @@ void Sum_force (Nuc +nuc, Spb *spb) {
     }
     for (dim = 0; dim < DIMENSION; dim++) sum_force += spb->force[dim];
     
-    printf ("\t total force = %3.2e\r", sum_force);
+    printf ("\t total force = %3.2e\n", sum_force);
 }
 
 void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time, const unsigned int sample_no) {
@@ -635,15 +635,15 @@ int main ( int argc, char **argv ){
     
     Nuc *nuc;
     Spb *spb;
-    unsigned int time, mitigation, calc_max = atoi (argv[1]);
-    unsigned int sample_no = atoi (argv[2]);
+    unsigned int time, mitigation, calc_max = atoi (argv[2]);
+    unsigned int sample_no = atoi (argv[1]);
 
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
     // 構造体の初期化
     StructInitilization (nuc, spb);
     
-    Write_coordinate (nuc, spb, 0);
+    Write_coordinate (nuc, spb, 0, sample_no);
     printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
     
     // 混合ガウスポテンシャルのパラメータ読み込み
@@ -653,20 +653,19 @@ int main ( int argc, char **argv ){
     // 計算
     for ( time = 1; time <= calc_max; time++) {
 
-        printf ("\t Calculating now ...  time = %d\t", time);
+        printf ("\t Calculating now ...  time = %d\r", time);
+        fflush (stdout);
         
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
             Calculation (mitigation, nuc, spb);
-        }
-        
-        Sum_force (nuc, spb);
-        fflush (stdout);
         
         Write_coordinate (nuc, spb, time, sample_no);
     }
-//    Calculation (mitigation, nuc, spb);
-    
+
+    Sum_force (nuc, spb);
+    fflush (stdout);
+        
     free (nuc);
     free (spb);
     
