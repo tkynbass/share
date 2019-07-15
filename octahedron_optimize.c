@@ -315,8 +315,6 @@ void Keep_ellipsoid (Nuc *nuc) {
             ncl1->force[Y] += f * (ncl1->position[Y] - ncl2->position[Y]);
             ncl1->force[Z] += f * (ncl1->position[Z] - ncl2->position[Z]);
         }
-        
-        
     }
     
 }
@@ -570,6 +568,7 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     TermDIst_SpbMem (spb, 'c');
     TermDIst_NucSpb (nuc, spb, 'c');
     
+    // 核膜との排除体積　および　核膜上に固定
     for (lp = 0; lp < SIZE; lp++) Membrane_interaction (nuc[lp].position, nuc[lp].force, 'E');
     Membrane_interaction (spb->position, spb->force, 'F');
     
@@ -581,6 +580,10 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
         ncl->position[Y] += DELTA * ncl->force[Y];
         ncl->position[Z] += DELTA * ncl->force[Z];
     }
+    
+    spb->position[X] += DELTA * spb->force[X];
+    spb->position[Y] += DELTA * spb->force[Y];
+    spb->position[Z] += DELTA * spb->force[Z];
 }
 
 void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time) {
