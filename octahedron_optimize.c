@@ -10,7 +10,7 @@
 
 #define DIMENSION (3)       // 次元
 #define LENGTH (7.0e-8)     // 長さ単位
-#define DELTA (1.0e-3)
+#define DELTA (1.0e-2)
 
 #define SIZE (6)    // 各構造体を構成する粒子数
 
@@ -620,6 +620,7 @@ int main ( int argc, char **argv ){
     // 構造体の初期化
     StructInitilization (nuc, spb);
     
+    Write_coordinate (nuc, spb, 0);
     printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
     
     // 混合ガウスポテンシャルのパラメータ読み込み
