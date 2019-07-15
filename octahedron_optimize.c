@@ -112,8 +112,8 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
     // 核小体　初期位置 //
     double init_pos [SIZE][DIMENSION] = {
         { gravity[X] + NUCLEOLUS_AXIS_1, gravity[Y], gravity[Z]}, { gravity[X] - NUCLEOLUS_AXIS_1, gravity[Y], gravity[Z]},
-        { gravity[X], gravity[Y] + NUCLEOLUS_AXIS_2, gravity[Z]}, { gravity[X], gravity[Y] - NUCLEOLUS_AXIS_2, gravity[Z]},
-        { gravity[X], gravity[Y], gravity[Z] + NUCLEOLUS_AXIS_3}, { gravity[X], gravity[Y], gravity[Z] - NUCLEOLUS_AXIS_3}
+        { gravity[X], gravity[Y], gravity[Z] + NUCLEOLUS_AXIS_2}, { gravity[X], gravity[Y], gravity[Z] - NUCLEOLUS_AXIS_2},
+        { gravity[X], gravity[Y] + NUCLEOLUS_AXIS_3, gravity[Z]}, { gravity[X], gravity[Y] - NUCLEOLUS_AXIS_3, gravity[Z]}
     };
     
     for (loop = 0; loop < SIZE; loop++) {
@@ -598,11 +598,11 @@ void Sum_force (Nuc *nuc, Spb *spb) {
 
     for (lp = 0; lp < SIZE; lp++) {
         
-        for (dim = 0; dim < DIMENSION; dim++) sum_force += nuc[lp].force[dim];
+        for (dim = 0; dim < DIMENSION; dim++) sum_force += abs (nuc[lp].force[dim]);
     }
-    for (dim = 0; dim < DIMENSION; dim++) sum_force += spb->force[dim];
+    for (dim = 0; dim < DIMENSION; dim++) sum_force += abs (spb->force[dim]);
     
-    printf ("\t total force = %3.2e\n", sum_force);
+    printf ("\n\t total force = %3.2e\n", sum_force);
 }
 
 void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time, const unsigned int sample_no) {
@@ -659,6 +659,7 @@ int main ( int argc, char **argv ){
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
             Calculation (mitigation, nuc, spb);
+        }
         
         Write_coordinate (nuc, spb, time, sample_no);
     }
