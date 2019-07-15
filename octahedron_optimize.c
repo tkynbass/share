@@ -22,7 +22,7 @@
 #define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
-#define WRITE_INTERVAL (1.0e+5)
+#define WRITE_INTERVAL (1.0e+2)
 
 #define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
@@ -106,12 +106,13 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
     
     Nuc *ncl;
     unsigned int loop, loop2;
-    double gravity[] = { -0.3 * MEMBRANE_AXIS_1, 1.0, 1.0};
+//    double gravity[] = { -0.3 * MEMBRANE_AXIS_1, 1.0, 1.0};
+    double gravity[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
     
     // 核小体　初期位置 //
     double init_pos [SIZE][DIMENSION] = {
-        { gravity[X], gravity[Y] + NUCLEOLUS_AXIS_1, gravity[Z]}, { gravity[X], gravity[Y] - NUCLEOLUS_AXIS_1, gravity[Z]},
-        { gravity[X] + NUCLEOLUS_AXIS_2, gravity[Y], gravity[Z]}, { gravity[X] - NUCLEOLUS_AXIS_2, gravity[Y], gravity[Z]},
+        { gravity[X] + NUCLEOLUS_AXIS_1, gravity[Y], gravity[Z]}, { gravity[X] - NUCLEOLUS_AXIS_1, gravity[Y], gravity[Z]},
+        { gravity[X], gravity[Y] + NUCLEOLUS_AXIS_2, gravity[Z]}, { gravity[X], gravity[Y] - NUCLEOLUS_AXIS_2, gravity[Z]},
         { gravity[X], gravity[Y], gravity[Z] + NUCLEOLUS_AXIS_3}, { gravity[X], gravity[Y], gravity[Z] - NUCLEOLUS_AXIS_3}
     };
     
@@ -123,9 +124,13 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
 //        printf (" %4.2f %4.2f %4.2f\n", ncl->position[X], ncl->position[Y], ncl->position[Z]);
     }
     
-    spb->position[X] = MEMBRANE_AXIS_1;
-    spb->position[Y] = 0.2;
-    spb->position[Z] = 0.2;
+//    spb->position[X] = 3.0;
+//    spb->position[Y] = 0.2;
+//    spb->position[Z] = 0.2;
+    
+    spb->position[X] = 90.0 / 7.0;
+    spb->position[Y] = 85.0 / 7.0;
+    spb->position[Z] = 100.0 / 7.0;
     
     // 核小体形状保存 自然長求める
     for ( loop = 0; loop < SIZE; loop++) {
