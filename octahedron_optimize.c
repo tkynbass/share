@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 #include "dSFMT/dSFMT.h"
-#include <time.h>
+#include <step.h>
 //#include <omp.h>
 
 #define PI (M_PI)
@@ -605,7 +605,7 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *ds
     
     for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
     
-    Spb_Noise (nuc, dsfmt)
+    Spb_Noise (spb, dsfmt);
     
     Def_NucMem_pt (nuc);
     Def_SpbMem_pt (spb);
@@ -651,7 +651,7 @@ double Sum_force (Nuc *nuc, Spb *spb) {
     return sum_force;
 }
 
-void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time, const unsigned int sample_no) {
+void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no) {
     
     unsigned int lp;
     char filename[128];
@@ -659,7 +659,7 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time, const unsign
     
     FILE *fpw;
     
-    sprintf (filename, "%d/result_%d.txt", sample_no, time);
+    sprintf (filename, "%d/result_%d.txt", sample_no, step);
     
     if ( (fpw = fopen (filename, "w")) == NULL) {
         
@@ -681,7 +681,7 @@ int main ( int argc, char **argv ){
     
     Nuc *nuc;
     Spb *spb;
-    unsigned int time, mitigation, calc_max = atoi (argv[2]);
+    unsigned int step, mitigation, calc_max = atoi (argv[2]);
     unsigned int sample_no = atoi (argv[1]);
 
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
@@ -701,16 +701,16 @@ int main ( int argc, char **argv ){
     TermDIst_SpbMem (NULL, 's');
     TermDIst_NucSpb (NULL, NULL, 's');
     // 計算
-    for ( time = 1; time <= calc_max; time++) {
+    for ( step = 1; step <= calc_max; step++) {
 
-        printf ("\t Calculating now ...  time = %d\r", time);
+        printf ("\t Calculating now ...  step = %d\r", step);
         fflush (stdout);
         
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
             Calculation (mitigation, nuc, spb, &dsfmt);
         }
-        Write_coordinate (nuc, spb, time, sample_no);
+        Write_coordinate (nuc, spb, step, sample_no);
         
         if (Sum_force (nuc, spb) < 1.0e-5) break;
     }
