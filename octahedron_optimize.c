@@ -35,7 +35,8 @@
 // SPBのノイズ用
 #define DIFFUSION (0.1)
 #define SPB_RADIUS (1.0)
-#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100)
+#define KINEMATIC_MYU (0.000890)
+#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890)
 
 const double ORIGIN[] = {0.0, 0.0, 0.0};
 
@@ -572,28 +573,30 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
         
         double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( pos[X] * normal_vector[X]
                                                                   + pos[Y] * normal_vector[Y]
-                                                                  + pos[Z] * normal_vector[Z]);
+                                                                  + pos[Z] * normal_vector[Z]) / normal_vector_norm;
         
-        force[X] += f * normal_vector[X] / normal_vector_norm;
-        force[Y] += f * normal_vector[Y] / normal_vector_norm;
-        force[Z] += f * normal_vector[Z] / normal_vector_norm;
+        force[X] += f * normal_vector[X];
+        force[Y] += f * normal_vector[Y];
+        force[Z] += f * normal_vector[Z];
     }
 }
 
 void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
 
     //noise dsfmt
-//    double p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-//    double p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+                / sqrt (DELTA) / SPB_MYU;
+    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+                / sqrt (DELTA) / SPB_MYU;
     
-    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+//    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+//    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
     double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     
-    spb->force[X] += p1 * sin(theta) / sqrt(DELTA);
-    spb->force[Y] += p1 * cos(theta) / sqrt(DELTA);
-    spb->force[Z] += p2 * sin(psi) / sqrt(DELTA);
+    spb->force[X] += p1 * sin(theta);
+    spb->force[Y] += p1 * cos(theta);
+    spb->force[Z] += p2 * sin(psi);
 }
 
 void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *dsfmt) {
@@ -650,7 +653,7 @@ double Sum_force (Nuc *nuc, Spb *spb) {
     }
     for (dim = 0; dim < DIMENSION; dim++) sum_force += abs (spb->force[dim]);
     
-    printf ("\n\t total force = %3.2e\n", sum_force);
+//    printf ("\n\t total force = %3.2e\n", sum_force);
     
     return sum_force;
 }
