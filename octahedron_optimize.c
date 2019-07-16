@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 #include "dSFMT/dSFMT.h"
-#include <step.h>
+#include <time.h>
 //#include <omp.h>
 
 #define PI (M_PI)
@@ -33,6 +33,7 @@
 #define K_KEEP (1.0e+1)
 
 // SPBのノイズ用
+#define DIFFUSION (0.1)
 #define SPB_RADIUS (1.0)
 #define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100)
 
@@ -582,8 +583,11 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
 void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
 
     //noise dsfmt
-    double p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-    double p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+//    double p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+//    double p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+    
+    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
     double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     
