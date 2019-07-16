@@ -33,10 +33,10 @@
 #define K_KEEP (1.0e+1)
 
 // SPBのノイズ用
-#define DIFFUSION (0.01)
-#define SPB_RADIUS (1.0)
+#define DIFFUSION (5.0e-3)
 #define KINEMATIC_MYU (0.000890)
-#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * 0.000890)
+#define MYU ( 2.0 * DIMENSION * PI * 1.0 * 0.000890)
+#define INV_MYU (1.0 / MYU)
 
 const double ORIGIN[] = {0.0, 0.0, 0.0};
 
@@ -554,6 +554,7 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間
     }
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
+
 void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION], char interaction_type /* F: fix, E: exclude */) {
     
     double dist = Euclid_norm (pos, ORIGIN);
@@ -581,6 +582,26 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
     }
 }
 
+void Noise (double *force dsfmt_t *dsfmt) {
+    
+    //noise dsfmt
+    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+                / sqrt (DELTA);
+    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+                / sqrt (DELTA);
+    
+//    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+//    / sqrt (DELTA);
+//    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+//    / sqrt (DELTA);
+    double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    
+    force[X] += p1 * sin(theta);
+    force[Y] += p1 * cos(theta);
+    force[Z] += p2 * sin(psi);
+}
+
 void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
 
     //noise dsfmt
@@ -590,9 +611,9 @@ void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
 //                / sqrt (DELTA) / SPB_MYU;
     
     double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA) / SPB_MYU;
+                / sqrt (DELTA);
     double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA) / SPB_MYU;
+                / sqrt (DELTA);
     double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     
@@ -610,11 +631,14 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *ds
     for ( lp = 0; lp < SIZE; lp++) {
         ncl = &nuc[lp];
         for (dim = 0; dim < DIMENSION; dim++) ncl->force[dim] = 0.0;
+        
+        Noise (ncl->force, dsfmt);
     }
     
     for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
     
-    Spb_Noise (spb, dsfmt);
+    Noise (spb->force, dsfmt);
+//    Spb_Noise (spb, dsfmt);
     
     Def_NucMem_pt (nuc);
     Def_SpbMem_pt (spb);
@@ -634,14 +658,14 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *ds
         
         ncl = &nuc[lp];
         
-        ncl->position[X] += DELTA * ncl->force[X];
-        ncl->position[Y] += DELTA * ncl->force[Y];
-        ncl->position[Z] += DELTA * ncl->force[Z];
+        ncl->position[X] += INV_MYU * DELTA * ncl->force[X];
+        ncl->position[Y] += INV_MYU * DELTA * ncl->force[Y];
+        ncl->position[Z] += INV_MYU * DELTA * ncl->force[Z];
     }
     
-    spb->position[X] += DELTA * spb->force[X];
-    spb->position[Y] += DELTA * spb->force[Y];
-    spb->position[Z] += DELTA * spb->force[Z];
+    spb->position[X] += INV_MYU * DELTA * spb->force[X];
+    spb->position[Y] += INV_MYU * DELTA * spb->force[Y];
+    spb->position[Z] += INV_MYU * DELTA * spb->force[Z];
 }
 
 double Sum_force (Nuc *nuc, Spb *spb) {
@@ -721,7 +745,7 @@ int main ( int argc, char **argv ){
         }
         Write_coordinate (nuc, spb, step, sample_no);
         
-        if (Sum_force (nuc, spb) < 1.0e-5) break;
+//        if (Sum_force (nuc, spb) < 1.0e-5) break;
     }
 
 //    Sum_force (nuc, spb);
