@@ -33,10 +33,10 @@
 #define K_KEEP (1.0e+1)
 
 // SPBのノイズ用
-#define DIFFUSION (0.1)
+#define DIFFUSION (0.01)
 #define SPB_RADIUS (1.0)
 #define KINEMATIC_MYU (0.000890)
-#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890)
+#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * 0.000890)
 
 const double ORIGIN[] = {0.0, 0.0, 0.0};
 
@@ -584,13 +584,15 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
 void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
 
     //noise dsfmt
-    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA) / SPB_MYU;
-    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA) / SPB_MYU;
+//    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+//                / sqrt (DELTA) / SPB_MYU;
+//    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+//                / sqrt (DELTA) / SPB_MYU;
     
-//    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
-//    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+                / sqrt (DELTA) / SPB_MYU;
+    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+                / sqrt (DELTA) / SPB_MYU;
     double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     
