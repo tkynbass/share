@@ -582,10 +582,10 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
 void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
 
     //noise dsfmt
-    double p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    double p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
-    double theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
-    double psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    double p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+    double p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ));
+    double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
     
     spb->force[X] += p1 * sin(theta) / sqrt(DELTA);
     spb->force[Y] += p1 * cos(theta) / sqrt(DELTA);
@@ -605,7 +605,7 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *ds
     
     for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
     
-    
+    Spb_Noise (nuc, dsfmt)
     
     Def_NucMem_pt (nuc);
     Def_SpbMem_pt (spb);
