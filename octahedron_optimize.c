@@ -133,7 +133,7 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
     Nuc *ncl;
     unsigned int loop, loop2;
 
-    
+    double gravity[] = {-0.01, -0.01, -0.01};
     // 核小体　初期位置 //
     double init_pos [SIZE][DIMENSION] = {
         { gravity[X] + NUCLEOLUS_AXIS_1, gravity[Y], gravity[Z]}, { gravity[X] - NUCLEOLUS_AXIS_1, gravity[Y], gravity[Z]},
