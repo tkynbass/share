@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "dSFMT/dSFMT.h"
+#include <time.h>
 //#include <omp.h>
 
 #define PI (M_PI)
@@ -11,6 +13,9 @@
 #define DIMENSION (3)       // 次元
 #define LENGTH (7.0e-8)     // 長さ単位
 #define DELTA (1.0e-2)
+
+#define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
+#define TEMPARTURE ( 300 )
 
 #define SIZE (6)    // 各構造体を構成する粒子数
 
@@ -26,6 +31,10 @@
 
 #define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
+
+// SPBのノイズ用
+#define SPB_RADIUS (1.0)
+#define SPB_MYU ( 2.0 * DIMENSION * PI * SPB_RADIUS * LENGTH * 0.000890 / 100)
 
 const double ORIGIN[] = {0.0, 0.0, 0.0};
 
@@ -102,12 +111,28 @@ void Secure_main_memory (Nuc **nuc, Spb **spb) {   // メモリ確保 //
     }
 }
 
+void NucleolusInitPosition (Nuc *nuc) {
+    
+    unsigned int orientation[6][3] = {
+        {X, Y, Z}, {X, Z, Y},
+        {Y, X, Z}, {Y, Z, X},
+        {Z, X, Y}, {Z, Y, X}
+    };
+    
+    //    double gravity[] = { -0.3 * MEMBRANE_AXIS_1, 1.0, 1.0};
+    //    double gravity[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
+    double gravity[] = {-0.01, -0.01, -0.01};
+    
+    unsigned int orient_no = 0;
+    
+    
+}
+
 void StructInitilization (Nuc *nuc, Spb *spb) {
     
     Nuc *ncl;
     unsigned int loop, loop2;
-//    double gravity[] = { -0.3 * MEMBRANE_AXIS_1, 1.0, 1.0};
-    double gravity[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
+
     
     // 核小体　初期位置 //
     double init_pos [SIZE][DIMENSION] = {
@@ -128,9 +153,13 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
 //    spb->position[Y] = 0.2;
 //    spb->position[Z] = 0.2;
     
-    spb->position[X] = 90.0 / 7.0;
-    spb->position[Y] = 85.0 / 7.0;
-    spb->position[Z] = 100.0 / 7.0;
+//    spb->position[X] = 90.0 / 7.0;
+//    spb->position[Y] = 85.0 / 7.0;
+//    spb->position[Z] = 100.0 / 7.0;
+
+    spb->position[X] = 0.01;
+    spb->position[Y] = 0.01;
+    spb->position[Z] = 0.01;
     
     // 核小体形状保存 自然長求める
     for ( loop = 0; loop < SIZE; loop++) {
@@ -411,7 +440,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
             exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
             exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
             
-            f = - ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            f =  ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
             / ( dist * (exp1 + exp2));
             
             spb->force[X] += f * (spb->position[X] - MEM_POS[mem_lp][X]);
@@ -550,7 +579,20 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
     }
 }
 
-void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
+void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
+
+    //noise dsfmt
+    double p1 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    double p2 = sqrt(2.0 * 3.0 * SPB_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(&dsfmt) ));
+    double theta = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    double psi = 2.0 * PI * dsfmt_genrand_open_close(&dsfmt);
+    
+    spb->force[X] += p1 * sin(theta) / sqrt(DELTA);
+    spb->force[Y] += p1 * cos(theta) / sqrt(DELTA);
+    spb->force[Z] += p2 * sin(psi) / sqrt(DELTA);
+}
+
+void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *dsfmt) {
     
     unsigned int lp, dim;
     Nuc *ncl;
@@ -562,6 +604,8 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     }
     
     for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
+    
+    
     
     Def_NucMem_pt (nuc);
     Def_SpbMem_pt (spb);
@@ -591,7 +635,7 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     spb->position[Z] += DELTA * spb->force[Z];
 }
 
-void Sum_force (Nuc *nuc, Spb *spb) {
+double Sum_force (Nuc *nuc, Spb *spb) {
     
     unsigned int lp, dim;
     double sum_force = 0.0;
@@ -603,6 +647,8 @@ void Sum_force (Nuc *nuc, Spb *spb) {
     for (dim = 0; dim < DIMENSION; dim++) sum_force += abs (spb->force[dim]);
     
     printf ("\n\t total force = %3.2e\n", sum_force);
+    
+    return sum_force;
 }
 
 void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int time, const unsigned int sample_no) {
@@ -643,6 +689,10 @@ int main ( int argc, char **argv ){
     // 構造体の初期化
     StructInitilization (nuc, spb);
     
+    //dSFMT
+    dsfmt_t dsfmt;
+    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
+    
     Write_coordinate (nuc, spb, 0, sample_no);
     printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
     
@@ -658,13 +708,14 @@ int main ( int argc, char **argv ){
         
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
-            Calculation (mitigation, nuc, spb);
+            Calculation (mitigation, nuc, spb, &dsfmt);
         }
-        
         Write_coordinate (nuc, spb, time, sample_no);
+        
+        if (Sum_force (nuc, spb) < 1.0e-5) break;
     }
 
-    Sum_force (nuc, spb);
+//    Sum_force (nuc, spb);
     fflush (stdout);
         
     free (nuc);
