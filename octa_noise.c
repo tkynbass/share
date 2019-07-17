@@ -639,12 +639,12 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *ds
         ncl = &nuc[lp];
         for (dim = 0; dim < DIMENSION; dim++) ncl->force[dim] = 0.0;
         
-//        Noise (ncl->force, dsfmt);
+        Noise (ncl->force, dsfmt);
     }
     
     for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
     
-//    Noise (spb->force, dsfmt);
+    Noise (spb->force, dsfmt);
 //    Spb_Noise (spb, dsfmt);
     
     Def_NucMem_pt (nuc);
