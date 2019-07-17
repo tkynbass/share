@@ -35,7 +35,8 @@
 // SPBのノイズ用
 #define DIFFUSION (5.0e-3)
 #define KINEMATIC_MYU (0.000890)
-#define MYU ( 2.0 * DIMENSION * PI * 1.0 * 0.000890)
+//#define MYU ( 2.0 * DIMENSION * PI * 1.0 * 0.000890)
+#define MYU (1.0)
 #define INV_MYU (1.0 / MYU)
 
 const double ORIGIN[] = {0.0, 0.0, 0.0};
@@ -582,7 +583,7 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
     }
 }
 
-void Noise (double *force dsfmt_t *dsfmt) {
+void Noise (double *force, dsfmt_t *dsfmt) {
     
     //noise dsfmt
     double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
