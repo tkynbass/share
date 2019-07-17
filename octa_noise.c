@@ -35,7 +35,7 @@
 #define ORIENT_NO (0)
 
 // SPBのノイズ用
-#define DIFFUSION (5.0e-3)
+#define DIFFUSION (1.0e-2)
 #define KINEMATIC_MYU (0.000890)
 //#define MYU ( 2.0 * DIMENSION * PI * 1.0 * 0.000890)
 #define MYU (1.0)
@@ -131,13 +131,12 @@ void NucleolusInitPosition (Nuc *nuc) {
     //    double gravity[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
     double gravity[] = {-0.01, -0.01, -0.01};
     
-//    unsigned int orient_no = 0;
+//    unsigned int orient_nov = 0;
     
     for (loop = 0; loop < SIZE; loop++) {
         
         ncl = &nuc[loop];
         for (unsigned int dim = 0; dim < DIMENSION; dim++) ncl->position [dim] = gravity[dim];
-        //        printf (" %4.2f %4.2f %4.2f\n", ncl->position[X], ncl->position[Y], ncl->position[Z]);
     }
     
     nuc[0].position[ orientation [ORIENT_NO][0] ] += NUCLEOLUS_AXIS_1;
