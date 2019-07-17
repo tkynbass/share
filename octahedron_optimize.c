@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "dSFMT/dSFMT.h"
+#include "/home/gensho/tkym/dSFMT/dSFMT.h"
 #include <time.h>
 //#include <omp.h>
 
@@ -31,6 +31,8 @@
 
 #define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
+
+#define ORIENT_NO (0)
 
 // SPBのノイズ用
 #define DIFFUSION (5.0e-3)
@@ -116,6 +118,9 @@ void Secure_main_memory (Nuc **nuc, Spb **spb) {   // メモリ確保 //
 
 void NucleolusInitPosition (Nuc *nuc) {
     
+    unsigned int loop;
+    Nuc *ncl;
+    
     unsigned int orientation[6][3] = {
         {X, Y, Z}, {X, Z, Y},
         {Y, X, Z}, {Y, Z, X},
@@ -126,7 +131,7 @@ void NucleolusInitPosition (Nuc *nuc) {
     //    double gravity[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
     double gravity[] = {-0.01, -0.01, -0.01};
     
-    unsigned int orient_no = 0;
+//    unsigned int orient_no = 0;
     
     for (loop = 0; loop < SIZE; loop++) {
         
@@ -135,14 +140,14 @@ void NucleolusInitPosition (Nuc *nuc) {
         //        printf (" %4.2f %4.2f %4.2f\n", ncl->position[X], ncl->position[Y], ncl->position[Z]);
     }
     
-    nuc[0].position[ orientation[orient_no][0] ] += NUCLEOLUS_AXIS_1;
-    nuc[1].position[ orientation[orient_no][0] ] -= NUCLEOLUS_AXIS_1;
+    nuc[0].position[ orientation [ORIENT_NO][0] ] += NUCLEOLUS_AXIS_1;
+    nuc[1].position[ orientation [ORIENT_NO][0] ] -= NUCLEOLUS_AXIS_1;
     
-    nuc[2].position[ orientation[orient_no][1] ] += NUCLEOLUS_AXIS_2;
-    nuc[3].position[ orientation[orient_no][1] ] -= NUCLEOLUS_AXIS_2;
+    nuc[2].position[ orientation[ORIENT_NO][1] ] += NUCLEOLUS_AXIS_2;
+    nuc[3].position[ orientation[ORIENT_NO][1] ] -= NUCLEOLUS_AXIS_2;
     
-    nuc[4].position[ orientation[orient_no][2] ] += NUCLEOLUS_AXIS_3;
-    nuc[5].position[ orientation[orient_no][2] ] -= NUCLEOLUS_AXIS_3;
+    nuc[4].position[ orientation[ORIENT_NO][2] ] += NUCLEOLUS_AXIS_3;
+    nuc[5].position[ orientation[ORIENT_NO][2] ] -= NUCLEOLUS_AXIS_3;
 }
 
 void StructInitilization (Nuc *nuc, Spb *spb) {
