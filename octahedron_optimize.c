@@ -170,6 +170,8 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
 //    spb->position[X] = 90.0 / 7.0;
 //    spb->position[Y] = 85.0 / 7.0;
 //    spb->position[Z] = 100.0 / 7.0;
+    
+    NucleolusInitPosition (nuc);
 
     spb->position[X] = 0.01;
     spb->position[Y] = 0.01;
@@ -406,7 +408,7 @@ void TermDIst_NucMem (Nuc *nuc, const char option) {  // 核小体-核膜間の�
         
         for (type_lp = 0; type_lp <4; type_lp++) {
             
-            sprintf (file_name, "pote_nm_%s.txt", type_list[type_lp]);
+            sprintf (file_name, "../subdata/pote_nm_%s.txt", type_list[type_lp]);
             if ( (fpr = fopen (file_name, "r")) == NULL) {
                 
                 printf ("\t Cannot open %s \n", file_name);
@@ -468,7 +470,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
         
         for (type_lp = 0; type_lp < 2; type_lp++) {
             
-            sprintf (file_name, "pote_sm_%s.txt", type_list[type_lp]);
+            sprintf (file_name, "../subdata/pote_sm_%s.txt", type_list[type_lp]);
             if ( (fpr = fopen (file_name, "r")) == NULL) {
                 
                 printf ("\t Cannot open %s \n", file_name);
@@ -538,7 +540,7 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間
         
         for (type_lp = 0; type_lp < 2; type_lp++) {
             
-            sprintf (file_name, "pote_sn_%s.txt", type_list[type_lp]);
+            sprintf (file_name, "../subdata/pote_sn_%s.txt", type_list[type_lp]);
             if ( (fpr = fopen (file_name, "r")) == NULL) {
                 
                 printf ("\t Cannot open %s \n", file_name);
