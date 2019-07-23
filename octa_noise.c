@@ -193,19 +193,10 @@ void StructInitilization (Nuc *nuc, Spb *spb) {
     }
 }
 
-void Def_max_min (const double dist_list[4], unsigned int *max, unsigned int *min) {
-    
-    for (unsigned int loop = 1; loop < 4; loop++) {
-        
-        if ( dist_list[*max] < dist_list[loop] ) *max = loop;
-        if ( dist_list[*min] > dist_list[loop] ) *min = loop;
-    }
-}
-
 void Def_NucMem_pt (Nuc *nuc) {
     
-    unsigned int n_ax, m_ax, mem_r, mem_l, max, min;
-    double dist_list[4];
+    unsigned int dim, n_ax, m_ax, mem_r, mem_l, mem_Near, mem_Far;
+    double mid_pos[DIMENSION];
     Nuc *nuc_r, *nuc_l;
     
     //     加えるポテンシャル種類の判別
@@ -214,76 +205,60 @@ void Def_NucMem_pt (Nuc *nuc) {
         nuc_r = &nuc[AXIS[n_ax][right]];
         nuc_l = &nuc[AXIS[n_ax][left]];
         
+        for (dim = 0; dim < DIMENSION; dim++) mid_pos [dim] = ( nuc_r->position[dim] + nuc_l->position[dim] ) / 2.0;
+        
         for (m_ax = 0; m_ax < 3; m_ax++) {
-            
-            max = 0;
-            min = 0;
             
             mem_r = AXIS[m_ax][right];
             mem_l = AXIS[m_ax][left];
             
-            dist_list[0] = Euclid_norm (nuc_r->position, MEM_POS[mem_r]);
-            dist_list[1] = Euclid_norm (nuc_r->position, MEM_POS[mem_l]);
-            
-            dist_list[2] = Euclid_norm (nuc_l->position, MEM_POS[mem_r]);
-            dist_list[3] = Euclid_norm (nuc_l->position, MEM_POS[mem_l]);
-            
-            Def_max_min (dist_list, &max, &min);
-            
-            switch (min) {
-                case 0:
-                    nuc_r->mem_pt[mem_r] = nn;
-                    nuc_l->mem_pt[mem_r] = nf;
-                    break;
-                case 1:
-                    nuc_r->mem_pt[mem_l] = nn;
-                    nuc_l->mem_pt[mem_l] = nf;
-                    break;
-                case 2:
-                    nuc_l->mem_pt[mem_r] = nn;
-                    nuc_r->mem_pt[mem_r] = nf;
-                    break;
-                case 3:
-                    nuc_l->mem_pt[mem_l] = nn;
-                    nuc_r->mem_pt[mem_l] = nf;
-                    break;
-                default:
-                    printf ("\t mem potential def. error \n");
-                    break;
+            //            Near point　と Far point の判別
+            if (Euclid_norm (MEM_POS[mem_r], mid_pos) <= Euclid_norm (MEM_POS[mem_l], mid_pos)) {
+                
+                mem_Near = mem_r;
+                mem_Far = mem_l;
+            }
+            else {
+                
+                mem_Near = mem_l;
+                mem_Far = mem_r;
             }
             
-            switch (max) {
-                case 0:
-                    nuc_r->mem_pt[mem_r] = ff;
-                    nuc_l->mem_pt[mem_r] = fn;
-                    break;
-                case 1:
-                    nuc_r->mem_pt[mem_l] = ff;
-                    nuc_l->mem_pt[mem_l] = fn;
-                    break;
-                case 2:
-                    nuc_l->mem_pt[mem_r] = ff;
-                    nuc_r->mem_pt[mem_r] = fn;
-                    break;
-                case 3:
-                    nuc_l->mem_pt[mem_l] = ff;
-                    nuc_r->mem_pt[mem_l] = fn;
-                    break;
-                default:
-                    printf ("\t mem potential def. error \n");
-                    break;
+            //            nn, nfの判別
+            if (Euclid_norm (nuc_r->position, MEM_POS[mem_Near]) <= Euclid_norm (nuc_l->position, MEM_POS[mem_Near])){
+                
+                mem_r->mem_pt [mem_Near] = nn;
+                mem_l->mem_pt [mem_Near] = nf;
             }
+            else {
+                
+                mem_r->mem_pt [mem_Near] = nf;
+                mem_l->mem_pt [mem_Near] = nn;
+            }
+            
+            //            fn, ffの判別
+            if (Euclid_norm (nuc_r->position, MEM_POS[mem_Far]) <= Euclid_norm (nuc_l->position, MEM_POS[mem_Fear])){
+                
+                mem_r->mem_pt [mem_Far] = fn;
+                mem_l->mem_pt [mem_Far] = ff;
+            }
+            else {
+                
+                mem_r->mem_pt [mem_Far] = ff;
+                mem_l->mem_pt [mem_Far] = fn;
+            }
+            
         }
     }
     
-//    for (int loop=0; loop<SIZE; loop++) {
-//
-//        for (int loop2=0; loop2<SIZE; loop2++) {
-//
-//            printf ("%d ", nuc[loop].mem_pt[loop2]);
-//        }
-//        printf ("\n");
-//    }
+    //    for (int loop=0; loop<SIZE; loop++) {
+    //
+    //        for (int loop2=0; loop2<SIZE; loop2++) {
+    //
+    //            printf ("%d ", nuc[loop].mem_pt[loop2]);
+    //        }
+    //        printf ("\n");
+    //    }
 }
 
 void Def_SpbMem_pt (Spb *spb) {
