@@ -228,25 +228,25 @@ void Def_NucMem_pt (Nuc *nuc) {
 //            nn, nfの判別
             if (Euclid_norm (nuc_r->position, MEM_POS[mem_Near]) <= Euclid_norm (nuc_l->position, MEM_POS[mem_Near])){
                 
-                mem_r->mem_pt [mem_Near] = nn;
-                mem_l->mem_pt [mem_Near] = nf;
+                nuc_r->mem_pt [mem_Near] = nn;
+                nuc_l->mem_pt [mem_Near] = nf;
             }
             else {
                 
-                mem_r->mem_pt [mem_Near] = nf;
-                mem_l->mem_pt [mem_Near] = nn;
+                nuc_r->mem_pt [mem_Near] = nf;
+                nuc_l->mem_pt [mem_Near] = nn;
             }
             
 //            fn, ffの判別
             if (Euclid_norm (nuc_r->position, MEM_POS[mem_Far]) <= Euclid_norm (nuc_l->position, MEM_POS[mem_Fear])){
                 
-                mem_r->mem_pt [mem_Far] = fn;
-                mem_l->mem_pt [mem_Far] = ff;
+                nuc_r->mem_pt [mem_Far] = fn;
+                nuc_l->mem_pt [mem_Far] = ff;
             }
             else {
                 
-                mem_r->mem_pt [mem_Far] = ff;
-                mem_l->mem_pt [mem_Far] = fn;
+                nuc_r->mem_pt [mem_Far] = ff;
+                nuc_l->mem_pt [mem_Far] = fn;
             }
 
         }
