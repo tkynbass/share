@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "/home/gensho/tkym/dSFMT/dSFMT.h"
+//#include "/home/gensho/tkym/dSFMT/dSFMT.h"
 #include <time.h>
 //#include <omp.h>
 
@@ -32,7 +32,7 @@
 #define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
 
-#define ORIENT_NO (0)
+#define ORIENT_NO (2)
 
 // SPBのノイズ用
 #define DIFFUSION (5.0e-3)
@@ -533,8 +533,6 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間
             ncl->force[Y] += f * (ncl->position[Y] - spb->position[Y]);
             ncl->force[Z] += f * (ncl->position[Z] - spb->position[Z]);
         }
-        
-//        for (lp = 0; lp < DIMENSION; lp++) printf ("%lf\n", spb->force[lp]);
     }
     else if (option == 's') { //    パラメータの読み込み
         
@@ -596,47 +594,7 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
     }
 }
 
-void Noise (double *force, dsfmt_t *dsfmt) {
-    
-    //noise dsfmt
-    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA);
-    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA);
-    
-//    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-//    / sqrt (DELTA);
-//    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-//    / sqrt (DELTA);
-    double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-    double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-    
-    force[X] += p1 * sin(theta);
-    force[Y] += p1 * cos(theta);
-    force[Z] += p2 * sin(psi);
-}
-
-void Spb_Noise (Spb *spb, dsfmt_t *dsfmt) {
-
-    //noise dsfmt
-//    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-//                / sqrt (DELTA) / SPB_MYU;
-//    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-//                / sqrt (DELTA) / SPB_MYU;
-    
-    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA);
-    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
-                / sqrt (DELTA);
-    double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-    double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
-    
-    spb->force[X] += p1 * sin(theta);
-    spb->force[Y] += p1 * cos(theta);
-    spb->force[Z] += p2 * sin(psi);
-}
-
-void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *dsfmt) {
+void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb) {
     
     unsigned int lp, dim;
     Nuc *ncl;
@@ -646,13 +604,9 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, dsfmt_t *ds
         ncl = &nuc[lp];
         for (dim = 0; dim < DIMENSION; dim++) ncl->force[dim] = 0.0;
         
-//        Noise (ncl->force, dsfmt);
     }
     
     for (dim = 0; dim < DIMENSION; dim++) spb->force[dim] = 0.0;
-    
-//    Noise (spb->force, dsfmt);
-//    Spb_Noise (spb, dsfmt);
     
     Def_NucMem_pt (nuc);
     Def_SpbMem_pt (spb);
@@ -724,6 +678,8 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsign
     fclose (fpw);
 }
 
+
+
 int main ( int argc, char **argv ){
     
     Nuc *nuc;
@@ -735,10 +691,6 @@ int main ( int argc, char **argv ){
     
     // 構造体の初期化
     StructInitilization (nuc, spb);
-    
-    //dSFMT
-    dsfmt_t dsfmt;
-    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
     
     Write_coordinate (nuc, spb, 0, sample_no);
     printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
@@ -755,7 +707,7 @@ int main ( int argc, char **argv ){
         
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
-            Calculation (mitigation, nuc, spb, &dsfmt);
+            Calculation (mitigation, nuc, spb;
         }
         Write_coordinate (nuc, spb, step, sample_no);
         
