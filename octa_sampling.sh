@@ -50,4 +50,6 @@ if [ ! -e ${sample} ]
 then mkdir ${sample}
 fi
 ./octa_sampling ${sample} 100
+
+
 done
