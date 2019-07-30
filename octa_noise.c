@@ -237,7 +237,7 @@ void Def_NucMem_pt (Nuc *nuc) {
             }
             
             //            fn, ffの判別
-            if (Euclid_norm (nuc_r->position, MEM_POS[mem_Far]) <= Euclid_norm (nuc_l->position, MEM_POS[mem_Fear])){
+            if (Euclid_norm (nuc_r->position, MEM_POS[mem_Far]) <= Euclid_norm (nuc_l->position, MEM_POS[mem_Far])){
                 
                 nuc_r->mem_pt [mem_Far] = fn;
                 nuc_l->mem_pt [mem_Far] = ff;
@@ -430,7 +430,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
             exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
             exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
             
-            f =  ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            f = - ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
             / ( dist * (exp1 + exp2));
             
             spb->force[X] += f * (spb->position[X] - MEM_POS[mem_lp][X]);
