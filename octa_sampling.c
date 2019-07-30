@@ -638,7 +638,32 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsign
     fclose (fpw);
 }
 
-
+void Write_result (Nuc *nuc, Spb *spb, const unsigned int sample_no) {
+    
+    unsigned int lp;
+    char filename[128];
+    
+    Nuc *ncl;
+    FILE *fpw;
+    
+    sprintf (filename, "result.txt")
+    
+    if ( (fpw = fopen (filename, "a")) == NULL) {
+        
+        printf ("\t Cannot open result file.\n");
+        exit(1);
+    }
+    
+    fprintf (fpw, "%d ", sample_no);
+    for (lp = 0; lp < SIZE; lp++) {
+        
+        ncl = &nuc[lp];
+        fprintf (fpw, "%4.2f %4.2f %4.2f ", ncl->position[X], ncl->position[Y], ncl->position[Z]);
+    }
+    fprintf (fpw, "%lf %lf %lf\n", spb->position[X], spb->position[Y], spb->position[Z]);
+    
+    fclose (fpw);
+}
 
 int main ( int argc, char **argv ){
     
@@ -657,7 +682,7 @@ int main ( int argc, char **argv ){
     StructInitilization (nuc, spb, &dsfmt);
     
     Write_coordinate (nuc, spb, 0, sample_no);
-    printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
+    printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e \r", DELTA, WRITE_INTERVAL);
     
     // 混合ガウスポテンシャルのパラメータ読み込み
     TermDIst_NucMem (NULL, 's');
@@ -666,7 +691,7 @@ int main ( int argc, char **argv ){
     // 計算
     for ( step = 1; step <= calc_max; step++) {
 
-        printf ("\t Calculating now ...  step = %d\r", step);
+//        printf ("\t Calculating now ...  step = %d\r", step);
         fflush (stdout);
         
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
