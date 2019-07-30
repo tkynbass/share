@@ -112,50 +112,13 @@ void Secure_main_memory (Nuc **nuc, Spb **spb) {   // メモリ確保 //
     }
 }
 
-void NucleolusInitPosition (Nuc *nuc) {
-    
-    unsigned int loop;
-    Nuc *ncl;
-    
-    unsigned int orientation[6][3] = {
-        {X, Y, Z}, {X, Z, Y},
-        {Y, X, Z}, {Y, Z, X},
-        {Z, X, Y}, {Z, Y, X}
-    };
-    
-    //    double gravity[] = { -0.3 * MEMBRANE_AXIS_1, 1.0, 1.0};
-    //    double gravity[] = { -0.25e-6 / LENGTH, -0.365e-6 / LENGTH, 0.3e-6 / LENGTH};
-    double gravity[] = {-0.01, -0.01, -0.01};
-    
-//    unsigned int orient_no = 0;
-    
-    for (loop = 0; loop < SIZE; loop++) {
-        
-        ncl = &nuc[loop];
-        for (unsigned int dim = 0; dim < DIMENSION; dim++) ncl->position [dim] = gravity[dim];
-        //        printf (" %4.2f %4.2f %4.2f\n", ncl->position[X], ncl->position[Y], ncl->position[Z]);
-    }
-    
-    nuc[0].position[ orientation [ORIENT_NO][0] ] += NUCLEOLUS_AXIS_1;
-    nuc[1].position[ orientation [ORIENT_NO][0] ] -= NUCLEOLUS_AXIS_1;
-    
-    nuc[2].position[ orientation[ORIENT_NO][1] ] += NUCLEOLUS_AXIS_2;
-    nuc[3].position[ orientation[ORIENT_NO][1] ] -= NUCLEOLUS_AXIS_2;
-    
-    nuc[4].position[ orientation[ORIENT_NO][2] ] += NUCLEOLUS_AXIS_3;
-    nuc[5].position[ orientation[ORIENT_NO][2] ] -= NUCLEOLUS_AXIS_3;
-}
-
 // サンプリング　初期配置
-void RandomSetting (Nuc *nuc, Spb *spb) {
+void RandomSetting (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt) {
     
     unsigned int lp, dim;
-    Nuc *nuc_r, nuc_l;
-    //dSFMT
-    dsfmt_t dsfmt;
-    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
+    Nuc *nuc_r, *nuc_l;
     
-    const double gravity = { MEMBRANE_AXIS_1 * dsfmt_genrand_open_open(dsfmt),
+    const double gravity[DIMENSION] = { MEMBRANE_AXIS_1 * dsfmt_genrand_open_open(dsfmt),
                         MEMBRANE_AXIS_2 * dsfmt_genrand_open_open (dsfmt),
                         MEMBRANE_AXIS_3 * dsfmt_genrand_open_open (dsfmt)};
     
@@ -192,12 +155,12 @@ void RandomSetting (Nuc *nuc, Spb *spb) {
     }
 }
 
-void StructInitilization (Nuc *nuc, Spb *spb) {
+void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt) {
     
     Nuc *ncl;
     unsigned int loop, loop2;
 
-    RandomSetting (nuc, spb);
+    RandomSetting (nuc, spb, dsfmt);
     
     // 核小体形状保存 自然長求める
     for ( loop = 0; loop < SIZE; loop++) {
@@ -686,8 +649,12 @@ int main ( int argc, char **argv ){
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
+    //dSFMT
+    dsfmt_t dsfmt;
+    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
+    
     // 構造体の初期化
-    StructInitilization (nuc, spb);
+    StructInitilization (nuc, spb, &dsfmt);
     
     Write_coordinate (nuc, spb, 0, sample_no);
     printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
