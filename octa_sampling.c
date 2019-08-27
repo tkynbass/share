@@ -487,11 +487,11 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
         
         fgets (dummy, 256, fpr);
         
-        for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
+        for (mem_lp = 0; mem_lp < 3; mem_lp++) {
             
             for (type_lp = 0; type_lp < 2; type_lp++){
                 
-                fscanf (fpr, "%s %lf\n", dummy, pcorr_ratio[type_lp][nuc_lp]);
+                fscanf (fpr, "%s %lf\n", dummy, pcorr_ratio[type_lp][mem_lp]);
             }
         }
         fclose (fpr);
