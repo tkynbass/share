@@ -351,14 +351,13 @@ void TermDIst_NucMem (Nuc *nuc, const char option) {  // 核小体-核膜間の�
                 
                 // type = ncl->mem_pt[mem_pt]
                 par = para_list [ncl->mem_pt [mem_lp]][AX_NUM[nuc_lp]][AX_NUM[mem_lp]];
-                ratio = pcorr_ratio [ncl->mem_pt [mem_lp]][AX_NUM[nuc_lp]][AX_NUM[mem_lp]];
                 
                 dist = Euclid_norm (ncl->position, MEM_POS [mem_lp]);
                 exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
                 exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
                 
                 
-                f = - K_EXPERIENCE * ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+                f = - K_EXPERIENCE * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
                     / ( dist * (exp1 + exp2));
                 
                 ncl->force[X] += f * (ncl->position[X] - MEM_POS[mem_lp][X]);
@@ -401,32 +400,14 @@ void TermDIst_NucMem (Nuc *nuc, const char option) {  // 核小体-核膜間の�
             fclose (fpr);
         }
         
-        sprintf (file_name, "../subdata/mn_vel_pcorr.txt");
-        if ( (fpr = fopen (file_name, "r")) == NULL) {
-            
-            printf ("\t Cannot open %s \n", file_name);
-            exit(1);
-        }
-        fgets (dummy, 256, fpr);
-        
-        for (type_lp = 0; type_lp < 3; type_lp++) {
-            
-            for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
-                
-                fscanf (fpr, "%s %lf %lf %lf\n", dummy, &pcorr_ratio[type_lp][nuc_lp][0],
-                        &pcorr_ratio[type_lp][nuc_lp][1], &pcorr_ratio[type_lp][nuc_lp][2]);
-            }
-        }
-        fclose (fpr);
-        
     }
 //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
 void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互作用
     
     unsigned int lp, type_lp, mem_lp;
-    static double para_list [2][3][6], pcorr_ratio[2][3];
-    double *par, dist, f, exp1, exp2, ratio;
+    static double para_list [2][3][6];
+    double *par, dist, f, exp1, exp2;
     char file_name[128], dummy[128], *type_list[] = {"near", "far"};
     
 //    char directory[] = "/Users/tkym/Desktop/Imaris/analysis/Cut11-Sid4";
@@ -439,13 +420,12 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
         for (mem_lp = 0; mem_lp < SIZE; mem_lp++) {
             
             par = para_list [spb->mem_pt [mem_lp]][AX_NUM[mem_lp]];
-            ratio = pcorr_ratio [spb->mem_pt [mem_lp]][AX_NUM[mem_lp]];
             
             dist = Euclid_norm (spb->position, MEM_POS [mem_lp]);
             exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
             exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
             
-            f = - K_EXPERIENCE * ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            f = - K_EXPERIENCE * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
             / ( dist * (exp1 + exp2));
             
             spb->force[X] += f * (spb->position[X] - MEM_POS[mem_lp][X]);
@@ -484,24 +464,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
             fclose (fpr);
         }
 //        for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[far][0][lp]);
-        
-        sprintf (file_name, "../subdata/sm_vel_pcorr.txt");
-        if ( (fpr = fopen (file_name, "r")) == NULL) {
-            
-            printf ("\t Cannot open %s \n", file_name);
-            exit(1);
-        }
-        
-        fgets (dummy, 256, fpr);
-        
-        for (mem_lp = 0; mem_lp < 3; mem_lp++) {
-            
-            for (type_lp = 0; type_lp < 2; type_lp++){
-                
-                fscanf (fpr, "%s %lf\n", dummy, &pcorr_ratio[type_lp][mem_lp]);
-            }
-        }
-        fclose (fpr);
+    
     }
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
@@ -509,8 +472,8 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
 void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間の相互作用
     
     unsigned int lp, type_lp, nuc_lp;
-    static double para_list [2][3][6], pcorr_ratio[2][3];
-    double *par, dist, f, exp1, exp2, ratio;
+    static double para_list [2][3][6];
+    double *par, dist, f, exp1, exp2;
     char file_name[128], dummy[128], *type_list[] = {"near", "far"};
     Nuc *ncl;
     
@@ -525,13 +488,12 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間
             ncl = &nuc [nuc_lp];
             
             par = para_list [spb->nuc_pt [nuc_lp]][AX_NUM[nuc_lp]];
-            ratio = pcorr_ratio [spb->nuc_pt [nuc_lp]][AX_NUM[nuc_lp]];
             
             dist = Euclid_norm (spb->position, ncl->position);
             exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
             exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
             
-            f = - K_EXPERIENCE * ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            f = - K_EXPERIENCE * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
             / ( dist * (exp1 + exp2));
             
 //            printf ("%c f = %lf\n", option, f);
@@ -575,25 +537,6 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間
         fclose(fpr);
     
 //        for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[far][0][lp]);
-        
-        sprintf (file_name, "../subdata/sn_vel_pcorr.txt");
-        if ( (fpr = fopen (file_name, "r")) == NULL) {
-            
-            printf ("\t Cannot open %s \n", file_name);
-            exit(1);
-        }
-        
-        fgets (dummy, 256, fpr);
-        
-        for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
-            
-            for (type_lp = 0; type_lp < 2; type_lp++){
-                
-                fscanf (fpr, "%s %lf\n", dummy, &pcorr_ratio[type_lp][nuc_lp]);
-            }
-        }
-        fclose (fpr);
-        
     }
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
