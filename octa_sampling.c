@@ -332,7 +332,7 @@ void Keep_ellipsoid (Nuc *nuc) {
 void TermDIst_NucMem (Nuc *nuc, const char option) {  // 核小体-核膜間の相互作用
     
     unsigned int lp, lp2, type_lp, nuc_lp, mem_lp;
-    static double para_list [4][3][3][6];
+    static double para_list [4][3][3][6], pcorr_ratio[4][3][3];
     double *par, dist, f, exp1, exp2;
     char file_name[128], dummy[128], *type_list[] = {"nn", "nf", "fn", "ff"};
     Nuc *ncl;
@@ -392,14 +392,35 @@ void TermDIst_NucMem (Nuc *nuc, const char option) {  // 核小体-核膜間の�
                     par[5] = 1.0 / par[5];
                 }
             }
+            
+            fclose (fpr);
         }
+        
+        sprintf (file_name, "../subdata/mn_vel_pcorr.txt");
+        if ( (fpr = fopen (file_name, "r")) == NULL) {
+            
+            printf ("\t Cannot open %s \n", file_name);
+            exit(1);
+        }
+        fgets (dummy, 256, fpr);
+        
+        for (type_lp = 0; type_lp < 3; type_lp++) {
+            
+            for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
+                
+                fscanf (fpr, "%s %lf %lf %lf\n", dummy, &pcorr_ratio[type_lp][nuc_lp][0],
+                        &pcorr_ratio[type_lp][nuc_lp][1], &pcorr_ratio[type_lp][nuc_lp][2]);
+            }
+        }
+        fclose (fpr);
+        
     }
 //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
 void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互作用
     
     unsigned int lp, type_lp, mem_lp;
-    static double para_list [2][3][6];
+    static double para_list [2][3][6], pcorr_ratio[2][3];
     double *par, dist, f, exp1, exp2;
     char file_name[128], dummy[128], *type_list[] = {"near", "far"};
     
@@ -407,6 +428,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
     
     FILE *fpr;
     
+    // calculate
     if ( option == 'c') {
         
         for (mem_lp = 0; mem_lp < SIZE; mem_lp++) {
@@ -425,7 +447,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
         }
         
 //        for (lp = 0; lp < DIMENSION; lp++) printf ("%lf\n", spb->force[lp]);
-    }
+    }// setting
     else if (option == 's') { //    パラメータの読み込み
         
         for (type_lp = 0; type_lp < 2; type_lp++) {
@@ -451,8 +473,28 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
                 par[3] /= par[5] * par[5] * par[5];
                 par[5] = 1.0 / par[5];
             }
+            
+            fclose (fpr);
         }
 //        for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[far][0][lp]);
+        
+        sprintf (file_name, "../subdata/sm_vel_pcorr.txt");
+        if ( (fpr = fopen (file_name, "r")) == NULL) {
+            
+            printf ("\t Cannot open %s \n", file_name);
+            exit(1);
+        }
+        
+        fgets (dummy, 256, fpr);
+        
+        for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
+            
+            for (type_lp = 0; type_lp < 2; type_lp++){
+                
+                fscanf (fpr, "%s %lf\n", dummy, pcorr_ratio[type_lp][nuc_lp]);
+            }
+        }
+        fclose (fpr);
     }
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
@@ -460,7 +502,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
 void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間の相互作用
     
     unsigned int lp, type_lp, nuc_lp;
-    static double para_list [2][3][6];
+    static double para_list [2][3][6], pcorr_ratio[2][3];
     double *par, dist, f, exp1, exp2;
     char file_name[128], dummy[128], *type_list[] = {"near", "far"};
     Nuc *ncl;
@@ -522,7 +564,27 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const char option) {  // SPB-核膜間
         }
         
         fclose(fpr);
+    
 //        for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[far][0][lp]);
+        
+        sprintf (file_name, "../subdata/sn_vel_pcorr.txt");
+        if ( (fpr = fopen (file_name, "r")) == NULL) {
+            
+            printf ("\t Cannot open %s \n", file_name);
+            exit(1);
+        }
+        
+        fgets (dummy, 256, fpr);
+        
+        for (nuc_lp = 0; nuc_lp < 3; nuc_lp++) {
+            
+            for (type_lp = 0; type_lp < 2; type_lp++){
+                
+                fscanf (fpr, "%s %lf\n", dummy, pcorr_ratio[type_lp][nuc_lp]);
+            }
+        }
+        fclose (fpr);
+        
     }
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
@@ -638,15 +700,13 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsign
     fclose (fpw);
 }
 
-void Write_result (Nuc *nuc, Spb *spb, const unsigned int sample_no) {
+void Write_row_data (char *filename, Nuc *nuc, Spb *spb, const unsigned int sample_no) {
     
     unsigned int lp;
-    char filename[128];
+//    char filename[128];
     
     Nuc *ncl;
     FILE *fpw;
-    
-    sprintf (filename, "result.txt")
     
     if ( (fpw = fopen (filename, "a")) == NULL) {
         
@@ -658,9 +718,9 @@ void Write_result (Nuc *nuc, Spb *spb, const unsigned int sample_no) {
     for (lp = 0; lp < SIZE; lp++) {
         
         ncl = &nuc[lp];
-        fprintf (fpw, "%4.2f %4.2f %4.2f ", ncl->position[X], ncl->position[Y], ncl->position[Z]);
+        fprintf (fpw, "%6.2f %6.2f %6.2f ", ncl->position[X], ncl->position[Y], ncl->position[Z]);
     }
-    fprintf (fpw, "%lf %lf %lf\n", spb->position[X], spb->position[Y], spb->position[Z]);
+    fprintf (fpw, "%6.2f %6.2f %6.2f\n", spb->position[X], spb->position[Y], spb->position[Z]);
     
     fclose (fpw);
 }
@@ -676,11 +736,12 @@ int main ( int argc, char **argv ){
     
     //dSFMT
     dsfmt_t dsfmt;
-    dsfmt_init_gen_rand(&dsfmt, (unsigned)time(NULL));
+    dsfmt_init_gen_rand(&dsfmt, sample_no);
     
     // 構造体の初期化
     StructInitilization (nuc, spb, &dsfmt);
     
+    Write_row_data ("init.txt", nuc, spb, sample_no);
     Write_coordinate (nuc, spb, 0, sample_no);
     printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e \r", DELTA, WRITE_INTERVAL);
     
@@ -702,6 +763,8 @@ int main ( int argc, char **argv ){
         
 //        if (Sum_force (nuc, spb) < 1.0e-5) break;
     }
+    
+    Write_row_data ("result.txt", nuc, spb, sample_no);
 
 //    Sum_force (nuc, spb);
     fflush (stdout);
