@@ -506,7 +506,7 @@ void TermDIst_SpbMem ( Spb *spb, const char option) {  // SPB-核膜間の相互
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
 
-void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const unsigned double k_sn, const char option) {  // SPB-核膜間の相互作用
+void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const double k_sn, const char option) {  // SPB-核膜間の相互作用
     
     unsigned int lp, type_lp, nuc_lp;
     static double para_list [2][3][6], pcorr_ratio[2][3];
@@ -625,7 +625,7 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
     }
 }
 
-void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const unsigned double k_sn) {
+void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const double k_sn) {
     
     unsigned int lp, dim;
     Nuc *ncl;
@@ -739,8 +739,8 @@ int main ( int argc, char **argv ){
     Nuc *nuc;
     Spb *spb;
 
-    unsigned int step, mitigation, sample_max = atoi (argv[1]);
-    unsigned double k_sn = atof (argv[2]);
+    unsigned int step, mitigation, sample_no, sample_max = atoi (argv[1]);
+    double k_sn = atof (argv[2]);
     char init_file[128], result_file[128];
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
