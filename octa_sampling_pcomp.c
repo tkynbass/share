@@ -747,12 +747,12 @@ int main ( int argc, char **argv ){
     
     //dSFMT
     dsfmt_t dsfmt;
-    dsfmt_init_gen_rand(&dsfmt, sample_no);
+    
     
     // 混合ガウスポテンシャルのパラメータ読み込み
     TermDIst_NucMem (NULL, 's');
     TermDIst_SpbMem (NULL, 's');
-    TermDIst_NucSpb (NULL, NULL, 's');
+    TermDIst_NucSpb (NULL, NULL, 's', 0);
     
     sprintf (init_file, "%2.1f/init.txt", k_sn);
     sprintf (result_file, "%2.1f/result.txt", k_sn);
@@ -760,6 +760,8 @@ int main ( int argc, char **argv ){
     
 #pragma omp parallel for private (nuc, spb, mitigation, step) num_threads (8)
     for ( sample_no = 1; sample_no < sample_max; sample_no++) {
+        
+        dsfmt_init_gen_rand(&dsfmt, sample_no);
         
         // 構造体の初期化 (核小体&SPBの初期位置を与える)
         StructInitilization (nuc, spb, &dsfmt);
