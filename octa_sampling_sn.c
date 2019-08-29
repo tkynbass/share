@@ -743,8 +743,8 @@ int main ( int argc, char **argv ){
     double k_sn = atof (argv[3]);
     
     char init_file[128], result_file[128];
-    sprintf (init_file, "%2.1f/init.txt", k_sn);
-    sprintf (result_file, "%2.1f/result.txt", k_sn);
+    sprintf (init_file, "%1.1f/init.txt", k_sn);
+    sprintf (result_file, "%1.1f/result.txt", k_sn);
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     

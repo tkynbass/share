@@ -36,8 +36,8 @@ printf "\n"
 for sample in `seq ${start} ${end}`
 do
 printf "\t calculating ${sample}  "
-if [ ! -e ${sample} ]
-then mkdir ${sample}
+if [ ! -e ${K_SN}/${sample} ]
+then mkdir ${K_SN}/${sample}
 fi
 ./octa_sampling_sn ${sample} 100 ${K_SN}
 printf "\r"

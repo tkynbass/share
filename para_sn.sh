@@ -1,5 +1,5 @@
-MAX=$2
 K_SN=$1
+MAX=$2
 
 CLASS=$((${MAX}/10000))
 
@@ -13,6 +13,11 @@ then
 rm init.txt
 fi
 
-seq 0 $((${CLASS}-1)) | parallel -j 5 'sh sn_simulate.sh {} ${K_SN}'
+if [ ! -e ${K_SN}/]
+then
+mkdir ${K_SN}
+fi
+
+parallel -j 5 'sh sn_simulate.sh {} {}' ::: seq 0 $((${CLASS}-1)) ::: ${K_SN}
 
 echo "\n Complete! \n"
