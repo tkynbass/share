@@ -18,6 +18,6 @@ then
 mkdir ${K_SN}
 fi
 
-parallel -j 5 'sh sn_simulate.sh {} {}' ::: seq 0 $((${CLASS}-1)) ::: ${K_SN}
+parallel -j 5 "sh sn_simulate.sh {} ${K_SN}" ::: `seq 0 $((${CLASS}-1))`
 
 echo "\n Complete! \n"
