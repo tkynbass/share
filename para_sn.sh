@@ -13,7 +13,7 @@ then
 rm init.txt
 fi
 
-if [ ! -e ${K_SN}/]
+if [ ! -e ${K_SN}/ ]
 then
 mkdir ${K_SN}
 fi
