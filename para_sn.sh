@@ -1,6 +1,25 @@
 K_SN=$1
 MAX=$2
 
+##### define option (i:insertion) #####
+while getopts "s:" option
+do
+case ${option} in
+a)
+START="$OPTARG"
+;;
+\?)
+START=0
+;;
+esac
+done
+
+
+if [ ${START} -ne 0 ]
+then
+START=$((${START}/10000))
+fi
+
 CLASS=$((${MAX}/10000))
 
 if [ -e result.txt ]
@@ -18,6 +37,6 @@ then
 mkdir ${K_SN}
 fi
 
-parallel -j 5 "sh sn_simulate.sh {} ${K_SN}" ::: `seq 0 $((${CLASS}-1))`
+parallel -j 5 "sh sn_simulate.sh {} ${K_SN}" ::: `seq ${START}  $((${CLASS}-1))`
 
 echo "\n Complete! \n"
