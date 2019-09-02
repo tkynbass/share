@@ -2,23 +2,25 @@ K_SN=$1
 MAX=$2
 
 ##### define option (i:insertion) #####
-while getopts "s:" option
-do
-case ${option} in
-a)
-START="$OPTARG"
-;;
-\?)
+#while getopts "s:" option
+#do
+#case ${option} in
+#-s)
+#START="$OPTARG"
+#;;
+#\?)
+#START=0
+#;;
+#esac
+#done
+
+
+#if [ ${START} -ne 0 ]
+#then
+#START=$((${START}/10000))
+#fi
+
 START=0
-;;
-esac
-done
-
-
-if [ ${START} -ne 0 ]
-then
-START=$((${START}/10000))
-fi
 
 CLASS=$((${MAX}/10000))
 
