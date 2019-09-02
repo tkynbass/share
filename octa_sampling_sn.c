@@ -31,7 +31,7 @@
 
 #define MEMBRANE_EXCLUDE (1.0)
 #define K_KEEP (1.0e+1)
-#define K_EXPERIENCE (5.0e+1)
+#define K_EXPERIENCE (5.0e+0) // 実効ポテンシャルの係数
 
 // SPBのノイズ用
 #define DIFFUSION (5.0e-3)
