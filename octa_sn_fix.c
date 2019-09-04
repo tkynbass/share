@@ -722,7 +722,7 @@ double Sum_force (Nuc *nuc, Spb *spb) {
     return sum_force;
 }
 
-void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no, const double k_sn) {
+void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no, const double stable_no) {
     
     unsigned int lp;
     char filename[128];
@@ -730,7 +730,7 @@ void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsign
     
     FILE *fpw;
     
-    sprintf (filename, "%2.1f/%d/result_%d.txt", k_sn, sample_no, step);
+    sprintf (filename, "%2.1f/%d/result_%d.txt", stable_no, sample_no, step);
     
     if ( (fpw = fopen (filename, "w")) == NULL) {
         
@@ -783,8 +783,8 @@ int main ( int argc, char **argv ){
     unsigned int stable_no = atoi (argv[4])
     
     char init_file[128], result_file[128];
-    sprintf (init_file, "%1.1f/init.txt", k_sn);
-    sprintf (result_file, "%1.1f/result.txt", k_sn);
+    sprintf (init_file, "%1.1f/init.txt", stable_no);
+    sprintf (result_file, "%1.1f/result.txt", stable_no);
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
@@ -813,7 +813,7 @@ int main ( int argc, char **argv ){
 
             Calculation (mitigation, nuc, spb, k_sn, nuc_gravity);
         }
-        Write_coordinate (nuc, spb, step, sample_no, k_sn);
+        Write_coordinate (nuc, spb, step, sample_no, stable_no);
         
 //        if (Sum_force (nuc, spb) < 1.0e-5) break;
     }
