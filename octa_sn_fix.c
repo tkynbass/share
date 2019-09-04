@@ -141,12 +141,12 @@ void RandomSetting (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *gravity, const u
                             cos(eta) * cos(phi) * NUCLEOLUS_AXIS_3}};
 
 //    核小体・SPBの安定点座標の設定
-    spb_init[8][DIMENSION] = {
+    const double spb_init[8][DIMENSION] = {
         {7.5, -14, 15}, {17.9, -10, 12.3}, {-8.5, 9, 17.5}, {-7.5, -10.7, 17}
         {8.7, 10.3, -16.5}, {-7.6, 13.4, -15.4}, {-7.6, -10, -17.3}, {8, -9.8, -17.3}
     };
     
-    gravity_list[8][DIMENSION] = {
+    const double gravity_list[8][DIMENSION] = {
         {6.4313, 4.0004, 2.796699}, {8.6966, 3.7777, 5.1331999}, {9.10869, 3.65000, 5.038200}, {6.30099, 3.31259, 2.963},
         {6.746, 4.016199, 3.561200}, {8.4694, 6.27099, 4.4428}, {4.0996, 3.22039, 1.86799}, {7.456200, 3.981600, 2.876200}
     };
@@ -780,7 +780,7 @@ int main ( int argc, char **argv ){
     unsigned int sample_no = atoi (argv[1]);
     unsigned int step, mitigation, calc_max = atoi (argv[2]);
     double k_sn = atof (argv[3]), nuc_gravity[DIMENSION];
-    unsigned int stable_no = atoi (argv[4])
+    unsigned int stable_no = atoi (argv[4]);
     
     char init_file[128], result_file[128];
     sprintf (init_file, "%1.1f/init.txt", stable_no);
@@ -793,7 +793,7 @@ int main ( int argc, char **argv ){
     dsfmt_init_gen_rand(&dsfmt, sample_no);
     
     // 構造体の初期化
-    StructInitilization (nuc, spb, &dsfmt, nuc_gravity);
+    StructInitilization (nuc, spb, &dsfmt, nuc_gravity, stable_no);
     
     Write_row_data (init_file, nuc, spb, sample_no);
     Write_coordinate (nuc, spb, 0, sample_no, k_sn);
