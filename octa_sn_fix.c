@@ -51,6 +51,12 @@ const double MEM_POS [SIZE][DIMENSION] = {
     {0.0, 0.0, MEMBRANE_AXIS_3}, { 0.0, 0.0, -MEMBRANE_AXIS_3}
 };
 
+const double NAL_LIST[SIZE] = {
+    NUCLEOLUS_AXIS_1, NUCLEOLUS_AXIS_1,
+    NUCLEOLUS_AXIS_2, NUCLEOLUS_AXIS_2,
+    NUCLEOLUS_AXIS_3, NUCLEOLUS_AXIS_3
+};
+
 // 軸番号と左右→粒子番号
 const unsigned int AXIS[3][2] = {
     {0, 1}, {2, 3}, {4,5}
@@ -141,10 +147,7 @@ void RandomSetting (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *gravity, const u
                             cos(eta) * cos(phi) * NUCLEOLUS_AXIS_3}};
 
 //    核小体・SPBの安定点座標の設定
-    const double spb_init[8][DIMENSION] = {
-        {7.5, -14, 15}, {17.9, -10, 12.3}, {-8.5, 9, 17.5}, {-7.5, -10.7, 17}
-        {8.7, 10.3, -16.5}, {-7.6, 13.4, -15.4}, {-7.6, -10, -17.3}, {8, -9.8, -17.3}
-    };
+
     
     const double gravity_list[8][DIMENSION] = {
         {6.4313, 4.0004, 2.796699}, {8.6966, 3.7777, 5.1331999}, {9.10869, 3.65000, 5.038200}, {6.30099, 3.31259, 2.963},
@@ -171,12 +174,52 @@ void RandomSetting (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *gravity, const u
     }
 }
 
+void Read_init_position (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned int stable_no) {
+    
+    Nuc *ncl;
+    unsigned int loop, i_dummy;
+    char filename[128], dummy[256];
+    FILE *fpr;
+    
+    const double spb_init[8][DIMENSION] = {
+        {7.5, -14, 15}, {17.9, -10, 12.3}, {-8.5, 9, 17.5}, {-7.5, -10.7, 17},
+        {8.7, 10.3, -16.5}, {-7.6, 13.4, -15.4}, {-7.6, -10, -17.3}, {8, -9.8, -17.3}
+    };
+    
+    sprintf (filename, "../subdata/init_%d.txt", stable_no);
+    
+    if ( (fpr = fopen (filename, "r")) == NULL) {
+        
+        printf ("\t Cannot open init position\n");
+        exit(1);
+    }
+    
+    fgets (dummy, 256, fpr);
+    
+    for (loop = 0; loop < SIZE; loop++){
+        
+        ncl = &nuc[loop];
+        
+        fscanf (fpr, "%d %lf %lf %lf\n", &i_dummy, &ncl->position[X], &ncl->position[Y], &ncl->position[Z]);
+    }
+    fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc_gravity[X], nuc_gravity[Y], nuc_gravity[Z]);
+    
+    fclose (fpr);
+    
+    spb->position[X] = spb_init[stable_no][X];
+    spb->position[Y] = spb_init[stable_no][Y];
+    spb->position[Z] = spb_init[stable_no][Z];
+    
+}
+
 void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *nuc_gravity, const unsigned int stable_no) {
     
     Nuc *ncl;
     unsigned int loop, loop2;
 
-    RandomSetting (nuc, spb, dsfmt, nuc_gravity, stable_no);
+//    RandomSetting (nuc, spb, dsfmt, nuc_gravity, stable_no);
+
+    Read_init_position (nuc, spb, nuc_gravity, stable_no);
     
     // 核小体形状保存 自然長求める
     for ( loop = 0; loop < SIZE; loop++) {
@@ -187,8 +230,8 @@ void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *nuc_gravit
             if (loop2 < loop) ncl->keep_list[loop2] = loop2;
             else ncl->keep_list[loop2] = loop2 + 1;
             
-            ncl->len_list[loop2] = Euclid_norm (ncl->position, nuc[ ncl->keep_list[loop2] ].position);
-            
+//            ncl->len_list[loop2] = Euclid_norm (ncl->position, nuc[ ncl->keep_list[loop2] ].position);
+            ncl->len_list [loop2] = sqrt ( NAL_LIST[loop]*NAL_LIST[loop] + NAL_LIST [ncl->keep_list[loop2]] * NAL_LIST[ncl->keep_list[loop2]] );
 //            printf ("%4.2f ", ncl->len_list[loop2]);
         }
 //        printf ("\n");
@@ -618,17 +661,12 @@ void Fix_nucleolus_gravity (Nuc *nuc, const double nuc_gravity[DIMENSION]) {
     unsigned int dim;
     double dist, f;
     Nuc *ncl;
-    const double nal[SIZE] = {
-        NUCLEOLUS_AXIS_1, NUCLEOLUS_AXIS_1,
-        NUCLEOLUS_AXIS_2, NUCLEOLUS_AXIS_2,
-        NUCLEOLUS_AXIS_3, NUCLEOLUS_AXIS_3
-    };
     
     for (unsigned int nuc_lp = 0; nuc_lp < SIZE; nuc_lp++) {
         
         ncl = &nuc [nuc_lp];
         dist = Euclid_norm (ncl->position, nuc_gravity);
-        f = - K_FIX * (dist - nal[nuc_lp]) / dist;
+        f = - K_FIX * (dist - NAL_LIST[nuc_lp]) / dist;
         
         for (dim = 0; dim < DIMENSION; dim++) ncl->force[dim] += f * (ncl->position[dim] - nuc_gravity[dim]);
     }
@@ -722,15 +760,15 @@ double Sum_force (Nuc *nuc, Spb *spb) {
     return sum_force;
 }
 
-void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no, const double stable_no) {
+void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no, const unsigned int stable_no) {
     
     unsigned int lp;
-    char filename[128];
+    char filename[256];
     Nuc *ncl;
     
     FILE *fpw;
     
-    sprintf (filename, "%2.1f/%d/result_%d.txt", stable_no, sample_no, step);
+    sprintf (filename, "%d/%d/result_%d.txt", stable_no, sample_no, step);
     
     if ( (fpw = fopen (filename, "w")) == NULL) {
         
@@ -783,8 +821,8 @@ int main ( int argc, char **argv ){
     unsigned int stable_no = atoi (argv[4]);
     
     char init_file[128], result_file[128];
-    sprintf (init_file, "%1.1f/init.txt", stable_no);
-    sprintf (result_file, "%1.1f/result.txt", stable_no);
+    sprintf (init_file, "%d/init.txt", stable_no);
+    sprintf (result_file, "%d/result.txt", stable_no);
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
@@ -796,7 +834,7 @@ int main ( int argc, char **argv ){
     StructInitilization (nuc, spb, &dsfmt, nuc_gravity, stable_no);
     
     Write_row_data (init_file, nuc, spb, sample_no);
-    Write_coordinate (nuc, spb, 0, sample_no, k_sn);
+    Write_coordinate (nuc, spb, 0, sample_no, stable_no);
 //    printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e \r", DELTA, WRITE_INTERVAL);
     
     // 混合ガウスポテンシャルのパラメータ読み込み
