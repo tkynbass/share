@@ -154,8 +154,6 @@ void RandomSetting (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *gravity, const u
         {6.746, 4.016199, 3.561200}, {8.4694, 6.27099, 4.4428}, {4.0996, 3.22039, 1.86799}, {7.456200, 3.981600, 2.876200}
     };
     
-    for (dim = 0; dim < DIMENSION; dim++) spb->position[dim] = spb_init[stable_no][dim];
-
     for (dim = 0; dim < DIMENSION; dim++) gravity[dim] = gravity_list[stable_no][dim];
 //    double nav[3][DIMENSION] = {{ -4-gravity[X],   }};
     
@@ -181,7 +179,7 @@ void Read_init_position (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned
     char filename[128], dummy[256];
     FILE *fpr;
     
-    const double spb_init[8][DIMENSION] = {
+    const double spb_init [8][DIMENSION] = {
         {7.5, -14, 15}, {17.9, -10, 12.3}, {-8.5, 9, 17.5}, {-7.5, -10.7, 17},
         {8.7, 10.3, -16.5}, {-7.6, 13.4, -15.4}, {-7.6, -10, -17.3}, {8, -9.8, -17.3}
     };
@@ -202,7 +200,7 @@ void Read_init_position (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned
         
         fscanf (fpr, "%d %lf %lf %lf\n", &i_dummy, &ncl->position[X], &ncl->position[Y], &ncl->position[Z]);
     }
-    fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc_gravity[X], nuc_gravity[Y], nuc_gravity[Z]);
+    fscanf (fpr, "%s %lf %lf %lf\n", dummy, &nuc_gravity[X], &nuc_gravity[Y], &nuc_gravity[Z]);
     
     fclose (fpr);
     
@@ -215,7 +213,7 @@ void Read_init_position (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned
 void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *nuc_gravity, const unsigned int stable_no) {
     
     Nuc *ncl;
-    unsigned int loop, loop2;
+    unsigned int loop, loop2, target;
 
 //    RandomSetting (nuc, spb, dsfmt, nuc_gravity, stable_no);
 
@@ -231,7 +229,16 @@ void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *nuc_gravit
             else ncl->keep_list[loop2] = loop2 + 1;
             
 //            ncl->len_list[loop2] = Euclid_norm (ncl->position, nuc[ ncl->keep_list[loop2] ].position);
-            ncl->len_list [loop2] = sqrt ( NAL_LIST[loop]*NAL_LIST[loop] + NAL_LIST [ncl->keep_list[loop2]] * NAL_LIST[ncl->keep_list[loop2]] );
+            target = ncl->keep_list[loop2];
+            
+            if ( AX_NUM[loop] == AX_NUM[target]) {
+                
+                ncl->len_list[loop] = 2.0 * NAL_LIST[loop];
+            }
+            else {
+                
+                ncl->len_list [loop2] = sqrt ( NAL_LIST[loop]*NAL_LIST[loop] + NAL_LIST [target] * NAL_LIST[target] );
+            }
 //            printf ("%4.2f ", ncl->len_list[loop2]);
         }
 //        printf ("\n");
