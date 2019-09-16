@@ -271,7 +271,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
-            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / Euclid_norm (part_1->position, cent->position);
+            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / arm_dist;
         }
         
         // 上流側粒子の初期座標決定
@@ -282,7 +282,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + loop2 - 1);
+                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius);
             }
             
             part_1->chr_no = loop;
@@ -298,7 +298,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
-            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / Euclid_norm (part_1->position, cent->position);
+            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / arm_dist;
         }
         
         // 下流側粒子の初期座標決定
@@ -309,7 +309,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + loop2 - 1);
+                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius);
             }
             part_1->chr_no = loop;
             part_1->particle_type = Normal;
