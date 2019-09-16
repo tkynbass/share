@@ -784,8 +784,8 @@ void write_init_coordinate (Particle *part) {
     for (loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
-        fprintf (fpw, "%d %d %d %lf %lf %lf 0.0 0.0 0.0\n", loop, part_1->chr_no, part_1->particle_type, part_1->position[X],
-                 part_1->position[Y], part_1->position[Z]);
+        fprintf (fpw, "%d %d %d %lf %lf %lf %lf\n", loop, part_1->chr_no, part_1->particle_type, part_1->position[X],
+                 part_1->position[Y], part_1->position[Z], part_1->radius);
     }
     
     fclose (fpw);
@@ -813,8 +813,8 @@ void write_coordinate (Particle *part, const unsigned int time) {
     for (loop = 0; loop < NUMBER_MAX; loop++) {
         
         part_1 = &part[loop];
-        fprintf (fpw, "%d %d %d %d %lf %lf %lf\n", loop, part_1->chr_no, part_1->particle_type,
-                 part_1->position[X],part_1->position[Y], part_1->position[Z]);
+        fprintf (fpw, "%d %d %d %lf %lf %lf %lf\n", loop, part_1->chr_no, part_1->particle_type, part_1->position[X],
+                 part_1->position[Y], part_1->position[Z], part_1->radius);
     }
     
     fprintf (fpw, "Radius %1.1e\n", LENGTH);
@@ -861,20 +861,20 @@ int main ( int argc, char **argv ) {
         exit (1);
     }
     
-    for ( unsigned int time = 1; time <= calculation_max; time++) {
-        
-        printf ("\t Now calculating...  time = %d \r", time);
-        fflush (stdout);
-        
-        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-            
-            calculation (part, mitigation, mem_al);
-        }
-        
-        write_coordinate (part, start + time);
-        
-        update_radius (part);
-    }
+//    for ( unsigned int time = 1; time <= calculation_max; time++) {
+//
+//        printf ("\t Now calculating...  time = %d \r", time);
+//        fflush (stdout);
+//
+//        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+//
+//            calculation (part, mitigation, mem_al);
+//        }
+//
+//        write_coordinate (part, start + time);
+//
+//        update_radius (part);
+//    }
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
