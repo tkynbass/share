@@ -160,7 +160,7 @@ void read_coordinate (Particle *part, const unsigned int start) {
         
         part_1 = &part[loop];
         
-        fscanf (fpr, "%d %d %d %d %lf %lf %lf\n", &i_dummy, &part_1->pastis_no, &part_1->chr_no, &part_1->particle_type,
+        fscanf (fpr, "%d %d %d %d %lf %lf %lf\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
     }
     
@@ -173,7 +173,7 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     char filename[128], dummy[256];
     unsigned int loop, i_dummy;
     
-    sprintf (filename, "../subdata/stable_status.txt", stable_no);
+    sprintf (filename, "../subdata/stable_status.txt");
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -188,7 +188,7 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     
     fclose (fpr);
     
-    sprintf (filename, "../subdata/stable_spb.txt", stable_no);
+    sprintf (filename, "../subdata/stable_spb.txt");
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -271,7 +271,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
-            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / Euclid_norm (part_1->position, cent->position)
+            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / Euclid_norm (part_1->position, cent->position);
         }
         
         // 上流側粒子の初期座標決定
@@ -298,7 +298,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
-            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / Euclid_norm (part_1->position, cent->position)
+            unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / Euclid_norm (part_1->position, cent->position);
         }
         
         // 下流側粒子の初期座標決定
@@ -331,10 +331,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
 //    for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) part [rDNA_LIST [loop]].particle_type = rDNA;
 //}
 
-
-
-
-double Euclid_norm (const dou ble pos_1[DIMENSION], const double pos_2[DIMENSION]) {
+double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
     double dist = 0.0;
     
@@ -388,7 +385,7 @@ void rotate_about_x ( double pos[DIMENSION], const double theta ) {
 }
 
 //　ばねによる力 part_1側の力計算//
-void spring (Particle *part_1, const Particle *part_2, Particle *spb, unsigned int interval) {
+void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
     // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
     const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2, K_BOND_3 };
@@ -399,13 +396,13 @@ void spring (Particle *part_1, const Particle *part_2, Particle *spb, unsigned i
             
             dist_0 =  part_1->radius + SPB_RADIUS;
             
-            dist = Euclid_norm (part_1->position, spb->position);
+            dist = Euclid_norm (part_1->position, part_2->position);
             
             f = bonding_power[interval] * (dist_0 - dist) / dist;
             
-            part_1->force[X] += f * (part_1->position[X] - spb->position[X]);
-            part_1->force[Y] += f * (part_1->position[Y] - spb->position[Y]);
-            part_1->force[Z] += f * (part_1->position[Z] - spb->position[Z]);
+            part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
+            part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
+            part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
             break;
             
         case 1:
@@ -646,8 +643,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         break;
                 }
                 
-                spb_exclusion (part_1);
-                nucleolus_interaction (part_1, 'E');
+                spb_exclusion (part_1, spb);
+                nucleolus_interaction (part_1, nuc, 'E');
                 membrane_interaction (part_1, 'E');
                 
                 break;
@@ -663,9 +660,9 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 spring (part_1, &part[loop + 3], 3);
                 spring (part_1, &part[loop - 3], 3);
                 
-                nucleolus_interaction (part_1, 'E');
+                nucleolus_interaction (part_1, nuc, 'E');
                 membrane_interaction (part_1, 'E');
-                spring (part_1, NULL, 0);
+                spring (part_1, spb, 0);
                 
                 break;
                 
@@ -695,9 +692,9 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         break;
                 }
                 
-                spb_exclusion (part_1);
+                spb_exclusion (part_1, spb);
                 membrane_interaction_change (part_1, 'F');
-                nucleolus_interaction (part_1, 'E');
+                nucleolus_interaction (part_1, nuc, 'E');
                 
                 break;
                 
@@ -725,9 +722,9 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         break;
                 }
                 
-                spb_exclusion (part_1);
+                spb_exclusion (part_1, spb);
                 membrane_interaction (part_1, 'E');
-                nucleolus_interaction (part_1, 'F');
+                nucleolus_interaction (part_1, nuc, 'F');
                 
                 break;
                 
