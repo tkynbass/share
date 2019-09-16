@@ -241,7 +241,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     }
     
     
-    double init_radius, arm_dist, unit_vector[DIMENSION];
+    double init_radius, init_distance, arm_dist, unit_vector[DIMENSION];
     const unsigned int chr_term[3][2] = {{TELO1_UP, TELO1_DOWN}, {TELO2_UP, TELO2_DOWN}, {rDNA_UP, rDNA_DOWN}};
     for (loop = 0; loop < 3; loop++) {
         
@@ -268,13 +268,13 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         arm_dist = Euclid_norm (cent->position, part_1->position);
         // 粒子の初期径
         init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num + 0.9) ;
+        init_distance = init_radius * 1.8;
         
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
             unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / arm_dist;
         }
-        
         // テロメア粒子の半径
         part_1->radius = init_radius;
         
@@ -286,7 +286,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius);
+                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius );
             }
             
             part_1->chr_no = loop;
@@ -298,6 +298,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         arm_num = abs (chr_term[loop][1] - CENT_LIST[loop]) - 1;
         arm_dist = Euclid_norm (cent->position, part_1->position);
         init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num + 0.9);
+        init_distance = init_radius * 1.8;
         
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
@@ -839,7 +840,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
                  part_1->position[Y], part_1->position[Z], part_1->radius);
     }
     
-    fprintf (fpw, "Radius %1.1e\n", LENGTH);
+//    fprintf (fpw, "Radius %1.1e\n", LENGTH);
     fclose (fpw);
 }
 
@@ -883,6 +884,8 @@ int main ( int argc, char **argv ) {
         exit (1);
     }
     
+    update_radius (part, 's');
+    
 //    for ( unsigned int time = 1; time <= calculation_max; time++) {
 //
 //        printf ("\t Now calculating...  time = %d \r", time);
@@ -895,7 +898,7 @@ int main ( int argc, char **argv ) {
 //
 //        write_coordinate (part, start + time);
 //
-//        update_radius (part);
+//        update_radius (part, 'c');
 //    }
     
     // メモリ解放 //
