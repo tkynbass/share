@@ -282,7 +282,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + loop2 - 1);
+                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + loop2 - 1);
             }
             
             part_1->chr_no = loop;
@@ -309,7 +309,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + loop2 - 1);
+                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + loop2 - 1);
             }
             part_1->chr_no = loop;
             part_1->particle_type = Normal;
