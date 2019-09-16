@@ -241,7 +241,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     }
     
     
-    double init_radius, init_distance, arm_dist, unit_vector[DIMENSION];
+    double init_radius, arm_dist, unit_vector[DIMENSION];
     const unsigned int chr_term[3][2] = {{TELO1_UP, TELO1_DOWN}, {TELO2_UP, TELO2_DOWN}, {rDNA_UP, rDNA_DOWN}};
     for (loop = 0; loop < 3; loop++) {
         
@@ -267,9 +267,8 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         // セントロメア-テロメアの距離
         arm_dist = Euclid_norm (cent->position, part_1->position);
         // 粒子の初期径
-        init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num + 0.9) ;
-        init_distance = init_radius * 1.8;
-        
+        init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num * 1.8 + 0.9) ;
+
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
@@ -286,7 +285,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius );
+                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius * 1.8 );
             }
             
             part_1->chr_no = loop;
@@ -298,8 +297,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         arm_num = abs (chr_term[loop][1] - CENT_LIST[loop]) - 1;
         arm_dist = Euclid_norm (cent->position, part_1->position);
         init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num + 0.9);
-        init_distance = init_radius * 1.8;
-        
+
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
             
@@ -316,7 +314,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius);
+                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius * 1.8);
             }
             part_1->chr_no = loop;
             part_1->particle_type = Normal;
