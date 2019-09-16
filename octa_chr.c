@@ -250,6 +250,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         
         cent->chr_no = loop;
         cent->particle_type = Centromere;
+        cent->radius = CENT_INIT_RADIUS;
         
         chr_dist = Euclid_norm (spb->position, part_1->position );
         
@@ -273,6 +274,9 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / arm_dist;
         }
+        
+        // テロメア粒子の半径
+        part_1->radius = init_radius;
         
         // 上流側粒子の初期座標決定
         for (loop2 = 1; loop2 <= arm_num; loop2++) {
@@ -300,6 +304,8 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             unit_vector [dim] = (part_1->position[dim] - cent->position[dim]) / arm_dist;
         }
+        // テロメア粒子の半径
+        part_1->radius = init_radius;
         
         // 下流側粒子の初期座標決定
         for (loop2 = 1; loop2 <= arm_num; loop2++) {
