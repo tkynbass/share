@@ -171,17 +171,36 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     
     FILE *fpr;
     char filename[128], dummy[256];
+    unsigned int loop, i_dummy;
     
-    sprintf (filename, "../subdata/stable_structure_%d.txt", stable_no);
+    sprintf (filename, "../subdata/stable_status.txt", stable_no);
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
-        printf ("\t Cannot open stable structure. \n");
+        printf ("\t Cannot open stable_status.txt \n");
+        exit (1);
+    }
+    
+    for (loop = 0; loop < stable_no + 1; loop++) fgets (dummy, 256, fpr);
+    
+    fscanf (fpr, "%d %lf %lf %lf %lf %lf %lf\n", &i_dummy, &nuc->position[X], &nuc->position[Y], &nuc->position[Z],
+            &nuc->theta, &nuc->phi, &nuc->eta);
+    
+    fclose (fpr);
+    
+    sprintf (filename, "../subdata/stable_spb.txt", stable_no);
+    
+    if ( (fpr = fopen (filename, "r")) == NULL) {
+        
+        printf ("\t Cannot open stable_spb.txt \n");
         exit (1);
     }
     
     fgets (dummy, 256, fpr);
-    fscanf ()
+    
+    fscanf (fpr, "%d %lf %lf %lf\n", &i_dummy, &spb->position[X], &spb->position[Y], &spb->position[Z]);
+    
+    fclose (fpr);
 }
 
 // ひも粒子の初期座標決定
