@@ -160,7 +160,7 @@ void read_coordinate (Particle *part, const unsigned int start) {
         
         part_1 = &part[loop];
         
-        fscanf (fpr, "%d %d %d %d %lf %lf %lf\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
+        fscanf (fpr, "%d %d %d %lf %lf %lf\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
                 &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
     }
     
@@ -693,7 +693,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
                 
                 spb_exclusion (part_1, spb);
-                membrane_interaction_change (part_1, 'F');
+                membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, nuc, 'E');
                 
                 break;
@@ -768,11 +768,11 @@ void update_radius (Particle *part, const char operation) {
         
         for (loop = 0; loop < 4; loop++) {
             
-            diff_radius [loop] = (PARTICLE_RADIUS - part[ TELO_LIST [loop] ]) / RADIUS_MITI_STEP;
+            diff_radius [loop] = (PARTICLE_RADIUS - part[ TELO_LIST [loop]].radius) / RADIUS_MITI_STEP;
         }
         for (loop = 0; loop < 2; loop++) {
             
-            diff_radius [loop + 4] = (PARTICLE_RADIUS - part[ rDNA_LIST [loop] ]) / RADIUS_MITI_STEP;
+            diff_radius [loop + 4] = (PARTICLE_RADIUS - part[ rDNA_LIST [loop]].radius) / RADIUS_MITI_STEP;
         }
     }
 }
@@ -839,7 +839,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, calculation_max, stable_no;
+    unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no = 0;
     char output_file[256];
     double mem_al[3];
     
@@ -860,8 +860,8 @@ int main ( int argc, char **argv ) {
         dsfmt_init_gen_rand (&dsfmt, sample_no);
         
 //        type_labeling (part);
-        Read_structure (nuc, spb);
-        Particle_initialization (part, nuc, spb, dsfmt);
+        Read_structure (nuc, spb, stable_no);
+        Particle_initialization (part, nuc, spb, &dsfmt);
         
         write_coordinate (part, 0);
     }
