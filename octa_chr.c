@@ -886,20 +886,20 @@ int main ( int argc, char **argv ) {
     
     update_radius (part, 's');
     
-//    for ( unsigned int time = 1; time <= calculation_max; time++) {
-//
-//        printf ("\t Now calculating...  time = %d \r", time);
-//        fflush (stdout);
-//
-//        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-//
-//            calculation (part, mitigation, mem_al);
-//        }
-//
-//        write_coordinate (part, start + time);
-//
-//        update_radius (part, 'c');
-//    }
+    for ( unsigned int time = 1; time <= calculation_max; time++) {
+
+        printf ("\t Now calculating...  time = %d \r", time);
+        fflush (stdout);
+
+        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+
+            calculation (part, mitigation, mem_al);
+        }
+
+        write_coordinate (part, start + time);
+
+        update_radius (part, 'c');
+    }
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
