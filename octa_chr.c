@@ -891,7 +891,7 @@ int main ( int argc, char **argv ) {
 
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
 
-            calculation (part, mitigation, mem_al);
+            calculation (part, nuc, spb, mitigation);
         }
 
         write_coordinate (part, start + time);
