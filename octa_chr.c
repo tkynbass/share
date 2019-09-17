@@ -296,7 +296,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         part_1 = &part[ chr_term [loop][1] ];
         arm_num = abs (chr_term[loop][1] - CENT_LIST[loop]) - 1;
         arm_dist = Euclid_norm (cent->position, part_1->position);
-        init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num + 0.9);
+        init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num * 1.8 + 0.9);
 
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
