@@ -399,7 +399,7 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     switch (interval) {
         case 0:
             
-            dist_0 =  part_1->radius + SPB_RADIUS;
+            dist_0 = part_1->radius + SPB_RADIUS;
             
             dist = Euclid_norm (part_1->position, part_2->position);
             
@@ -412,7 +412,7 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
             
         case 1:
             
-            dist_0 = BOND_DISTANCE * interval;
+            dist_0 = part_1->radis * 1.8 * interval;
             dist = Euclid_norm (part_1->position, part_2->position);
             
             f = bonding_power[interval] * (dist_0 - dist) / dist;
