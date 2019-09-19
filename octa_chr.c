@@ -30,13 +30,13 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e+0 )     //2つ隣
+#define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+1 )
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
-#define LIST_INTERVAL ( 50 )   // リスト化の間隔
+#define LIST_INTERVAL ( 100 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
@@ -59,7 +59,7 @@
 #define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
-#define RADIUS_MITI_STEP (1.0e+3)
+#define RADIUS_MITI_STEP (5.0e+3)
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
@@ -206,25 +206,47 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
 // ひも粒子の初期座標決定
 void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *dsfmt) {
     
-    unsigned int loop, loop2, arm_num, dim;
-    double theta, phi, chr_dist, vector[DIMENSION];
+    unsigned int loop, loop2, arm_num, dim, territory_flag[2] = {0, 0};
+    double theta, phi, chr_dist, vector[DIMENSION], telo_dist[2];
     Particle *part_1, *cent;
     
-    //テロメア rDNA末端粒子の初期値を核膜上または核小体表面上でランダムに設定 //
-    for (loop = 0; loop < 4; loop++) {
+    //テロメア粒子の初期値を核膜上でランダムに設定 //
+    do {
+
+        for (loop = 0; loop < 4; loop++) {
+            
+            part_1 = &part[ TELO_LIST[loop]];
+            
+            theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
+            phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+            
+            part_1->position[X] = MEMBRANE_AXIS_1 * sin (phi) * cos (theta);
+            part_1->position[Y] = MEMBRANE_AXIS_2 * sin (phi) * sin (theta);
+            part_1->position[Z] = MEMBRANE_AXIS_3 * cos (phi);
+            
+            part_1->particle_type = Telomere;
+            part_1->chr_no = loop / 2;
+            
+        }
+        //　同染色体テロメア間の距離
+        telo_dist[0] = Euclid_norm (part[TELO1_UP].position, part[TELO1_DOWN]);
+        telo_dist[1] = Euclid_norm (part[TELO2_UP].position, part[TELO2_DOWN]);
         
-        part_1 = &part[ TELO_LIST[loop]];
+        for (loop = 0; loop < 2; loop++) {
+            
+            if (telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_UP].position) ||
+                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_UP].position) ||
+                telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_DOWN].position) ||
+                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_DOWN].position) )
+            {
+                territory_flag[loop] = 1;
+            }
+        }
         
-        theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
-        phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+    } while (territory_flag[0] == 0 && territory_flag[1] == 0);
         
-        part_1->position[X] = MEMBRANE_AXIS_1 * sin (phi) * cos (theta);
-        part_1->position[Y] = MEMBRANE_AXIS_2 * sin (phi) * sin (theta);
-        part_1->position[Z] = MEMBRANE_AXIS_3 * cos (phi);
         
-        part_1->particle_type = Telomere;
-        part_1->chr_no = loop / 2;
-    }
+    //rDNA末端粒子の初期値を核小体表面上でランダムに設定 //
     for (loop = 0; loop < 2; loop++) {
         
         part_1 = &part[ rDNA_LIST[loop]];
@@ -411,8 +433,9 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
             break;
             
         case 1:
+        case 2:
             
-            dist_0 = part_1->radis * 1.8 * interval;
+            dist_0 = part_1->radius * 1.8 * interval;
             dist = Euclid_norm (part_1->position, part_2->position);
             
             f = bonding_power[interval] * (dist_0 - dist) / dist;
