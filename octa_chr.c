@@ -675,23 +675,29 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 nucleolus_interaction (part_1, nuc, 'E');
                 membrane_interaction (part_1, 'E');
                 
+                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                particle_exclusion (part, part_1);
+                
                 break;
             
             case Centromere:
                 
 //                spring (part_1, &part[loop + 1], 1);
 //                spring (part_1, &part[loop - 1], 1);
-//                
+//
 //                spring (part_1, &part[loop + 2], 2);
 //                spring (part_1, &part[loop - 2], 2);
-//                
+//
 //                spring (part_1, &part[loop + 3], 3);
 //                spring (part_1, &part[loop - 3], 3);
-//                
+//
 //                nucleolus_interaction (part_1, nuc, 'E');
 //                membrane_interaction (part_1, 'E');
 //                spring (part_1, spb, 0);
-//                
+                
+//                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+//                particle_exclusion (part, part_1);
+//
                 break;
                 
             case Telomere:
@@ -754,6 +760,9 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 membrane_interaction (part_1, 'E');
                 nucleolus_interaction (part_1, nuc, 'F');
                 
+                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                particle_exclusion (part, part_1);
+                
                 break;
                 
             default:
@@ -761,8 +770,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 exit(1);
         }
         
-        if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
-        particle_exclusion (part, part_1);
+        
         
     }
     
