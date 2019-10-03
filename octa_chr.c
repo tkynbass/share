@@ -30,9 +30,9 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e-4 )     //2つ隣
+#define K_BOND_2 ( 1.0e-6 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
-#define K_EXCLUDE ( 1.0e+1 )
+#define K_EXCLUDE ( 1.0e+0 )
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
@@ -229,8 +229,8 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
         }
         //　同染色体テロメア間の距離
-        telo_dist[0] = Euclid_norm (part[TELO1_UP].position, part[TELO1_DOWN]);
-        telo_dist[1] = Euclid_norm (part[TELO2_UP].position, part[TELO2_DOWN]);
+        telo_dist[0] = Euclid_norm (part[TELO1_UP].position, part[TELO1_DOWN].position);
+        telo_dist[1] = Euclid_norm (part[TELO2_UP].position, part[TELO2_DOWN].position);
         
         for (loop = 0; loop < 2; loop++) {
             
@@ -679,19 +679,19 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
             
             case Centromere:
                 
-                spring (part_1, &part[loop + 1], 1);
-                spring (part_1, &part[loop - 1], 1);
-                
-                spring (part_1, &part[loop + 2], 2);
-                spring (part_1, &part[loop - 2], 2);
-                
-                spring (part_1, &part[loop + 3], 3);
-                spring (part_1, &part[loop - 3], 3);
-                
-                nucleolus_interaction (part_1, nuc, 'E');
-                membrane_interaction (part_1, 'E');
-                spring (part_1, spb, 0);
-                
+//                spring (part_1, &part[loop + 1], 1);
+//                spring (part_1, &part[loop - 1], 1);
+//                
+//                spring (part_1, &part[loop + 2], 2);
+//                spring (part_1, &part[loop - 2], 2);
+//                
+//                spring (part_1, &part[loop + 3], 3);
+//                spring (part_1, &part[loop - 3], 3);
+//                
+//                nucleolus_interaction (part_1, nuc, 'E');
+//                membrane_interaction (part_1, 'E');
+//                spring (part_1, spb, 0);
+//                
                 break;
                 
             case Telomere:
@@ -785,10 +785,10 @@ void update_radius (Particle *part, const char operation) {
         
         for (loop = TELO_LIST[0]; loop < CENT_LIST[0]; loop++) part [loop].radius += diff_radius [0];
         for (loop = CENT_LIST[0] + 1; loop <= TELO_LIST[1]; loop++) part [loop].radius += diff_radius [1];
-        
+    
         for (loop = TELO_LIST[2]; loop < CENT_LIST[1]; loop++) part [loop].radius += diff_radius [2];
         for (loop = CENT_LIST[1] + 1; loop <= TELO_LIST[3]; loop++) part [loop].radius += diff_radius [3];
-        
+    
         for (loop = rDNA_LIST[0]; loop < CENT_LIST[2]; loop++) part [loop].radius += diff_radius [4];
         for (loop = CENT_LIST[2] + 1; loop <= rDNA_LIST[1]; loop++) part [loop].radius += diff_radius [5];
     }
