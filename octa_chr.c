@@ -234,13 +234,14 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         
         for (loop = 0; loop < 2; loop++) {
             
-            if (telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_UP].position) ||
-                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_UP].position) ||
-                telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_DOWN].position) ||
+            if (telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_UP].position) &&
+                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_UP].position) &&
+                telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_DOWN].position) &&
                 telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_DOWN].position) )
             {
-                territory_flag[loop] = 1;
+                territory_flag[loop] = 0;
             }
+            else territory_flag = 1;
         }
         
     } while (territory_flag[0] == 0 && territory_flag[1] == 0);
