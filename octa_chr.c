@@ -241,10 +241,10 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             {
                 territory_flag[loop] = 0;
             }
-            else territory_flag = 1;
+            else territory_flag[loop] = 1;
         }
         
-    } while (territory_flag[0] == 0 && territory_flag[1] == 0);
+    } while (territory_flag[0] != 0 || territory_flag[1] != 0);
         
         
     //rDNA末端粒子の初期値を核小体表面上でランダムに設定 //
