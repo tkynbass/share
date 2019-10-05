@@ -142,14 +142,14 @@ void secure_main_memory (Particle **part, Nuc **nuc, Particle **spb) {   // メ�
 }
 
 // 途中から計算する場合の 座標データ読みこみ //
-void Read_coordinate (Particle *part, const unsigned int start) {
+void Read_coordinate (Particle *part, const unsigned int start, const char *dir) {
     
     unsigned int loop, number, i_dummy;
     char input_file[256];
     FILE *fpr;
     Particle *part_1;
     
-    sprintf (input_file, "result_%d.txt", start);
+    sprintf (input_file, "%s/result_%d.txt", dir, start);
     if ((fpr = fopen (input_file, "r")) == NULL){
         
         printf ("\t erroe : cannot read coordinate data.\n");
@@ -799,8 +799,7 @@ void update_radius (Particle *part, const char operation) {
     }
 }
 
-// 初期データの出力 //
-void write_init_coordinate (Particle *part) {
+void write_coordinate (Particle *part, const unsigned int time, const char *dir) {
     
     unsigned int loop;
     
@@ -810,36 +809,7 @@ void write_init_coordinate (Particle *part) {
     
     char result[128], str[128];
     
-    sprintf (result, "result_init.txt");
-    
-    if ((fpw = fopen (result, "w")) == NULL) {
-        
-        printf (" \t error : cannot write coordinate. \n");
-        
-        exit (1);
-    }
-    
-    for (loop = 0; loop < NUMBER_MAX; loop++) {
-        
-        part_1 = &part[loop];
-        fprintf (fpw, "%d %d %d %lf %lf %lf %lf\n", loop, part_1->chr_no, part_1->particle_type, part_1->position[X],
-                 part_1->position[Y], part_1->position[Z], part_1->radius);
-    }
-    
-    fclose (fpw);
-}
-
-void write_coordinate (Particle *part, const unsigned int time) {
-    
-    unsigned int loop;
-    
-    Particle *part_1;
-    
-    FILE *fpw;
-    
-    char result[128], str[128];
-    
-    sprintf (result, "result_%d.txt", time);
+    sprintf (result, "%s/result_%d.txt", dir, time);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -862,7 +832,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
 int main ( int argc, char **argv ) {
     
     unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no;
-    char output_file[256];
+    char output_file[256], directory[256];
     double mem_al[3];
     
     Particle *part, *part_1, *spb;
@@ -872,6 +842,7 @@ int main ( int argc, char **argv ) {
     
     dsfmt_t dsfmt;
     
+    sprintf (directory, "%d_%d", stable_no, sample_no);
     
     if ( argc == 4 ) {
         
@@ -886,7 +857,7 @@ int main ( int argc, char **argv ) {
         Read_structure (nuc, spb, stable_no);
         Particle_initialization (part, nuc, spb, &dsfmt);
         
-        write_coordinate (part, 0);
+        write_coordinate (part, 0, directory);
         
         update_radius (part, 's');
     }
@@ -895,9 +866,10 @@ int main ( int argc, char **argv ) {
         start = atoi (argv[1]);
         calculation_max = atoi (argv[2]);
         stable_no = atoi (argv[3]);
+        sample_no = atoi (argv[4]);
         
         Read_structure (nuc, spb, stable_no);
-        Read_coordinate (part, start);
+        Read_coordinate (part, start, directory);
         
     }
     else {
@@ -918,7 +890,7 @@ int main ( int argc, char **argv ) {
             calculation (part, nuc, spb, mitigation);
         }
 
-        write_coordinate (part, start + time);
+        write_coordinate (part, start + time, directory);
 
         if (argc == 4) update_radius (part, 'c');
     }
