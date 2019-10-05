@@ -861,7 +861,7 @@ void write_coordinate (Particle *part, const unsigned int time) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no = 0;
+    unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no;
     char output_file[256];
     double mem_al[3];
     
@@ -873,11 +873,12 @@ int main ( int argc, char **argv ) {
     dsfmt_t dsfmt;
     
     
-    if ( argc == 3 ) {
+    if ( argc == 4 ) {
         
         start = 0;
         calculation_max = atoi (argv[1]);
         stable_no = atoi (argv[2]);
+        sample_no = atoi (argv[3]);
         
         dsfmt_init_gen_rand (&dsfmt, sample_no);
         
@@ -889,7 +890,7 @@ int main ( int argc, char **argv ) {
         
         update_radius (part, 's');
     }
-    else if (argc == 4 ) {
+    else if (argc == 5 ) {
         
         start = atoi (argv[1]);
         calculation_max = atoi (argv[2]);
@@ -919,7 +920,7 @@ int main ( int argc, char **argv ) {
 
         write_coordinate (part, start + time);
 
-        if (argc == 3) update_radius (part, 'c');
+        if (argc == 4) update_radius (part, 'c');
     }
     
     // メモリ解放 //
