@@ -47,7 +47,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
-#define CENT_INIT_RADIUS (0.5)  // セントロメア粒子の初期半径
+#define CENT_INIT_RADIUS (1.0)  // セントロメア粒子の初期半径
 
 // Ellipsoid axes parameter of nucleus & nucleolus //
 
@@ -142,10 +142,10 @@ void secure_main_memory (Particle **part, Nuc **nuc, Particle **spb) {   // メ�
 }
 
 // 途中から計算する場合の 座標データ読みこみ //
-void read_coordinate (Particle *part, const unsigned int start) {
+void Read_coordinate (Particle *part, const unsigned int start) {
     
     unsigned int loop, number, i_dummy;
-    char pastis_data[256], input_file[256], *arm_list[] = {"1long", "1short", "2short", "2long", "3short", "3long"};
+    char input_file[256];
     FILE *fpr;
     Particle *part_1;
     
@@ -160,8 +160,8 @@ void read_coordinate (Particle *part, const unsigned int start) {
         
         part_1 = &part[loop];
         
-        fscanf (fpr, "%d %d %d %lf %lf %lf\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z]);
+        fscanf (fpr, "%d %d %d %lf %lf %lf %lf\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->radius);
     }
     
     fclose (fpr);
@@ -347,18 +347,6 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     
 }
 
-// particle_type labeling セントロメアorテロメアor rDNA末端 //
-//void type_labeling (Particle *part) {
-//
-//    unsigned int loop;
-//
-//    for ( loop = 0; loop < NUMBER_MAX; loop++ ) part [loop].particle_type = Normal;
-//
-//    for ( loop = 0; loop < sizeof (CENT_LIST) / sizeof (CENT_LIST[0]); loop++ ) part [CENT_LIST [loop]].particle_type = Centromere;
-//    for ( loop = 0; loop < sizeof (TELO_LIST) / sizeof (TELO_LIST[0]); loop++ ) part [TELO_LIST [loop]].particle_type = Telomere;
-//    for ( loop = 0; loop < sizeof (rDNA_LIST) / sizeof (rDNA_LIST[0]); loop++ ) part [rDNA_LIST [loop]].particle_type = rDNA;
-//}
-
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
     double dist = 0.0;
@@ -448,17 +436,6 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
             
         default:
             
-//            if ( part_1->pastis_no >= 0 && part_2->pastis_no >= 0 ) {
-//
-//                dist_0 = Euclid_norm (part_1->position_init, part_2->position_init);
-//                dist = Euclid_norm (part_1->position, part_2->position);
-//
-//                f = bonding_power[interval] * (dist_0 - dist) / dist;
-//
-//                part_1->force[X] += f * (part_1->position[X] - part_2->position[X]);
-//                part_1->force[Y] += f * (part_1->position[Y] - part_2->position[Y]);
-//                part_1->force[Z] += f * (part_1->position[Z] - part_2->position[Z]);
-//            }
             break;
     }
 }
@@ -790,7 +767,7 @@ void update_radius (Particle *part, const char operation) {
     unsigned int loop;
     static double diff_radius[6];
     
-    if (operation == 'c') {
+    if (operation == 'c' && part[0].radius < 1.0) {
         
         for (loop = TELO_LIST[0]; loop < CENT_LIST[0]; loop++) part [loop].radius += diff_radius [0];
         for (loop = CENT_LIST[0] + 1; loop <= TELO_LIST[1]; loop++) part [loop].radius += diff_radius [1];
@@ -800,6 +777,14 @@ void update_radius (Particle *part, const char operation) {
     
         for (loop = rDNA_LIST[0]; loop < CENT_LIST[2]; loop++) part [loop].radius += diff_radius [4];
         for (loop = CENT_LIST[2] + 1; loop <= rDNA_LIST[1]; loop++) part [loop].radius += diff_radius [5];
+        
+        if (part[0].radius + diff_radius[0] > 1.0 ) {
+            
+            for (loop = 0; loop < NUMBER_MAX; loop++) {
+                
+                part [loop].radius = 1.0;
+            }
+        }
     }
     else if (operation == 's') {
         
@@ -901,12 +886,18 @@ int main ( int argc, char **argv ) {
         Particle_initialization (part, nuc, spb, &dsfmt);
         
         write_coordinate (part, 0);
+        
+        update_radius (part, 's');
     }
     else if (argc == 4 ) {
         
         start = atoi (argv[1]);
         calculation_max = atoi (argv[2]);
         stable_no = atoi (argv[3]);
+        
+        Read_structure (nuc, spb, stable_no);
+        Read_coordinate (part, start);
+        
     }
     else {
         
@@ -914,7 +905,7 @@ int main ( int argc, char **argv ) {
         exit (1);
     }
     
-    update_radius (part, 's');
+    
     
     for ( unsigned int time = 1; time <= calculation_max; time++) {
 
@@ -928,7 +919,7 @@ int main ( int argc, char **argv ) {
 
         write_coordinate (part, start + time);
 
-        update_radius (part, 'c');
+        if (argc == 3) update_radius (part, 'c');
     }
     
     // メモリ解放 //
