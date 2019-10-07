@@ -158,7 +158,7 @@ void Read_coordinate (Particle *part, const unsigned int start, const char *dir)
     sprintf (input_file, "%s/result_%d.txt", dir, start);
     if ((fpr = fopen (input_file, "r")) == NULL){
         
-        printf ("\t erroe : cannot read coordinate data.\n");
+        printf ("\t error : cannot read coordinate data.\n");
         exit (1);
     }
     
@@ -873,8 +873,6 @@ int main ( int argc, char **argv ) {
     
     dsfmt_t dsfmt;
     
-    sprintf (directory, "%d_%d", stable_no, sample_no);
-    
     if ( argc == 4 ) {
         
         start = 0;
@@ -898,6 +896,8 @@ int main ( int argc, char **argv ) {
         calculation_max = atoi (argv[2]);
         stable_no = atoi (argv[3]);
         sample_no = atoi (argv[4]);
+        
+        sprintf (directory, "%d_%d", stable_no, sample_no);
         
         Read_structure (nuc, spb, stable_no);
         Read_coordinate (part, start, directory);
