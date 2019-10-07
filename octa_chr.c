@@ -886,6 +886,8 @@ int main ( int argc, char **argv ) {
         Read_structure (nuc, spb, stable_no);
         Particle_initialization (part, nuc, spb, &dsfmt);
         
+        sprintf (directory, "%d_%d", stable_no, sample_no);
+        
         write_coordinate (part, 0, directory);
         
         update_radius (part, 's');
