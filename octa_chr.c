@@ -614,7 +614,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         
         if (loop != CENT_LIST[0] && loop != CENT_LIST[1] && loop != CENT_LIST[2]) {
             
-            Noise (part_1, dsfmt);
+            Noise (part_1->force, dsfmt);
         }
     }
 
