@@ -20,6 +20,9 @@
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 7.0e-8 )   //長さの単位 (粒子径)
 
+#define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
+#define TEMPARTURE ( 300 )
+
 #define M_A ( 1.85131596e+6 )   // g/mol/particle
 #define N_A ( 6.022140857e+23 )
 #define PASTIS_SCALING ( 1.8e-6 / 75 / LENGTH)
@@ -45,6 +48,9 @@
 #define BOND_DISTANCE ( 2.0 * PARTICLE_RADIUS * 0.8 )   // １個隣ばねの自然長
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
+
+#define KINEMATIC_MYU (0.000890)
+#define DIFFUSION (1.0e-3)
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define CENT_INIT_RADIUS (1.0)  // セントロメア粒子の初期半径
@@ -571,8 +577,28 @@ void particle_exclusion (Particle *part, Particle *part_1) {
     }
 }
 
+void Noise (double *force, dsfmt_t *dsfmt) {
+    
+    //noise dsfmt
+//    double p1 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+//    / sqrt (DELTA);
+//    double p2 = sqrt(2.0 * 3.0 * KINEMATIC_MYU * KBT * TEMPARTURE) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+//    / sqrt (DELTA);
+    
+    double p1 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+    / sqrt (DELTA);
+    double p2 = sqrt(2.0 * DIFFUSION) * sqrt(-2.0 * log( dsfmt_genrand_open_close(dsfmt) ))
+    / sqrt (DELTA);
+    double theta = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    double psi = 2.0 * PI * dsfmt_genrand_open_close(dsfmt);
+    
+    force[X] += p1 * sin(theta);
+    force[Y] += p1 * cos(theta);
+    force[Z] += p2 * sin(psi);
+}
+
 // 各stepごとの座標計算 //
-void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mitigation ) {
+void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mitigation, dsfmt_t *dsfmt ) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -585,6 +611,11 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         part_1->force[X] = 0.0;
         part_1->force[Y] = 0.0;
         part_1->force[Z] = 0.0;
+        
+        if (loop != CENT_LIST[0] && loop != CENT_LIST[1] && loop != CENT_LIST[2]) {
+            
+            Noise (part_1, dsfmt);
+        }
     }
 
     #pragma omp parallel for private (part_1) num_threads (8)
@@ -887,7 +918,7 @@ int main ( int argc, char **argv ) {
 
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
 
-            calculation (part, nuc, spb, mitigation);
+            calculation (part, nuc, spb, mitigation, &dsfmt);
         }
 
         write_coordinate (part, start + time, directory);
