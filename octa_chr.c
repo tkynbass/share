@@ -239,9 +239,9 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
         
         hmm_list[0]++;
         
-        if ( (part_1->*spb_mean = (double *)malloc (sizeof (double) * 10)) == NULL
-            || (part_1->*nuc_mean = (double *)malloc (sizeof (double) * 10)) == NULL
-            || (part_1->*hmm_prob = (double *)malloc (sizeof (double) * 10)) == NULL ) {
+        if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * 10)) == NULL
+            || (part_1->nuc_mean = (double *)malloc (sizeof (double) * 10)) == NULL
+            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * 10)) == NULL ) {
             
             printf ("\t Cannot secure memories related to hmm_status.\n");
         }
@@ -940,7 +940,8 @@ int main ( int argc, char **argv ) {
         Particle_initialization (part, nuc, spb, &dsfmt);
         
         Read_hmm_status (part, hmm_list);
-        print (part[43].hmm_prob[7])
+        printf ("hmm_prob[7] = %lf\n", part[43].hmm_prob[7]);
+        fflush (stdout);
         
         sprintf (directory, "%d_%d", stable_no, sample_no);
         
