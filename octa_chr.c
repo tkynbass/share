@@ -255,18 +255,18 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
     }
 }
 
-void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, char option) {
+void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const char option) {
     
     unsigned int status = 0;
     double prob_value = dsfmt_genrand_close_open (dsfmt);
     
-    if (option == "s") {
+    if (option == 's') {
         
         while (prob_value > part_1->hmm_prob [status]) status++;
         
         part_1->hmm_status = status;
     }
-    else if ( option == "r") {
+    else if ( option == 'r') {
         
         
     }
@@ -962,8 +962,8 @@ int main ( int argc, char **argv ) {
         
         for (loop = 1; loop <= hmm_list[0]; loop++) {
             
-            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, "s");
-            printf ("%d status %d\n", part[ hmm_list[loop]].hmm_status);
+            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's');
+            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
         }
         
         sprintf (directory, "%d_%d", stable_no, sample_no);
