@@ -33,9 +33,10 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e-6 )     //2つ隣
+#define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+0 )
+#define K_HMM (1.0e-0) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
@@ -119,6 +120,59 @@ typedef struct nucleolus{
 } Nuc;
 
 enum label{ X, Y, Z};
+
+double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
+    
+    double dist = 0.0;
+    
+    dist += (pos_1[X] - pos_2[X]) * (pos_1[X] - pos_2[X]);
+    dist += (pos_1[Y] - pos_2[Y]) * (pos_1[Y] - pos_2[Y]);
+    dist += (pos_1[Z] - pos_2[Z]) * (pos_1[Z] - pos_2[Z]);
+    
+    return (sqrt(dist));
+}
+
+//  内積計算    //
+double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
+    
+    return ( pos_1[X] * pos_2[X] + pos_1[Y] * pos_2[Y] + pos_1[Z] * pos_2[Z]);
+}
+
+// rotate function about z axis //
+void rotate_about_z ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
+    pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
+    
+    pos[X] = pos_new[X];
+    pos[Y] = pos_new[Y];
+}
+
+// rotate function about y axis x-z平面での回転 //
+void rotate_about_y ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Z];
+    pos_new[Z] = sin (theta) * pos[X] + cos (theta) * pos[Z];
+    
+    pos[X] = pos_new[X];
+    pos[Z] = pos_new[Z];
+}
+
+// rotate function about x axis y-z平面での回転 //
+void rotate_about_x ( double pos[DIMENSION], const double theta ) {
+    
+    double pos_new[DIMENSION];
+    
+    pos_new[Y] = cos (theta) * pos[Y] - sin (theta) * pos[Z];
+    pos_new[Z] = sin (theta) * pos[Y] + cos (theta) * pos[Z];
+    
+    pos[Y] = pos_new[Y];
+    pos[Z] = pos_new[Z];
+}
 
 void secure_main_memory (Particle **part, Nuc **nuc, Particle **spb) {   // メモリ確保 //
     
@@ -250,8 +304,12 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
         for (loop = 0; loop < 10; loop++) {
             
             fscanf (fpr, " %lf %lf %lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob[loop]);
+            
+            part_1->spb_mean[loop] *= 10e-6 / LENGTH;   // シミュレーションの長さ単位に合わせる
+            part_1->nuc_mean[loop] *= 10e-6 / LENGTH;
         }
         fgets (dummy, 256, fpr);
+        
     }
 }
 
@@ -328,9 +386,17 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
         phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
         
-        part_1->position[X] = NUCLEOLUS_AXIS_1 * sin (phi) * cos (theta) + nuc->position[X];
-        part_1->position[Y] = NUCLEOLUS_AXIS_2 * sin (phi) * sin (theta) + nuc->position[Y];
-        part_1->position[Z] = NUCLEOLUS_AXIS_3 * cos (phi) + nuc->position [Z];
+        part_1->position[X] = NUCLEOLUS_AXIS_1 * sin (phi) * cos (theta);
+        part_1->position[Y] = NUCLEOLUS_AXIS_2 * sin (phi) * sin (theta);
+        part_1->position[Z] = NUCLEOLUS_AXIS_3 * cos (phi);
+        
+        rotate_about_x (part_1->position, -nuc->eta);
+        rotate_about_y (part_1->position, -nuc->phi);
+        rotate_about_z (part_1->position, -nuc->theta);
+        
+        part_1->position[X] += nuc->position[X];
+        part_1->position[Y] += nuc->position[Y];
+        part_1->position[Z] += nuc->position[Z];
         
         part_1->chr_no = 2;
         part_1->particle_type = rDNA;
@@ -418,61 +484,6 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         
     }
     
-}
-
-
-
-double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
-    
-    double dist = 0.0;
-    
-    dist += (pos_1[X] - pos_2[X]) * (pos_1[X] - pos_2[X]);
-    dist += (pos_1[Y] - pos_2[Y]) * (pos_1[Y] - pos_2[Y]);
-    dist += (pos_1[Z] - pos_2[Z]) * (pos_1[Z] - pos_2[Z]);
-    
-    return (sqrt(dist));
-}
-
-//  内積計算    //
-double Inner_product (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
-    
-    return ( pos_1[X] * pos_2[X] + pos_1[Y] * pos_2[Y] + pos_1[Z] * pos_2[Z]);
-}
-
-// rotate function about z axis //
-void rotate_about_z ( double pos[DIMENSION], const double theta ) {
-    
-    double pos_new[DIMENSION];
-    
-    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Y];
-    pos_new[Y] = sin (theta) * pos[X] + cos (theta) * pos[Y];
-    
-    pos[X] = pos_new[X];
-    pos[Y] = pos_new[Y];
-}
-
-// rotate function about y axis x-z平面での回転 //
-void rotate_about_y ( double pos[DIMENSION], const double theta ) {
-    
-    double pos_new[DIMENSION];
-    
-    pos_new[X] = cos (theta) * pos[X] - sin (theta) * pos[Z];
-    pos_new[Z] = sin (theta) * pos[X] + cos (theta) * pos[Z];
-    
-    pos[X] = pos_new[X];
-    pos[Z] = pos_new[Z];
-}
-
-// rotate function about x axis y-z平面での回転 //
-void rotate_about_x ( double pos[DIMENSION], const double theta ) {
-    
-    double pos_new[DIMENSION];
-    
-    pos_new[Y] = cos (theta) * pos[Y] - sin (theta) * pos[Z];
-    pos_new[Z] = sin (theta) * pos[Y] + cos (theta) * pos[Z];
-    
-    pos[Y] = pos_new[Y];
-    pos[Z] = pos_new[Z];
 }
 
 //　ばねによる力 part_1側の力計算//
@@ -646,6 +657,24 @@ void particle_exclusion (Particle *part, Particle *part_1) {
     }
 }
 
+void Hmm_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
+    
+    unsigned int loop;
+    double spb_f, nuc_f, dist;
+    
+    dist = Euclid_norm (part_1->position, spb->position);
+    spb_f = K_HMM * (part_1->spb_mean[ part_1->hmm_status ] - dist) / dist;
+    
+    dist = Euclid_norm (part_1->position, nuc->position);
+    nuc_f = K_HMM * (part_1->nuc_mean[ part_1->hmm_status ] - dist) / dist;
+    
+    for (loop = 0; loop < DIMENSION; loop++) {
+     
+        part_1->force[loop] = spb_f * (part_1->position[loop] - spb->position[loop]) + nuc_f * (part_1->position[loop] - nuc->position[loop]);
+    }
+    
+}
+
 void Noise (double *force, dsfmt_t *dsfmt) {
     
     //noise dsfmt
@@ -667,7 +696,7 @@ void Noise (double *force, dsfmt_t *dsfmt) {
 }
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mitigation, dsfmt_t *dsfmt ) {
+void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mitigation, dsfmt_t *dsfmt, const unsigned int *hmm_list) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -686,6 +715,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
             Noise (part_1->force, dsfmt);
         }
     }
+    
+    for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_potential (&part [hmm_list [loop]], nuc, spb);
 
     #pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
@@ -954,16 +985,15 @@ int main ( int argc, char **argv ) {
         
         dsfmt_init_gen_rand (&dsfmt, sample_no);
         
-//        type_labeling (part);
         Read_structure (nuc, spb, stable_no);
         Particle_initialization (part, nuc, spb, &dsfmt);
         
-        Read_hmm_status (part, hmm_list);
+        Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
         
         for (loop = 1; loop <= hmm_list[0]; loop++) {
             
-            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's');
-            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
+            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
+//            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
         }
         
         sprintf (directory, "%d_%d", stable_no, sample_no);
@@ -999,7 +1029,7 @@ int main ( int argc, char **argv ) {
 
         for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
 
-            calculation (part, nuc, spb, mitigation, &dsfmt);
+            calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list);
         }
 
         write_coordinate (part, start + time, directory);
