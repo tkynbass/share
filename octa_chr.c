@@ -217,7 +217,7 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
 void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
     
     FILE *fpr;
-    char filename[128], dummy[256];
+    char filename[128], dummy[512];
     unsigned int loop, number;
     Particle *part_1;
     
@@ -229,7 +229,7 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
         exit (1);
     }
     
-    fgets (dummy, 256, fpr);
+    fgets (dummy, 512, fpr);
     
     hmm_list [0] = 0; // hmm_statusを持つ粒子 (locus)の個数
     
@@ -237,7 +237,8 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
         
         part_1 = &part[number];
         
-        hmm_list[0]++;
+        hmm_list[0]++; // locus数の更新
+        hmm_list [hmm_list [0]] = number;
         
         if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * 10)) == NULL
             || (part_1->nuc_mean = (double *)malloc (sizeof (double) * 10)) == NULL
@@ -252,9 +253,27 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
         }
         fgets (dummy, 256, fpr);
     }
+}
+
+void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, char option) {
     
+    unsigned int status = 0;
+    double prob_value = dsfmt_genrand_close_open (dsfmt);
     
-    
+    if (option == "s") {
+        
+        while (prob_value > part_1->hmm_prob [status]) status++;
+        
+        part_1->hmm_status = status;
+    }
+    else if ( option == "r") {
+        
+        
+    }
+    else {
+        
+        printf ("\t Cannot set hmm_status\n");
+    }
 }
 
 // ひも粒子の初期座標決定
@@ -940,8 +959,12 @@ int main ( int argc, char **argv ) {
         Particle_initialization (part, nuc, spb, &dsfmt);
         
         Read_hmm_status (part, hmm_list);
-        printf ("hmm_prob[7] = %lf\n", part[43].hmm_prob[7]);
-        fflush (stdout);
+        
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            
+            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, "s");
+            printf ("%d status %d\n", part[ hmm_list[loop]].hmm_status);
+        }
         
         sprintf (directory, "%d_%d", stable_no, sample_no);
         
@@ -968,8 +991,6 @@ int main ( int argc, char **argv ) {
         printf ("\t error : Number of arguments error \n");
         exit (1);
     }
-    
-    
     
     for ( unsigned int time = 1; time <= calculation_max; time++) {
 
