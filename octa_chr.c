@@ -55,6 +55,8 @@
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define CENT_INIT_RADIUS (1.0)  // セントロメア粒子の初期半径
 
+#define LOCUS_MAX (137)
+
 // Ellipsoid axes parameter of nucleus & nucleolus //
 
 #define MEMBRANE_AXIS_1 ( 1.889011e-6 / LENGTH )
@@ -102,11 +104,14 @@ typedef struct particle {           //構造体の型宣言
     double radius;
     unsigned int list_no;
     unsigned int *list;
+    double *nuc_mean;
+    double *spb_mean;
+    double *hmm_prob;
+    unsigned int hmm_status;
     
 } Particle;
 
 typedef struct nucleolus{
-    
     double position[DIMENSION]; // 重心座標
     double theta;
     double phi;
@@ -207,6 +212,49 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     fscanf (fpr, "%d %lf %lf %lf\n", &i_dummy, &spb->position[X], &spb->position[Y], &spb->position[Z]);
     
     fclose (fpr);
+}
+
+void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
+    
+    FILE *fpr;
+    char filename[128], dummy[256];
+    unsigned int loop, number;
+    Particle *part_1;
+    
+    sprintf (filename, "../subdata/G2_status_5k.txt");
+    
+    if ( (fpr = fopen (filename, "r")) == NULL) {
+        
+        printf ("\t Cannot open %s \n", filename);
+        exit (1);
+    }
+    
+    fgets (dummy, 256, fpr);
+    
+    hmm_list [0] = 0; // hmm_statusを持つ粒子 (locus)の個数
+    
+    while (fscanf (fpr, "%d", &number) != EOF) {
+        
+        part_1 = &part[number];
+        
+        hmm_list[0]++;
+        
+        if ( (part_1->*spb_mean = (double *)malloc (sizeof (double) * 10)) == NULL
+            || (part_1->*nuc_mean = (double *)malloc (sizeof (double) * 10)) == NULL
+            || (part_1->*hmm_prob = (double *)malloc (sizeof (double) * 10)) == NULL ) {
+            
+            printf ("\t Cannot secure memories related to hmm_status.\n");
+        }
+        
+        for (loop = 0; loop < 10; loop++) {
+            
+            fscanf (fpr, " %lf %lf %lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob[loop]);
+        }
+        fgets (dummy, 256, fpr);
+    }
+    
+    
+    
 }
 
 // ひも粒子の初期座標決定
@@ -352,6 +400,8 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     }
     
 }
+
+
 
 double Euclid_norm (const double pos_1[DIMENSION], const double pos_2[DIMENSION]) {
     
@@ -869,6 +919,9 @@ int main ( int argc, char **argv ) {
     Particle *part, *part_1, *spb;
     Nuc *nuc;
     
+    int hmm_list [137];
+    for (loop = 0; loop < LOCUS_MAX + 1; loop++) hmm_list [loop] = -1;
+    
     secure_main_memory (&part, &nuc, &spb);
     
     dsfmt_t dsfmt;
@@ -885,6 +938,9 @@ int main ( int argc, char **argv ) {
 //        type_labeling (part);
         Read_structure (nuc, spb, stable_no);
         Particle_initialization (part, nuc, spb, &dsfmt);
+        
+        Read_hmm_status (part, hmm_list);
+        print (part[43].hmm_prob[7])
         
         sprintf (directory, "%d_%d", stable_no, sample_no);
         
