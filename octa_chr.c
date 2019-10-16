@@ -36,7 +36,7 @@
 #define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+0 )
-#define K_HMM (1.0e-0) // 隠れマルコフ状態を用いたポテンシャルの強度
+#define K_HMM (1.0e-3) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
@@ -305,8 +305,8 @@ void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
             
             fscanf (fpr, " %lf %lf %lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob[loop]);
             
-            part_1->spb_mean[loop] *= 10e-6 / LENGTH;   // シミュレーションの長さ単位に合わせる
-            part_1->nuc_mean[loop] *= 10e-6 / LENGTH;
+            part_1->spb_mean[loop] *= 1.0e-6 / LENGTH;   // シミュレーションの長さ単位に合わせる
+            part_1->nuc_mean[loop] *= 1.0e-6 / LENGTH;
         }
         fgets (dummy, 256, fpr);
         
@@ -1015,6 +1015,13 @@ int main ( int argc, char **argv ) {
         Read_structure (nuc, spb, stable_no);
         Read_coordinate (part, start, directory);
         
+        Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
+        
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            
+            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
+            //            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
+        }
     }
     else {
         
