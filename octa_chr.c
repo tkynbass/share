@@ -1017,6 +1017,10 @@ int main ( int argc, char **argv ) {
         for (loop = 1; loop <= hmm_list[0]; loop++) {
             
             Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
+            
+            part_1 = &part[ hmm_list[loop]];
+            
+            printf ("%d %lf %lf\n", hmm_list[loop], part_1->nuc_mean [part_1->hmm_status], part_1->spb_mean [part_1->hmm_status]);
 //            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
         }
 
