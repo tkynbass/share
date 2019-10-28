@@ -36,7 +36,7 @@
 #define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 1.0e+0 )
-#define K_HMM (1.0e-3) // 隠れマルコフ状態を用いたポテンシャルの強度
+#define K_HMM (5.0e-3) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
@@ -60,7 +60,7 @@
 
 // Ellipsoid axes parameter of nucleus & nucleolus //
 
-#define MEMBRANE_AXIS_1 ( 1.889011e-6 / LENGTH )
+#define MEMBRANE_AXIS_1 ( 1.889011e-6 / LENGTH )    // ~= 27
 #define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
 #define MEMBRANE_AXIS_3 ( 0.75 * MEMBRANE_AXIS_1 )
 
@@ -338,56 +338,80 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const char option) {
 void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *dsfmt) {
     
     unsigned int loop, loop2, arm_num, dim, territory_flag[2] = {0, 0};
-    double theta, phi, chr_dist, vector[DIMENSION], telo_dist[2];
+    double theta[2], init_theta, phi, chr_dist, vector[DIMENSION], telo_dist[2], telo_center[DIMENSION];
     Particle *part_1, *cent;
     
     //テロメア粒子の初期値を核膜上でランダムに設定 //
-    do {
-
-        for (loop = 0; loop < 4; loop++) {
+//    do {
+//
+//        for (loop = 0; loop < 4; loop++) {
+//
+//            part_1 = &part[ TELO_LIST[loop]];
+//
+//            theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
+//            phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+//
+//            part_1->position[X] = MEMBRANE_AXIS_1 * sin (phi) * cos (theta);
+//            part_1->position[Y] = MEMBRANE_AXIS_2 * sin (phi) * sin (theta);
+//            part_1->position[Z] = MEMBRANE_AXIS_3 * cos (phi);
+//
+//            part_1->particle_type = Telomere;
+//            part_1->chr_no = loop / 2;
+//
+//        }
+//        //　同染色体テロメア間の距離
+//        telo_dist[0] = Euclid_norm (part[TELO1_UP].position, part[TELO1_DOWN].position);
+//        telo_dist[1] = Euclid_norm (part[TELO2_UP].position, part[TELO2_DOWN].position);
+//
+//        for (loop = 0; loop < 2; loop++) {
+//
+//            if (telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_UP].position) &&
+//                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_UP].position) &&
+//                telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_DOWN].position) &&
+//                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_DOWN].position) )
+//            {
+//                territory_flag[loop] = 0;
+//            }
+//            else territory_flag[loop] = 1;
+//        }
+//
+//    } while (territory_flag[0] != 0 || territory_flag[1] != 0);
+    
+    // テロメアの初期位置を染色体ごとでほぼ同位置に配置する。
+    for (loop = 0; loop < 2; loop++) {
+        
+        init_theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
+        phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+        
+        theta[0] = init_theta + PI / 36;
+        theta[1] = init_theta - PI / 36;
+        
+        for (loop2 = 0; loop2 < 2; loop2++) {
+         
+            part_1 = &part[ TELO_LIST [2 * loop + loop2] ];
             
-            part_1 = &part[ TELO_LIST[loop]];
-            
-            theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
-            phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
-            
-            part_1->position[X] = MEMBRANE_AXIS_1 * sin (phi) * cos (theta);
-            part_1->position[Y] = MEMBRANE_AXIS_2 * sin (phi) * sin (theta);
+            part_1->position[X] = MEMBRANE_AXIS_1 * sin (phi) * cos (theta [loop2]);
+            part_1->position[Y] = MEMBRANE_AXIS_2 * sin (phi) * sin (theta [loop2]);
             part_1->position[Z] = MEMBRANE_AXIS_3 * cos (phi);
             
             part_1->particle_type = Telomere;
-            part_1->chr_no = loop / 2;
-            
+            part_1->chr_no = loop;
         }
-        //　同染色体テロメア間の距離
-        telo_dist[0] = Euclid_norm (part[TELO1_UP].position, part[TELO1_DOWN].position);
-        telo_dist[1] = Euclid_norm (part[TELO2_UP].position, part[TELO2_DOWN].position);
-        
-        for (loop = 0; loop < 2; loop++) {
-            
-            if (telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_UP].position) &&
-                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_UP].position) &&
-                telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_DOWN].position) &&
-                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_DOWN].position) )
-            {
-                territory_flag[loop] = 0;
-            }
-            else territory_flag[loop] = 1;
-        }
-        
-    } while (territory_flag[0] != 0 || territory_flag[1] != 0);
-        
-        
+    }
+    
     //rDNA末端粒子の初期値を核小体表面上でランダムに設定 //
+    init_theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
+    phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+    
+    theta[0] = init_theta + PI / 36;
+    theta[1] = init_theta - PI / 36;
+    
     for (loop = 0; loop < 2; loop++) {
         
         part_1 = &part[ rDNA_LIST[loop]];
         
-        theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
-        phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
-        
-        part_1->position[X] = NUCLEOLUS_AXIS_1 * sin (phi) * cos (theta);
-        part_1->position[Y] = NUCLEOLUS_AXIS_2 * sin (phi) * sin (theta);
+        part_1->position[X] = NUCLEOLUS_AXIS_1 * sin (phi) * cos (theta [loop]);
+        part_1->position[Y] = NUCLEOLUS_AXIS_2 * sin (phi) * sin (theta [loop]);
         part_1->position[Z] = NUCLEOLUS_AXIS_3 * cos (phi);
         
         rotate_about_x (part_1->position, -nuc->eta);
@@ -995,7 +1019,7 @@ int main ( int argc, char **argv ) {
             Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
 //            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
         }
-        
+
         sprintf (directory, "%d_%d", stable_no, sample_no);
         
         write_coordinate (part, 0, directory);
