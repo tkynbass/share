@@ -40,7 +40,7 @@
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
-#define LIST_INTERVAL ( 100 )   // リスト化の間隔
+#define LIST_INTERVAL ( 200 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
@@ -998,9 +998,9 @@ void Save_settings (const char *dir, const int start, const int calculation_max)
     
     fprintf (fpw, "start = %d\t end = %d\n\n", start, start+calculation_max);
     
-    fprintf (fpw, "\nK_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %2.1e\nK_EXCLUDE = %2.1e\n",
+    fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %2.1e\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
-    fprintf (fpw, "DELTA = %2.1e\n MITIGATION_INTERVAL = %2.1e\n\n\n", DELTA, MITIGATION_INTERVAL);
+    fprintf (fpw, "DELTA = %2.1e\nMITIGATION_INTERVAL = %2.1e\n\n\n", DELTA, MITIGATION_INTERVAL);
     
     fclose (fpw);
 }
