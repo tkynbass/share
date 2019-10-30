@@ -35,8 +35,8 @@
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
-#define K_EXCLUDE ( 1.0e+0 )
-#define K_HMM (5.0e-3) // 隠れマルコフ状態を用いたポテンシャルの強度
+#define K_EXCLUDE ( 1.0e+1 )
+#define K_HMM (1.0e-2) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
@@ -64,7 +64,7 @@
 #define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
 #define MEMBRANE_AXIS_3 ( 0.75 * MEMBRANE_AXIS_1 )
 
-#define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH ) // ~=16.3
 #define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
 
@@ -736,7 +736,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         
         if (loop != CENT_LIST[0] && loop != CENT_LIST[1] && loop != CENT_LIST[2]) {
             
-            Noise (part_1->force, dsfmt);
+//            Noise (part_1->force, dsfmt);
         }
     }
     
@@ -744,77 +744,77 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
     #pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
-        
+
         part_1 = &part [loop];
-        
+
         switch (part_1->particle_type) {
             case Normal:
-                
+
                 // spring 1 //
                 spring (part_1, &part [loop + 1], 1);
                 spring (part_1, &part [loop - 1], 1);
-                
+
                 // spring 2 & 3 //
                 switch (loop)  {
-                        
+
                     case TELO1_UP + 1:
                     case TELO2_UP + 1:
                     case rDNA_UP + 1:
-                        
+
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop + 3], 3);
                         break;
-                    
+
                     case TELO1_UP + 2:
                     case TELO2_UP + 2:
                     case rDNA_UP + 2:
-                        
+
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
-                        
+
                         spring (part_1, &part[loop + 3], 3);
                         break;
-                    
+
                     case TELO1_DOWN - 1:
                     case TELO2_DOWN - 1:
                     case rDNA_DOWN - 1:
-                        
+
                         spring (part_1, &part[loop - 2], 2);
-                        
+
                         spring (part_1, &part[loop - 3], 3);
                         break;
-                        
+
                     case TELO1_DOWN - 2:
                     case TELO2_DOWN - 2:
                     case rDNA_DOWN - 2:
-                        
+
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
-                        
+
                         spring (part_1, &part[loop - 3], 3);
                         break;
-                    
+
                     default:
-                        
+
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
-                        
+
                         spring (part_1, &part[loop + 3], 3);
                         spring (part_1, &part[loop - 3], 3);
                         break;
                 }
-                
+
                 spb_exclusion (part_1, spb);
                 nucleolus_interaction (part_1, nuc, 'E');
                 membrane_interaction (part_1, 'E');
-                
+
                 if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
-                
+
                 break;
-            
+
             case Centromere:
-                
+
 //                spring (part_1, &part[loop + 1], 1);
 //                spring (part_1, &part[loop - 1], 1);
 //
@@ -827,86 +827,86 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 //                nucleolus_interaction (part_1, nuc, 'E');
 //                membrane_interaction (part_1, 'E');
 //                spring (part_1, spb, 0);
-                
+
 //                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
 //                particle_exclusion (part, part_1);
 //
                 break;
-                
+
             case Telomere:
-                
+
                 switch (loop) {
                     case TELO1_UP:
                     case TELO2_UP:
-                        
+
                         spring (part_1, &part[loop + 1], 1);
-                        
+
                         spring (part_1, &part[loop + 2], 2);
-                        
+
                         spring (part_1, &part[loop + 3], 3);
-                        
+
                         break;
-                        
+
                     case TELO1_DOWN:
                     case TELO2_DOWN:
-                        
+
                         spring (part_1, &part[loop - 1], 1);
-                        
+
                         spring (part_1, &part[loop - 2], 2);
-                        
+
                         spring (part_1, &part[loop - 3], 3);
-                        
+
                         break;
                 }
-                
+
                 spb_exclusion (part_1, spb);
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, nuc, 'E');
-                
+
                 break;
-                
+
             case rDNA:
-                
+
                 switch (loop) {
                     case rDNA_UP:
-                        
+
                         spring (part_1, &part[loop + 1], 1);
-                        
+
                         spring (part_1, &part[loop + 2], 2);
-                        
+
                         spring (part_1, &part[loop + 3], 3);
-                        
+
                         break;
-                        
+
                     case rDNA_DOWN:
-                        
+
                         spring (part_1, &part[loop - 1], 1);
-                        
+
                         spring (part_1, &part[loop - 2], 2);
-                        
+
                         spring (part_1, &part[loop - 3], 3);
-                
+
                         break;
                 }
-                
+
                 spb_exclusion (part_1, spb);
                 membrane_interaction (part_1, 'E');
                 nucleolus_interaction (part_1, nuc, 'F');
-                
+
                 if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
-                
+
                 break;
-                
+
             default:
                 printf ("\t Labeling error occured. \n");
                 exit(1);
         }
-        
-        
-        
+
+
+
     }
-    
+
     for ( loop = 0; loop < NUMBER_MAX; loop++ ) {
         
         part_1 = &part[loop];
@@ -984,6 +984,29 @@ void write_coordinate (Particle *part, const unsigned int time, const char *dir)
     fclose (fpw);
 }
 
+void Save_settings (const char *dir, const int start, const int calculation_max) {
+    
+    FILE *fpw;
+    char filename[256];
+    
+    sprintf (filename, "%s/readme_%s.txt", dir, dir);
+    
+    if ((fpw = fopen (result, "a")) == NULL) {
+        
+        printf (" \t error : cannot write coordinate. \n");
+        
+        exit (1);
+    }
+    
+    fprintf (fpw, "start = %d\t end = %d\n\n", start, start+calculation_max);
+    
+    fprintf (fpw, "\nK_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %2.1e\nK_EXCLUDE = %2.1e\n",
+             K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
+    fprintf (fpw, "DELTA = %2.1e\n WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
+    
+    fclose (fpw);
+}
+
 int main ( int argc, char **argv ) {
     
     unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no;
@@ -1056,6 +1079,8 @@ int main ( int argc, char **argv ) {
         printf ("\t error : Number of arguments error \n");
         exit (1);
     }
+    
+    Save_settings (directory, start, calculation_max);
     
     for ( unsigned int time = 1; time <= calculation_max; time++) {
 
