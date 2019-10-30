@@ -983,29 +983,6 @@ void write_coordinate (Particle *part, const unsigned int time, const char *dir)
     fclose (fpw);
 }
 
-void Save_settings (const char *dir, const int start, const int calculation_max) {
-    
-    FILE *fpw;
-    char filename[256];
-    
-    sprintf (filename, "%s/readme_%s.txt", dir, dir);
-    
-    if ((fpw = fopen (result, "a")) == NULL) {
-        
-        printf (" \t error : cannot write coordinate. \n");
-        
-        exit (1);
-    }
-    
-    fprintf (fpw, "start = %d\t end = %d\n\n", start, start+calculation_max);
-    
-    fprintf (fpw, "\nK_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %2.1e\nK_EXCLUDE = %2.1e\n",
-             K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
-    fprintf (fpw, "DELTA = %2.1e\n WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
-    
-    fclose (fpw);
-}
-
 int main ( int argc, char **argv ) {
     
     unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no;
@@ -1079,7 +1056,7 @@ int main ( int argc, char **argv ) {
         exit (1);
     }
     
-    Save_settings (directory, start, calculation_max);
+//    Save_settings (directory, start, calculation_max);
     
     for ( unsigned int time = 1; time <= calculation_max; time++) {
 
