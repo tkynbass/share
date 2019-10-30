@@ -863,6 +863,9 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, nuc, 'E');
 
+                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                particle_exclusion (part, part_1);
+                
                 break;
 
             case rDNA:
