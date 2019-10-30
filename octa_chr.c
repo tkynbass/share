@@ -414,9 +414,9 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         part_1->position[Y] = NUCLEOLUS_AXIS_2 * sin (phi) * sin (theta [loop]);
         part_1->position[Z] = NUCLEOLUS_AXIS_3 * cos (phi);
         
-        rotate_about_x (part_1->position, -nuc->eta);
-        rotate_about_y (part_1->position, -nuc->phi);
-        rotate_about_z (part_1->position, -nuc->theta);
+        rotate_about_x (part_1->position, nuc->eta);
+        rotate_about_y (part_1->position, nuc->phi);
+        rotate_about_z (part_1->position, nuc->theta);
         
         part_1->position[X] += nuc->position[X];
         part_1->position[Y] += nuc->position[Y];
@@ -610,9 +610,9 @@ void nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_
         double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector)
         / normal_vector_norm;
         
-        rotate_about_x (normal_vector, -nuc->eta);
-        rotate_about_y (normal_vector, -nuc->phi);
-        rotate_about_z (normal_vector, -nuc->theta);
+        rotate_about_x (normal_vector, nuc->eta);
+        rotate_about_y (normal_vector, nuc->phi);
+        rotate_about_z (normal_vector, nuc->theta);
         
         part_1->force[X] += f * normal_vector[X];
         part_1->force[Y] += f * normal_vector[Y];
@@ -736,7 +736,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         
         if (loop != CENT_LIST[0] && loop != CENT_LIST[1] && loop != CENT_LIST[2]) {
             
-//            Noise (part_1->force, dsfmt);
+            Noise (part_1->force, dsfmt);
         }
     }
     
@@ -903,8 +903,6 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 exit(1);
         }
 
-
-
     }
 
     for ( loop = 0; loop < NUMBER_MAX; loop++ ) {
@@ -991,7 +989,7 @@ void Save_settings (const char *dir, const int start, const int calculation_max)
     
     sprintf (filename, "%s/readme_%s.txt", dir, dir);
     
-    if ((fpw = fopen (result, "a")) == NULL) {
+    if ((fpw = fopen (filename, "a")) == NULL) {
         
         printf (" \t error : cannot write coordinate. \n");
         
@@ -1002,7 +1000,7 @@ void Save_settings (const char *dir, const int start, const int calculation_max)
     
     fprintf (fpw, "\nK_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %2.1e\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
-    fprintf (fpw, "DELTA = %2.1e\n WRITE_INTERVAL = %2.1e\n\n", DELTA, WRITE_INTERVAL);
+    fprintf (fpw, "DELTA = %2.1e\n MITIGATION_INTERVAL = %2.1e\n\n\n", DELTA, MITIGATION_INTERVAL);
     
     fclose (fpw);
 }
