@@ -35,7 +35,7 @@
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
-#define K_EXCLUDE ( 1.0e+1 )
+#define K_EXCLUDE ( 1.0 )
 #define K_HMM (1.0e-2) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
@@ -43,8 +43,8 @@
 #define LIST_INTERVAL ( 200 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
-#define MEMBRANE_EXCLUDE ( 1.0 )     //膜との衝突
-#define MEMBRANE_EXCLUDE_SPB ( 1.0 ) //SPBとの衝突
+#define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
+#define NUCLEOLUS_EXCLUDE ( 1.0 ) //核小体との衝突
 
 #define BOND_DISTANCE ( 2.0 * PARTICLE_RADIUS * 0.8 )   // １個隣ばねの自然長
 
@@ -341,42 +341,6 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     double theta[2], init_theta, phi, chr_dist, vector[DIMENSION], telo_dist[2], telo_center[DIMENSION];
     Particle *part_1, *cent;
     
-    //テロメア粒子の初期値を核膜上でランダムに設定 //
-//    do {
-//
-//        for (loop = 0; loop < 4; loop++) {
-//
-//            part_1 = &part[ TELO_LIST[loop]];
-//
-//            theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
-//            phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
-//
-//            part_1->position[X] = MEMBRANE_AXIS_1 * sin (phi) * cos (theta);
-//            part_1->position[Y] = MEMBRANE_AXIS_2 * sin (phi) * sin (theta);
-//            part_1->position[Z] = MEMBRANE_AXIS_3 * cos (phi);
-//
-//            part_1->particle_type = Telomere;
-//            part_1->chr_no = loop / 2;
-//
-//        }
-//        //　同染色体テロメア間の距離
-//        telo_dist[0] = Euclid_norm (part[TELO1_UP].position, part[TELO1_DOWN].position);
-//        telo_dist[1] = Euclid_norm (part[TELO2_UP].position, part[TELO2_DOWN].position);
-//
-//        for (loop = 0; loop < 2; loop++) {
-//
-//            if (telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_UP].position) &&
-//                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_UP].position) &&
-//                telo_dist[loop] < Euclid_norm (part[TELO1_UP].position, part[TELO2_DOWN].position) &&
-//                telo_dist[loop] < Euclid_norm (part[TELO1_DOWN].position, part[TELO2_DOWN].position) )
-//            {
-//                territory_flag[loop] = 0;
-//            }
-//            else territory_flag[loop] = 1;
-//        }
-//
-//    } while (territory_flag[0] != 0 || territory_flag[1] != 0);
-    
     // テロメアの初期位置を染色体ごとでほぼ同位置に配置する。
     for (loop = 0; loop < 2; loop++) {
         
@@ -588,26 +552,26 @@ void nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_
     
     // 核小体座標系に変換 //
     //位置座標をx-y平面で-theta回転
-    rotate_about_z (nuc_to_pos, nuc->theta );
+    rotate_about_z (nuc_to_pos, -nuc->theta );
     // x-z平面
-    rotate_about_y (nuc_to_pos, nuc->phi);
+    rotate_about_y (nuc_to_pos, -nuc->phi);
     // y-z平面
-    rotate_about_x (nuc_to_pos, nuc->eta);
+    rotate_about_x (nuc_to_pos, -nuc->eta);
     
     double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1 )
-    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 )
-    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2 );
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2 )
+    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 );
     
     if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
         
         // 法線ベクトル @核小体座標系
         double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1),
-            2.0 * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3),
-            2.0 * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2) };
+            2.0 * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2),
+            2.0 * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3) };
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
         
-        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * Inner_product (nuc_to_pos, normal_vector)
+        double f = - ( ellipsoid_dist - 1 ) * NUCLEOLUS_EXCLUDE * Inner_product (nuc_to_pos, normal_vector)
         / normal_vector_norm;
         
         rotate_about_x (normal_vector, nuc->eta);
@@ -1001,7 +965,7 @@ void Save_settings (const char *dir, const int start, const int calculation_max)
     
     fprintf (fpw, "start = %d\t end = %d\n\n", start, start+calculation_max);
     
-    fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %2.1e\nK_EXCLUDE = %2.1e\n",
+    fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %de\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
     fprintf (fpw, "DELTA = %2.1e\nMITIGATION_INTERVAL = %2.1e\n\n\n", DELTA, MITIGATION_INTERVAL);
     
