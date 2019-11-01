@@ -345,7 +345,8 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     for (loop = 0; loop < 2; loop++) {
         
         init_theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
-        phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+        if (spb->position[Z] > 0 ) phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt) + 0.5 * PI;
+        else phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
         
         theta[0] = init_theta + PI / 36;
         theta[1] = init_theta - PI / 36;
