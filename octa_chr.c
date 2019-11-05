@@ -117,6 +117,9 @@ typedef struct nucleolus{
     double theta;
     double phi;
     double eta;
+    double al1;
+    double al2;
+    double al3;
 } Nuc;
 
 enum label{ X, Y, Z};
@@ -366,7 +369,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
     
     //rDNA末端粒子の初期値を核小体表面上でランダムに設定 //
     init_theta = 2 * PI * dsfmt_genrand_close_open (dsfmt);
-    phi = 0.5 * PI * dsfmt_genrand_close_open (dsfmt);
+    phi = PI * dsfmt_genrand_close_open (dsfmt);
     
     theta[0] = init_theta + PI / 36;
     theta[1] = init_theta - PI / 36;
@@ -559,6 +562,48 @@ void nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_
     // y-z平面
     rotate_about_x (nuc_to_pos, -nuc->eta);
     
+    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( nuc->al1 * nuc->al1 )
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( nuc->al2 * nuc->al2 )
+    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( nuc->al3 * nuc->al3 );
+    
+    if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
+        
+        // 法線ベクトル @核小体座標系
+        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( nuc->al1 * nuc->al1 ),
+            2.0 * nuc_to_pos[Y] / ( nuc->al2 * nuc->al2 ),
+            2.0 * nuc_to_pos[Z] / ( nuc->al3 * nuc->al3 ) };
+        
+        double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+        
+        double f = - ( ellipsoid_dist - 1 ) * NUCLEOLUS_EXCLUDE * Inner_product (nuc_to_pos, normal_vector)
+        / normal_vector_norm;
+        
+        rotate_about_x (normal_vector, nuc->eta);
+        rotate_about_y (normal_vector, nuc->phi);
+        rotate_about_z (normal_vector, nuc->theta);
+        
+        part_1->force[X] += f * normal_vector[X];
+        part_1->force[Y] += f * normal_vector[Y];
+        part_1->force[Z] += f * normal_vector[Z];
+    }
+}
+
+// nucleolus interaction //
+void nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc, const char interaction_type ) {
+    
+    //核小体中心から粒子へのベクトル
+    double nuc_to_pos[DIMENSION] = { part_1->position[X] - nuc->position[X],
+        part_1->position[Y] - nuc->position[Y],
+        part_1->position[Z] - nuc->position[Z]};
+    
+    // 核小体座標系に変換 //
+    //位置座標をx-y平面で-theta回転
+    rotate_about_z (nuc_to_pos, -nuc->theta );
+    // x-z平面
+    rotate_about_y (nuc_to_pos, -nuc->phi);
+    // y-z平面
+    rotate_about_x (nuc_to_pos, -nuc->eta);
+    
     double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1 )
     + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2 )
     + nuc_to_pos[Z] * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 );
@@ -705,7 +750,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         }
     }
     
-    for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_potential (&part [hmm_list [loop]], nuc, spb);
+//    for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_potential (&part [hmm_list [loop]], nuc, spb);
 
     #pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
@@ -920,6 +965,8 @@ void update_radius (Particle *part, const char operation) {
     }
 }
 
+
+
 void write_coordinate (Particle *part, const unsigned int time, const char *dir) {
     
     unsigned int loop;
@@ -1001,6 +1048,10 @@ int main ( int argc, char **argv ) {
         Read_structure (nuc, spb, stable_no);
         Particle_initialization (part, nuc, spb, &dsfmt);
         
+        nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
+        nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
+        nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
+        
         Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
         
         for (loop = 1; loop <= hmm_list[0]; loop++) {
@@ -1009,7 +1060,7 @@ int main ( int argc, char **argv ) {
             
             part_1 = &part[ hmm_list[loop]];
             
-            printf ("%d %lf %lf\n", hmm_list[loop], part_1->nuc_mean [part_1->hmm_status], part_1->spb_mean [part_1->hmm_status]);
+//            printf ("%d %lf %lf\n", hmm_list[loop], part_1->nuc_mean [part_1->hmm_status], part_1->spb_mean [part_1->hmm_status]);
 //            printf ("%d status %d\n", hmm_list[loop], part[ hmm_list[loop]].hmm_status);
         }
 
@@ -1048,6 +1099,11 @@ int main ( int argc, char **argv ) {
     
     Save_settings (directory, start, calculation_max);
     
+    unsigned int nuc_enlarge, enlarge_count;
+    printf ("\n Nucleolus enlargement (yes:1, no:0) : ");
+    scanf ("%d", &nuc_enlarge);
+    if (nuc_enlarge == 1) enlarge_count = 0;
+    
     for ( unsigned int time = 1; time <= calculation_max; time++) {
 
         printf ("\t Now calculating...  time = %d \r", time);
@@ -1061,6 +1117,14 @@ int main ( int argc, char **argv ) {
         write_coordinate (part, start + time, directory);
 
         if (argc == 4) update_radius (part, 'c');
+        if ( time % 100 == 0 && enlarge_count < 9 ) {
+            
+            nuc->al1 += NUCLEOLUS_AXIS_1 * 0.1;
+            nuc->al2 += NUCLEOLUS_AXIS_2 * 0.1;
+            nuc->al3 += NUCLEOLUS_AXIS_3 * 0.1;
+            
+            enlarge_count++;
+        }
     }
     
     // メモリ解放 //
