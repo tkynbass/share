@@ -1041,11 +1041,10 @@ int main ( int argc, char **argv ) {
     
     if (argc == 5 ) {
         
-        total_time = atoi (argv[1]);
-        calculation_max = atoi (argv[2]);
-        stable_no = atoi (argv[3]);
-        sample_no = atoi (argv[4]);
-        calc_phase = atoi (argv[5]);
+        stable_no = atoi (argv[1]);
+        sample_no = atoi (argv[2]);
+        total_time = atoi (argv[3]);
+        calc_phase = atoi (argv[4]);
         
         dsfmt_init_gen_rand (&dsfmt, sample_no);
         sprintf (directory, "%d_%d", stable_no, sample_no);
