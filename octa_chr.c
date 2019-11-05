@@ -1106,6 +1106,7 @@ int main ( int argc, char **argv ) {
         nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
     }else{
         
+        enlarge_count = 100;
         nuc->al1 = NUCLEOLUS_AXIS_1;
         nuc->al2 = NUCLEOLUS_AXIS_2;
         nuc->al3 = NUCLEOLUS_AXIS_3;
@@ -1124,13 +1125,18 @@ int main ( int argc, char **argv ) {
         write_coordinate (part, start + time, directory);
 
         if (argc == 4) update_radius (part, 'c');
-        if ( time % 100 == 0 && enlarge_count < 9 ) {
+        if ( time % 10 == 0 && nuc->al1 < NUCLEOLUS_AXIS_1 ) {
             
-            nuc->al1 += NUCLEOLUS_AXIS_1 * 0.1;
-            nuc->al2 += NUCLEOLUS_AXIS_2 * 0.1;
-            nuc->al3 += NUCLEOLUS_AXIS_3 * 0.1;
+            nuc->al1 += NUCLEOLUS_AXIS_1 * 0.01;
+            nuc->al2 += NUCLEOLUS_AXIS_2 * 0.01;
+            nuc->al3 += NUCLEOLUS_AXIS_3 * 0.01;
             
-            enlarge_count++;
+            if (nuc->al1 > NUCLEOLUS_AXIS_1) {
+                
+                nuc->al1 = NUCLEOLUS_AXIS_1;
+                nuc->al2 = NUCLEOLUS_AXIS_2;
+                nuc->al3 = NUCLEOLUS_AXIS_3;
+            }
         }
     }
     
