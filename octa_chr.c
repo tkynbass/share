@@ -1048,10 +1048,6 @@ int main ( int argc, char **argv ) {
         Read_structure (nuc, spb, stable_no);
         Particle_initialization (part, nuc, spb, &dsfmt);
         
-        nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
-        nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
-        nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
-        
         Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
         
         for (loop = 1; loop <= hmm_list[0]; loop++) {
@@ -1102,7 +1098,18 @@ int main ( int argc, char **argv ) {
     unsigned int nuc_enlarge, enlarge_count;
     printf ("\n Nucleolus enlargement (yes:1, no:0) : ");
     scanf ("%d", &nuc_enlarge);
-    if (nuc_enlarge == 1) enlarge_count = 0;
+    if (nuc_enlarge == 1) {
+        
+        enlarge_count = 0;
+        nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
+        nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
+        nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
+    }else{
+        
+        nuc->al1 = NUCLEOLUS_AXIS_1;
+        nuc->al2 = NUCLEOLUS_AXIS_2;
+        nuc->al3 = NUCLEOLUS_AXIS_3;
+    }
     
     for ( unsigned int time = 1; time <= calculation_max; time++) {
 
