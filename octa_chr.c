@@ -730,7 +730,7 @@ void Noise (double *force, dsfmt_t *dsfmt) {
 }
 
 // 各stepごとの座標計算 //
-void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mitigation, dsfmt_t *dsfmt, const unsigned int *hmm_list) {
+void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mitigation, dsfmt_t *dsfmt, const unsigned int *hmm_list, unsigned int calc_phase) {
     
     unsigned int loop;
     Particle *part_1, *part_2, *part_3;
@@ -823,24 +823,27 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                 break;
 
-            case Centromere:
+            case Centromere:    // calc_phase >= 1のときのみ
 
-//                spring (part_1, &part[loop + 1], 1);
-//                spring (part_1, &part[loop - 1], 1);
-//
-//                spring (part_1, &part[loop + 2], 2);
-//                spring (part_1, &part[loop - 2], 2);
-//
-//                spring (part_1, &part[loop + 3], 3);
-//                spring (part_1, &part[loop - 3], 3);
-//
-//                nucleolus_interaction (part_1, nuc, 'E');
-//                membrane_interaction (part_1, 'E');
-//                spring (part_1, spb, 0);
+                if (calc_phase > 0) {
+                    
+                    spring (part_1, &part[loop + 1], 1);
+                    spring (part_1, &part[loop - 1], 1);
 
-//                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
-//                particle_exclusion (part, part_1);
-//
+                    spring (part_1, &part[loop + 2], 2);
+                    spring (part_1, &part[loop - 2], 2);
+
+                    spring (part_1, &part[loop + 3], 3);
+                    spring (part_1, &part[loop - 3], 3);
+
+                    nucleolus_interaction (part_1, nuc, 'E');
+                    membrane_interaction (part_1, 'E');
+                    spring (part_1, spb, 0);
+
+                    if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                    particle_exclusion (part, part_1);
+                }
+
                 break;
 
             case Telomere:
@@ -1022,7 +1025,7 @@ void Save_settings (const char *dir, const int start, const int calculation_max)
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, calculation_max, stable_no, sample_no, calc_state;
+    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase;
     char output_file[256], directory[256];
     double mem_al[3];
     
@@ -1038,11 +1041,11 @@ int main ( int argc, char **argv ) {
     
     if (argc == 5 ) {
         
-        start = atoi (argv[1]);
+        total_time = atoi (argv[1]);
         calculation_max = atoi (argv[2]);
         stable_no = atoi (argv[3]);
         sample_no = atoi (argv[4]);
-        calc_state = atoi (argv[5]);
+        calc_phase = atoi (argv[5]);
         
         dsfmt_init_gen_rand (&dsfmt, sample_no);
         sprintf (directory, "%d_%d", stable_no, sample_no);
@@ -1073,45 +1076,77 @@ int main ( int argc, char **argv ) {
     }
     Save_settings (directory, start, calculation_max);
     
-    if (calc_state < 2) {
+    nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
+    nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
+    nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
+    
+    if (calc_phase == 0) {  // 粒子径 増加
         
-        enlarge_count = 0;
-        nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
-        nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
-        nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
-    }else{
-        
-        nuc->al1 = NUCLEOLUS_AXIS_1;
-        nuc->al2 = NUCLEOLUS_AXIS_2;
-        nuc->al3 = NUCLEOLUS_AXIS_3;
+        for ( unsigned int time = 1; time <= RADIUS_MITI_STEP; time++) {
+            
+            total_time++;
+            printf ("\t Now calculating... phase 0 / time = %d \r", time);
+            fflush (stdout);
+            
+            for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                
+                calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
+            }
+            
+            write_coordinate (part, total_time, directory);
+            
+            update_radius (part, 'c');
+        }
+        calc_phase++;
     }
     
-    for ( unsigned int time = 1; time <= calculation_max; time++) {
-
-        printf ("\t Now calculating...  time = %d \r", time);
-        fflush (stdout);
-
-        for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-
-            calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list);
-        }
-
-        write_coordinate (part, start + time, directory);
-
-        if (argc == 4) update_radius (part, 'c');
-        if ( time % 10 == 0 && nuc->al1 < NUCLEOLUS_AXIS_1 ) {
+    if (calc_phase == 1) {  // セントロメア:free → 緩和
+        
+        for ( unsigned int time = 1; time <= 20000; time++) {
             
-            nuc->al1 += NUCLEOLUS_AXIS_1 * 0.01;
-            nuc->al2 += NUCLEOLUS_AXIS_2 * 0.01;
-            nuc->al3 += NUCLEOLUS_AXIS_3 * 0.01;
+            total_time++;
+            printf ("\t Now calculating... phase 1 / time = %d \r", time);
+            fflush (stdout);
             
-            if (nuc->al1 > NUCLEOLUS_AXIS_1) {
+            for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
                 
-                nuc->al1 = NUCLEOLUS_AXIS_1;
-                nuc->al2 = NUCLEOLUS_AXIS_2;
-                nuc->al3 = NUCLEOLUS_AXIS_3;
+                calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
+            }
+            
+            write_coordinate (part, total_time, directory);
+        }
+        calc_phase++;
+    }
+    
+    if (calc_phase == 2) {  // 核小体 増大
+        
+        for ( unsigned int time = 1; time <= 10000; time++) {
+            
+            total_time++;
+            printf ("\t Now calculating... phase 2 / time = %d \r", time);
+            fflush (stdout);
+            
+            for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                
+                calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
+            }
+            write_coordinate (part,total_time, directory);
+            
+            if ( time % 10 == 0 && nuc->al1 < NUCLEOLUS_AXIS_1 ) {
+                
+                nuc->al1 += NUCLEOLUS_AXIS_1 * 0.01;
+                nuc->al2 += NUCLEOLUS_AXIS_2 * 0.01;
+                nuc->al3 += NUCLEOLUS_AXIS_3 * 0.01;
+                
+                if (nuc->al1 > NUCLEOLUS_AXIS_1) {
+                    
+                    nuc->al1 = NUCLEOLUS_AXIS_1;
+                    nuc->al2 = NUCLEOLUS_AXIS_2;
+                    nuc->al3 = NUCLEOLUS_AXIS_3;
+                }
             }
         }
+//        calc_phase++;
     }
     
     // メモリ解放 //
