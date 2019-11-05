@@ -1000,7 +1000,7 @@ void write_coordinate (Particle *part, const unsigned int time, const char *dir)
     fclose (fpw);
 }
 
-void Save_settings (const char *dir, const int start, const int calculation_max) {
+void Save_settings (const char *dir, const int start, const int phase) {
     
     FILE *fpw;
     char filename[256];
@@ -1014,7 +1014,7 @@ void Save_settings (const char *dir, const int start, const int calculation_max)
         exit (1);
     }
     
-    fprintf (fpw, "start = %d\t end = %d\n\n", start, start+calculation_max);
+    fprintf (fpw, "start = %d\t phase\n\n", start, phase);
     
     fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %de\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
@@ -1073,7 +1073,7 @@ int main ( int argc, char **argv ) {
     for (loop = 1; loop <= hmm_list[0]; loop++) {
         Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
     }
-    Save_settings (directory, start, calculation_max);
+    Save_settings (directory, start, calc_phase);
     
     nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
     nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
