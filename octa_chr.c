@@ -1014,7 +1014,7 @@ void Save_settings (const char *dir, const int start, const int phase) {
         exit (1);
     }
     
-    fprintf (fpw, "start = %d\t phase\n\n", start, phase);
+    fprintf (fpw, "start = %d\t phase %d\n\n", start, phase);
     
     fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %de\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
@@ -1051,7 +1051,7 @@ int main ( int argc, char **argv ) {
         
         Read_structure (nuc, spb, stable_no);
         
-        if (start == 0) {
+        if (total_time == 0) {
             
             Particle_initialization (part, nuc, spb, &dsfmt);
             write_coordinate (part, 0, directory);
@@ -1059,7 +1059,7 @@ int main ( int argc, char **argv ) {
         }
         else {
             
-            Read_coordinate (part, start, directory);
+            Read_coordinate (part, total_time, directory);
         }
     
     }
@@ -1073,7 +1073,7 @@ int main ( int argc, char **argv ) {
     for (loop = 1; loop <= hmm_list[0]; loop++) {
         Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
     }
-    Save_settings (directory, start, calc_phase);
+    Save_settings (directory, total_time, calc_phase);
     
     nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
     nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
