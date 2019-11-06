@@ -743,11 +743,6 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         part_1->force[X] = 0.0;
         part_1->force[Y] = 0.0;
         part_1->force[Z] = 0.0;
-        
-        if (loop != CENT_LIST[0] && loop != CENT_LIST[1] && loop != CENT_LIST[2]) {
-            
-            Noise (part_1->force, dsfmt);
-        }
     }
     
 //    for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_potential (&part [hmm_list [loop]], nuc, spb);
@@ -760,6 +755,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         switch (part_1->particle_type) {
             case Normal:
 
+                Noise (part_1->force, dsfmt);
                 // spring 1 //
                 spring (part_1, &part [loop + 1], 1);
                 spring (part_1, &part [loop - 1], 1);
@@ -827,6 +823,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                 if (calc_phase > 0) {
                     
+                    Noise (part_1->force, dsfmt);
+                    
                     spring (part_1, &part[loop + 1], 1);
                     spring (part_1, &part[loop - 1], 1);
 
@@ -848,6 +846,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
             case Telomere:
 
+                Noise (part_1->force, dsfmt);
+                
                 switch (loop) {
                     case TELO1_UP:
                     case TELO2_UP:
@@ -871,7 +871,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                         break;
                 }
-
+                
                 spb_exclusion (part_1, spb);
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, nuc, 'E');
@@ -883,6 +883,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
             case rDNA:
 
+                Noise (part_1->force, dsfmt);
+                
                 switch (loop) {
                     case rDNA_UP:
 
