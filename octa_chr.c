@@ -380,9 +380,9 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         
         part_1 = &part[ rDNA_LIST[loop]];
         
-        part_1->position[X] = NUCLEOLUS_AXIS_1 * sin (phi) * cos (theta [loop]);
-        part_1->position[Y] = NUCLEOLUS_AXIS_2 * sin (phi) * sin (theta [loop]);
-        part_1->position[Z] = NUCLEOLUS_AXIS_3 * cos (phi);
+        part_1->position[X] = nuc->al1 * sin (phi) * cos (theta [loop]);
+        part_1->position[Y] = nuc->al2 * sin (phi) * sin (theta [loop]);
+        part_1->position[Z] = nuc->al3 * cos (phi);
         
         rotate_about_x (part_1->position, nuc->eta);
         rotate_about_y (part_1->position, nuc->phi);
