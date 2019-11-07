@@ -1047,23 +1047,6 @@ int main ( int argc, char **argv ) {
         sample_no = atoi (argv[2]);
         total_time = atoi (argv[3]);
         calc_phase = atoi (argv[4]);
-        
-        dsfmt_init_gen_rand (&dsfmt, sample_no);
-        sprintf (directory, "%d_%d", stable_no, sample_no);
-        
-        Read_structure (nuc, spb, stable_no);
-        
-        if (total_time == 0) {
-            
-            Particle_initialization (part, nuc, spb, &dsfmt);
-            write_coordinate (part, 0, directory);
-            update_radius (part, 's');
-        }
-        else {
-            
-            Read_coordinate (part, total_time, directory);
-        }
-    
     }
     else {
         
@@ -1071,15 +1054,31 @@ int main ( int argc, char **argv ) {
         exit (1);
     }
     
+    dsfmt_init_gen_rand (&dsfmt, sample_no);
+    sprintf (directory, "%d_%d", stable_no, sample_no);
+    
+    Read_structure (nuc, spb, stable_no);
+
+    nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
+    nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
+    nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
+    
+    if (total_time == 0) {
+        
+        Particle_initialization (part, nuc, spb, &dsfmt);
+        write_coordinate (part, 0, directory);
+        update_radius (part, 's');
+    }
+    else {
+        
+        Read_coordinate (part, total_time, directory);
+    }
+    
     Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     for (loop = 1; loop <= hmm_list[0]; loop++) {
         Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
     }
     Save_settings (directory, total_time, calc_phase);
-    
-    nuc->al1 = 0.1 * NUCLEOLUS_AXIS_1;
-    nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
-    nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
     
     if (calc_phase == 0) {  // 粒子径 増加
         
