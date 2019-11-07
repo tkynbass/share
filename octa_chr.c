@@ -40,7 +40,7 @@
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+3)
-#define LIST_INTERVAL ( 200 )   // リスト化の間隔
+//#define LIST_INTERVAL ( 200 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
@@ -74,6 +74,8 @@ const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
 const unsigned int rDNA_LIST[] = { 2024, 2515};
 const double ORIGIN[] = { 0.0, 0.0, 0.0};
+
+const unsigned int LIST_INTERVAL[] = {100, 500, 500};
 
 //#define POTENTIAL_DELTA (1.0e-7)
 
@@ -814,7 +816,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 nucleolus_interaction (part_1, nuc, 'E');
                 membrane_interaction (part_1, 'E');
 
-                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
 
                 break;
@@ -838,7 +840,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     membrane_interaction (part_1, 'E');
                     spring (part_1, spb, 0);
 
-                    if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                    if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                     particle_exclusion (part, part_1);
                 }
 
@@ -876,7 +878,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 membrane_interaction (part_1, 'F');
                 nucleolus_interaction (part_1, nuc, 'E');
 
-                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
                 
                 break;
@@ -911,7 +913,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 membrane_interaction (part_1, 'E');
                 nucleolus_interaction (part_1, nuc, 'F');
 
-                if ( mitigation % LIST_INTERVAL == 0 ) make_ve_list (part, part_1, loop);
+                if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
 
                 break;
@@ -1018,8 +1020,8 @@ void Save_settings (const char *dir, const int start, const int phase) {
     
     fprintf (fpw, "start = %d\t phase %d\n\n", start, phase);
     
-    fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = %de\nK_EXCLUDE = %2.1e\n",
-             K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL, K_EXCLUDE);
+    fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = {%d, %d, %d}\nK_EXCLUDE = %2.1e\n",
+             K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL[0], LIST_INTERVAL[1], LIST_INTERVAL[2], K_EXCLUDE);
     fprintf (fpw, "DELTA = %2.1e\nMITIGATION_INTERVAL = %2.1e\n\n\n", DELTA, MITIGATION_INTERVAL);
     
     fclose (fpw);
