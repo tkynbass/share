@@ -36,7 +36,7 @@
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-4 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
-#define K_EXCLUDE ( 1.0 )
+#define K_EXCLUDE ( 0.7 )   // 粒子間, 粒子-SPB間の排除体積効果
 #define K_HMM (1.0e-2) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
@@ -52,7 +52,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 
 #define KINEMATIC_MYU (0.000890)
-#define DIFFUSION (1.0e-3)
+#define DIFFUSION (1.0e-2)
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define CENT_INIT_RADIUS (1.0)  // セントロメア粒子の初期半径
@@ -1121,7 +1121,7 @@ int main ( int argc, char **argv ) {
     
     if (calc_phase == 1) {  // セントロメア:free → 緩和
         
-        for ( unsigned int time = 1; time <= 20000; time++) {
+        for ( unsigned int time = 1; time <= 10000; time++) {
             
             total_time++;
             printf ("\t Now calculating... phase 1 / time = %d \r", time);
