@@ -65,6 +65,10 @@
 #define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
 #define MEMBRANE_AXIS_3 ( 0.75 * MEMBRANE_AXIS_1 )
 
+#define INV2_MAL1 ( 1.0 / MEMBRANE_AXIS_1 / MEMBRANE_AXIS_1)
+#define INV2_MAL2 ( 1.0 / MEMBRANE_AXIS_2 / MEMBRANE_AXIS_2)
+#define INV2_MAL3 ( 1.0 / MEMBRANE_AXIS_3 / MEMBRANE_AXIS_3)
+
 #define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH ) // ~=16.3
 #define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
@@ -527,31 +531,30 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     }
 }
 
-
 void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E: exclude */) {
     
     double dist = Euclid_norm (part_1->position, ORIGIN);
     
-    double ellipsoid_dist = part_1->position[X] * part_1->position[X] / ( MEMBRANE_AXIS_1 * MEMBRANE_AXIS_1 )
-    + part_1->position[Y] * part_1->position[Y] / ( MEMBRANE_AXIS_2 * MEMBRANE_AXIS_2 )
-    + part_1->position[Z] * part_1->position[Z] / ( MEMBRANE_AXIS_3 * MEMBRANE_AXIS_3 );
+    double ellipsoid_dist = part_1->position[X] * part_1->position[X] * INV2_MAL1
+    + part_1->position[Y] * part_1->position[Y] * INV2_MAL2
+    + part_1->position[Z] * part_1->position[Z] * INV2_MAL3;
     
     if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
         
         // 法線ベクトル
-        double normal_vector[] = { 2.0 * part_1->position[X] / ( MEMBRANE_AXIS_1 * MEMBRANE_AXIS_1),
-            2.0 * part_1->position[Y] / ( MEMBRANE_AXIS_2 * MEMBRANE_AXIS_2),
-            2.0 * part_1->position[Z] / ( MEMBRANE_AXIS_3 * MEMBRANE_AXIS_3) };
+        double normal_vector[] = { 2.0 * part_1->position[X] * INV2_MAL1,
+            2.0 * part_1->position[Y] * INV2_MAL2,
+            2.0 * part_1->position[Z] * INV2_MAL3 };
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
         
         double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
                                                                   + part_1->position[Y] * normal_vector[Y]
-                                                                  + part_1->position[Z] * normal_vector[Z]);
+                                                                  + part_1->position[Z] * normal_vector[Z]) / normal_vector_norm;
         
-        part_1->force[X] += f * normal_vector[X] / normal_vector_norm;
-        part_1->force[Y] += f * normal_vector[Y] / normal_vector_norm;
-        part_1->force[Z] += f * normal_vector[Z] / normal_vector_norm;
+        part_1->force[X] += f * normal_vector[X];
+        part_1->force[Y] += f * normal_vector[Y];
+        part_1->force[Z] += f * normal_vector[Z];
     }
 }
 
@@ -752,8 +755,11 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         part_1->force[X] = 0.0;
         part_1->force[Y] = 0.0;
         part_1->force[Z] = 0.0;
+    }
+    
+    if (calc_phase > 0) {
         
-        Noise (part_1->force, dsfmt);
+        for (loop = 0; loop < NUMBER_MAX; loop++) Noise (part[loop].force, dsfmt);
     }
     
     
