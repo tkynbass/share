@@ -19,7 +19,6 @@
 
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 9.66e-8 )   //長さの単位 (粒子径)
-#define TRANS_LENGTH ( 7 / 9.66) // r7 → r9 に変換
 
 #define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
 #define TEMPARTURE ( 300 )
@@ -34,13 +33,13 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e-4 )     //2つ隣
+#define K_BOND_2 ( 1.0e-2 )     //2つ隣
 #define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 0.7 )   // 粒子間, 粒子-SPB間の排除体積効果
 #define K_HMM (1.0e-2) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
-#define MITIGATION_INTERVAL (1.0e+3)
+#define MITIGATION_INTERVAL (1.0e+2)
 //#define LIST_INTERVAL ( 200 )   // リスト化の間隔
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
@@ -277,11 +276,6 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     
     fclose (fpr);
     
-    for (loop = 0; loop < DIMENSION; loop++) {
-        
-        nuc->position [loop] *= TRANS_LENGTH;
-        spb->position [loop] *= TRANS_LENGTH;
-    }
 }
 
 void Read_hmm_status (Particle *part, unsigned int *hmm_list) {
