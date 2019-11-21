@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "/home/gensho/tkym/dSFMT/dSFMT.h"
 #include <time.h>
 //#include <omp.h>
 
@@ -130,7 +129,7 @@ void Read_init_position (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned
     char filename[128], dummy[256];
     FILE *fpr;
     
-    sprintf (filename, "stable_spb.txt", stable_no);
+    sprintf (filename, "stable_spb.txt");
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -172,12 +171,10 @@ void Read_init_position (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned
     
 }
 
-void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *nuc_gravity, const unsigned int stable_no) {
+void StructInitilization (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigned int stable_no) {
     
     Nuc *ncl;
     unsigned int loop, loop2, target;
-
-//    RandomSetting (nuc, spb, dsfmt, nuc_gravity, stable_no);
 
     Read_init_position (nuc, spb, nuc_gravity, stable_no);
     
@@ -704,18 +701,15 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const doubl
     Fix_nucleolus_gravity (nuc, nuc_gravity);
     
     Def_NucMem_pt (nuc);
-//    Def_SpbMem_pt (spb);
     Def_NucSpb_pt (nuc, spb);
     
     Keep_ellipsoid (nuc);
     
     TermDIst_NucMem (nuc, 'c');
-//    TermDIst_SpbMem (spb, 'c');
     TermDIst_NucSpb (nuc, spb, k_sn, 'c');
     
     // 核膜との排除体積　および　核膜上に固定
     for (lp = 0; lp < SIZE; lp++) Membrane_interaction (nuc[lp].position, nuc[lp].force, 'E');
-//    Membrane_interaction (spb->position, spb->force, 'F');
     
     for (lp = 0; lp < SIZE; lp++) {
         
@@ -725,10 +719,6 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const doubl
         ncl->position[Y] += INV_MYU * DELTA * ncl->force[Y];
         ncl->position[Z] += INV_MYU * DELTA * ncl->force[Z];
     }
-    
-//    spb->position[X] += INV_MYU * DELTA * spb->force[X];
-//    spb->position[Y] += INV_MYU * DELTA * spb->force[Y];
-//    spb->position[Z] += INV_MYU * DELTA * spb->force[Z];
 }
 
 double Sum_force (Nuc *nuc, Spb *spb) {
@@ -813,12 +803,8 @@ int main ( int argc, char **argv ){
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
-    //dSFMT
-    dsfmt_t dsfmt;
-    dsfmt_init_gen_rand(&dsfmt, sample_no);
-    
     // 構造体の初期化
-    StructInitilization (nuc, spb, &dsfmt, nuc_gravity, stable_no);
+    StructInitilization (nuc, spb, nuc_gravity, stable_no);
     
     Write_row_data (init_file, nuc, spb, sample_no);
     Write_coordinate (nuc, spb, 0, sample_no, stable_no);
