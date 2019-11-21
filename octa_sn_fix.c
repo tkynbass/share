@@ -233,7 +233,7 @@ void StructInitilization (Nuc *nuc, Spb *spb, dsfmt_t *dsfmt, double *nuc_gravit
             
             if ( AX_NUM[loop] == AX_NUM[target]) {
                 
-                ncl->len_list[loop] = 2.0 * NAL_LIST[loop];
+                ncl->len_list[loop2] = 2.0 * NAL_LIST[loop];
             }
             else {
                 

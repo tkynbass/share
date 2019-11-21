@@ -24,7 +24,7 @@
 #define MEMBRANE_AXIS_2 ( 0.849 * MEMBRANE_AXIS_1 )  // ~1.6
 #define MEMBRANE_AXIS_3 ( 0.737 * MEMBRANE_AXIS_1 )  // ~1.4
 
-#define NUCLEOLUS_AXIS_1 ( 1.147035e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_1 ( 1.147035e-6 / LENGTH )  // 11.874
 #define NUCLEOLUS_AXIS_2 ( 0.895 * NUCLEOLUS_AXIS_1 )
 #define NUCLEOLUS_AXIS_3 ( 0.783 * NUCLEOLUS_AXIS_1 )
 
@@ -192,11 +192,11 @@ void StructInitilization (Nuc *nuc, Spb *spb, double *nuc_gravity, const unsigne
             
             if ( AX_NUM[loop] == AX_NUM[target]) {
                 
-                ncl->len_list[loop] = 2.0 * NAL_LIST[loop];
+                ncl->len_list[loop2] = 2.0 * NAL_LIST[loop];
             }
             else {
                 
-                ncl->len_list [loop] = sqrt ( NAL_LIST[loop]*NAL_LIST[loop] + NAL_LIST [target] * NAL_LIST[target] );
+                ncl->len_list [loop2] = sqrt ( NAL_LIST[loop]*NAL_LIST[loop] + NAL_LIST [target] * NAL_LIST[target] );
             }
 //            printf ("%4.2f ", ncl->len_list[loop2]);
         }
