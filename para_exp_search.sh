@@ -1,7 +1,4 @@
-K_MN=$1
-K_SN=$2
-K_SM=$3
-MAX=$4
+MAX=$1
 
 ##### define option (i:insertion) #####
 #while getopts "s:" option
@@ -26,6 +23,12 @@ START=0
 
 CLASS=$((${MAX}/10000))
 
+for K_MN in `seq 0 7`
+do
+for K_SN in `seq 0 $((7 - ${i}))`
+do
+K_SM=$((7 - ${K_MN} - ${K_SN}))
+
 if [ ! -e ${K_MN}_${SN}_${K_SM}/ ]
 then
 mkdir ${K_SN}
@@ -41,12 +44,7 @@ rm init.txt
 fi
 fi
 
-for K_MN in `seq 0 7`
-do
-for K_SN in `seq 0 $((7 - ${i}))`
-do
-K_SM=$((7 - ${K_MN} - ${K_SN}))
-parallel -j 5 "sh exp_simulate.sh {} $((${K_MN} + 1)) $((${K_SN} + 1)) $((${K_SM} + 1))" ::: `seq ${START}  $((${CLASS}-1))`
+parallel -j 7 "sh exp_simulate.sh {} $((${K_MN} + 1)) $((${K_SN} + 1)) $((${K_SM} + 1))" ::: `seq ${START}  $((${CLASS}-1))`
 done
 done
 
