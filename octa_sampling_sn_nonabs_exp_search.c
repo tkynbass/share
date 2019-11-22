@@ -624,7 +624,7 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
     
     double dist = Euclid_norm (pos, ORIGIN);
     
-    double ellipsoid_dist = pos[X] * pos[X] * INV2_MAL + pos[Y] * pos[Y] * INV2_MAL2 + pos[Z] * pos[Z] * INV2_MAL3;
+    double ellipsoid_dist = pos[X] * pos[X] * INV2_MAL1 + pos[Y] * pos[Y] * INV2_MAL2 + pos[Z] * pos[Z] * INV2_MAL3;
     
     if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
         
@@ -664,7 +664,7 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const doubl
     Keep_ellipsoid (nuc);
     
     TermDIst_NucMem (nuc, k_mn, 'c');
-    TermDIst_SpbMem (spb, k_sm 'c');
+    TermDIst_SpbMem (spb, k_sm, 'c');
     TermDIst_NucSpb (nuc, spb, k_sn, 'c');
     
     // 核膜との排除体積　および　核膜上に固定
@@ -760,13 +760,13 @@ int main ( int argc, char **argv ){
     StructInitilization (nuc, spb, &dsfmt);
     
     Write_row_data (init_file, nuc, spb, sample_no);
-    Write_coordinate (nuc, spb, 0, sample_no, k_sn);
+//    Write_coordinate (nuc, spb, 0, sample_no, k_sn);
 //    printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e \r", DELTA, WRITE_INTERVAL);
     
     // 混合ガウスポテンシャルのパラメータ読み込み
-    TermDIst_NucMem (NULL, 's');
-    TermDIst_SpbMem (NULL, 's');
-    TermDIst_NucSpb (NULL, NULL, 0, 's');
+    TermDIst_NucMem (NULL, k_mn, 's');
+    TermDIst_SpbMem (NULL, k_sm, 's');
+    TermDIst_NucSpb (NULL, NULL, k_sn, 's');
     // 計算
     for ( step = 1; step <= calc_max; step++) {
 
