@@ -46,7 +46,7 @@ do
 for K_SN in `seq 0 $((7 - ${i}))`
 do
 K_SM=$((7 - ${K_MN} - ${K_SN}))
-parallel -j 5 "sh exp_simulate.sh {} ${K_MN} ${K_SN} ${K_SM}" ::: `seq ${START}  $((${CLASS}-1))`
+parallel -j 5 "sh exp_simulate.sh {} $((${K_MN} + 1)) $((${K_SN} + 1)) $((${K_SM} + 1))" ::: `seq ${START}  $((${CLASS}-1))`
 done
 done
 
