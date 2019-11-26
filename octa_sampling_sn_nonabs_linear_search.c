@@ -34,8 +34,8 @@
 
 #define WRITE_INTERVAL (1.0e+3)
 
-#define MEMBRANE_EXCLUDE (1.0)
-#define K_KEEP (1.0e+1)
+#define MEMBRANE_EXCLUDE (50.0)
+#define K_KEEP (5.0e+1)
 #define K_EXPERIENCE (5.0e+0) // 実効ポテンシャルの係数
 
 // SPBのノイズ用
@@ -432,9 +432,9 @@ void TermDIst_NucMem (Nuc *nuc, const double k_mn, const char option) {  // 核�
                 
                 fscanf (fpr, "%s %lf %lf %lf\n", dummy, &pcorr[0], &pcorr[1], &pcorr[2]);
                 
-                pcorr_ratio[type_lp][nuc_lp][0] = k_mn * (1 + pcorr[0]);
-                pcorr_ratio[type_lp][nuc_lp][1] = k_mn * (1 + pcorr[1]);
-                pcorr_ratio[type_lp][nuc_lp][2] = k_mn * (1 + pcorr[2]);
+                pcorr_ratio[type_lp][nuc_lp][0] = k_mn * exp (pcorr[0]);
+                pcorr_ratio[type_lp][nuc_lp][1] = k_mn * exp (pcorr[1]);
+                pcorr_ratio[type_lp][nuc_lp][2] = k_mn * exp (pcorr[2]);
             }
         }
         fclose (fpr);
@@ -519,7 +519,7 @@ void TermDIst_SpbMem ( Spb *spb, const double k_sm, const char option) {  // SPB
             for (type_lp = 0; type_lp < 2; type_lp++){
                 
                 fscanf (fpr, "%s %lf\n", dummy, &ratio);
-                pcorr_ratio[type_lp][mem_lp] = k_sm * (1 + ratio);
+                pcorr_ratio[type_lp][mem_lp] = k_sm * exp (ratio);
             }
         }
         fclose (fpr);
@@ -611,7 +611,7 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const double k_sn, const char option) 
             for (type_lp = 0; type_lp < 2; type_lp++){
 
                 fscanf (fpr, "%s %lf\n", dummy, &ratio);
-                pcorr_ratio[type_lp][nuc_lp] = k_sn * (1 + ratio);
+                pcorr_ratio[type_lp][nuc_lp] = k_sn * exp(ratio);
             }
         }
         fclose (fpr);
@@ -742,17 +742,14 @@ int main ( int argc, char **argv ){
     Spb *spb;
     unsigned int sample_no = atoi (argv[1]);
     unsigned int step, mitigation, calc_max = atoi (argv[2]);
-    int k_mn = atoi (argv[3]);   // 核小体-核膜　ポテンシャルの指数係数
-    int k_sn = atoi (argv[4]);
-    int k_sm = atoi (argv[5]);
+    const int k_mn = atoi (argv[3]);   // 核小体-核膜　ポテンシャルの指数係数
+    const int k_sn = atoi (argv[4]);
+    const int k_sm = atoi (argv[5]);
     
     char init_file[128], result_file[128];
     sprintf (init_file, "%d_%d_%d/init.txt", k_mn, k_sn, k_sm);
     sprintf (result_file, "%d_%d_%d/result.txt", k_mn, k_sn, k_sm);
-
-//    printf ("\t %s\n", result_file);
-//    fflush (stdout);
-
+    
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
     //dSFMT

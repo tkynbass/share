@@ -35,7 +35,7 @@
 #define WRITE_INTERVAL (1.0e+3)
 
 #define MEMBRANE_EXCLUDE (50.0)
-#define K_KEEP (1.0e+1)
+#define K_KEEP (5.0e+1)
 #define K_EXPERIENCE (5.0e+0) // 実効ポテンシャルの係数
 
 // SPBのノイズ用
