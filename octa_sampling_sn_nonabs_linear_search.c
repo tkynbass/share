@@ -36,7 +36,6 @@
 
 #define MEMBRANE_EXCLUDE (50.0)
 #define K_KEEP (5.0e+1)
-#define K_EXPERIENCE (5.0e+0) // 実効ポテンシャルの係数
 
 // SPBのノイズ用
 #define DIFFUSION (5.0e-3)
@@ -375,7 +374,7 @@ void TermDIst_NucMem (Nuc *nuc, const double k_mn, const char option) {  // 核�
                 exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
                 
                 
-                f = - K_EXPERIENCE * ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+                f = - ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
                     / ( dist * (exp1 + exp2));
                 
                 ncl->force[X] += f * (ncl->position[X] - MEM_POS[mem_lp][X]);
@@ -465,7 +464,7 @@ void TermDIst_SpbMem ( Spb *spb, const double k_sm, const char option) {  // SPB
             exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
             exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
             
-            f = - K_EXPERIENCE * ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            f = - ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
             / ( dist * (exp1 + exp2));
             
             spb->force[X] += f * (spb->position[X] - MEM_POS[mem_lp][X]);
@@ -552,7 +551,7 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const double k_sn, const char option) 
             exp1 = exp ( -0.5 * par[2]*par[2] * (dist - par[1])*(dist - par[1]));
             exp2 = exp ( -0.5 * par[5]*par[5] * (dist - par[4])*(dist - par[4]));
             
-            f = - K_EXPERIENCE * ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
+            f = - ratio * ( par[0] * (dist - par[1]) * exp1 + par[3] * (dist - par[4]) *exp2 )
             / ( dist * (exp1 + exp2));
             
 //            printf ("%c f = %lf\n", option, f);
