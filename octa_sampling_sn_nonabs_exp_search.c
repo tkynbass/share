@@ -34,7 +34,7 @@
 
 #define WRITE_INTERVAL (1.0e+3)
 
-#define MEMBRANE_EXCLUDE (1.0)
+#define MEMBRANE_EXCLUDE (50.0)
 #define K_KEEP (1.0e+1)
 #define K_EXPERIENCE (5.0e+0) // 実効ポテンシャルの係数
 
@@ -742,9 +742,9 @@ int main ( int argc, char **argv ){
     Spb *spb;
     unsigned int sample_no = atoi (argv[1]);
     unsigned int step, mitigation, calc_max = atoi (argv[2]);
-    double k_mn = atoi (argv[3]);   // 核小体-核膜　ポテンシャルの指数係数
-    double k_sn = atoi (argv[4]);
-    double k_sm = atoi (argv[5]);
+    const int k_mn = atoi (argv[3]);   // 核小体-核膜　ポテンシャルの指数係数
+    const int k_sn = atoi (argv[4]);
+    const int k_sm = atoi (argv[5]);
     
     char init_file[128], result_file[128];
     sprintf (init_file, "%d_%d_%d/init.txt", k_mn, k_sn, k_sm);

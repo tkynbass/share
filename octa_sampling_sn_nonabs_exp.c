@@ -606,7 +606,7 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const double k_sn, const char option) 
             for (type_lp = 0; type_lp < 2; type_lp++){
 
                 fscanf (fpr, "%s %lf\n", dummy, &ratio);
-                pcorr_ratio[type_lp][nuc_lp] = exp s(ratio);
+                pcorr_ratio[type_lp][nuc_lp] = exp(ratio);
             }
         }
         fclose (fpr);
