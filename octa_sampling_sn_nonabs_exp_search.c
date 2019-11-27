@@ -20,13 +20,18 @@
 #define SIZE (6)    // 各構造体を構成する粒子数
 
 #define MEMBRANE_AXIS_1 ( 1.981780e-6 / LENGTH )
-#define MEMBRANE_AXIS_2 ( 0.849 * MEMBRANE_AXIS_1 )  // ~1.6
-#define MEMBRANE_AXIS_3 ( 0.737 * MEMBRANE_AXIS_1 )  // ~1.4
+#define MEMBRANE_AXIS_2 ( 0.849 * MEMBRANE_AXIS_1 )  // ~1.6um
+#define MEMBRANE_AXIS_3 ( 0.737 * MEMBRANE_AXIS_1 )  // ~1.46057186 um
 
 // 排除体積計算用 (粒子が核外に出ないように半径分短く)
-#define INV2_MAL1 ( 1.0 / (MEMBRANE_AXIS_1 - 1) / (MEMBRANE_AXIS_1 - 1))
-#define INV2_MAL2 ( 1.0 / (MEMBRANE_AXIS_2 - 1) / (MEMBRANE_AXIS_2 - 1))
-#define INV2_MAL3 ( 1.0 / (MEMBRANE_AXIS_3 - 1) / (MEMBRANE_AXIS_3 - 1))
+#define K_ELLIP1_EXCLUDE ( 1.0 / (MEMBRANE_AXIS_1 - 1) / (MEMBRANE_AXIS_1 - 1))
+#define K_ELLIP2_EXCLUDE ( 1.0 / (MEMBRANE_AXIS_2 - 1) / (MEMBRANE_AXIS_2 - 1))
+#define K_ELLIP3_EXCLUDE ( 1.0 / (MEMBRANE_AXIS_3 - 1) / (MEMBRANE_AXIS_3 - 1))
+
+// SPBを核膜に止める際の楕円体係数
+#define K_ELLIP1_FIX ( 1.0 / MEMBRANE_AXIS_1 / MEMBRANE_AXIS_1)
+#define K_ELLIP2_FIX ( 1.0 / MEMBRANE_AXIS_2 / MEMBRANE_AXIS_2)
+#define K_ELLIP3_FIX ( 1.0 / MEMBRANE_AXIS_3 / MEMBRANE_AXIS_3)
 
 #define NUCLEOLUS_AXIS_1 ( 1.147035e-6 / LENGTH )
 #define NUCLEOLUS_AXIS_2 ( 0.895 * NUCLEOLUS_AXIS_1 )
@@ -34,8 +39,8 @@
 
 #define WRITE_INTERVAL (1.0e+3)
 
-#define MEMBRANE_EXCLUDE (50.0)
-#define K_KEEP (5.0e+1)
+#define K_MEMBRANE_EXCLUDE (5.0)
+#define K_KEEP (5.0e+0)
 
 // SPBのノイズ用
 #define DIFFUSION (5.0e-3)
@@ -619,20 +624,18 @@ void TermDIst_NucSpb (Nuc *nuc, Spb *spb, const double k_sn, const char option) 
     //    if (option == 'c') for (lp = 0; lp < 6; lp++) printf ("%lf\n", para_list[fn][0][0][lp]);
 }
 
-void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION], char interaction_type /* F: fix, E: exclude */) {
+void Membrane_exclude ( const double pos[DIMENSION], double force[DIMENSION]) {
     
-    double dist = Euclid_norm (pos, ORIGIN);
+    double ellipsoid_dist = pos[X] * pos[X] * K_ELLIP1_EXCLUDE + pos[Y] * pos[Y] * K_ELLIP2_EXCLUDE + pos[Z] * pos[Z] * K_ELLIP3_EXCLUDE;
     
-    double ellipsoid_dist = pos[X] * pos[X] * INV2_MAL1 + pos[Y] * pos[Y] * INV2_MAL2 + pos[Z] * pos[Z] * INV2_MAL3;
-    
-    if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
+    if ( ellipsoid_dist - 1 > 0 ) {
         
         // 法線ベクトル
-        double normal_vector[] = { 2.0 * pos[X] * INV2_MAL1, 2.0 * pos[Y] * INV2_MAL2, 2.0 * pos[Z] *INV2_MAL3 };
+        double normal_vector[] = { 2.0 * pos[X] * K_ELLIP1_EXCLUDE, 2.0 * pos[Y] * K_ELLIP2_EXCLUDE, 2.0 * pos[Z] *K_ELLIP3_EXCLUDE };
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
         
-        double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( pos[X] * normal_vector[X]
+        double f = - ( ellipsoid_dist - 1 ) * K_MEMBRANE_EXCLUDE * ( pos[X] * normal_vector[X]
                                                                   + pos[Y] * normal_vector[Y]
                                                                   + pos[Z] * normal_vector[Z]) / normal_vector_norm;
         
@@ -640,6 +643,24 @@ void Membrane_interaction ( const double pos[DIMENSION], double force[DIMENSION]
         force[Y] += f * normal_vector[Y];
         force[Z] += f * normal_vector[Z];
     }
+}
+
+void Membrane_fix ( const double pos[DIMENSION], double force[DIMENSION]) {
+
+    double ellipsoid_dist = pos[X] * pos[X] * K_ELLIP1_FIX + pos[Y] * pos[Y] * K_ELLIP2_FIX + pos[Z] * pos[Z] * K_ELLIP3_FIX;
+
+    // 法線ベクトル
+    double normal_vector[] = { 2.0 * pos[X] * K_ELLIP1_FIX, 2.0 * pos[Y] * K_ELLIP2_FIX, 2.0 * pos[Z] *K_ELLIP3_FIX };
+    
+    double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+    
+    double f = - ( ellipsoid_dist - 1 ) * K_MEMBRANE_EXCLUDE * ( pos[X] * normal_vector[X]
+                                                                + pos[Y] * normal_vector[Y]
+                                                                + pos[Z] * normal_vector[Z]) / normal_vector_norm;
+    
+    force[X] += f * normal_vector[X];
+    force[Y] += f * normal_vector[Y];
+    force[Z] += f * normal_vector[Z];
 }
 
 void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const double k_mn, const double k_sn, const double k_sm) {
@@ -667,8 +688,8 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const doubl
     TermDIst_NucSpb (nuc, spb, k_sn, 'c');
     
     // 核膜との排除体積　および　核膜上に固定
-    for (lp = 0; lp < SIZE; lp++) Membrane_interaction (nuc[lp].position, nuc[lp].force, 'E');
-    Membrane_interaction (spb->position, spb->force, 'F');
+    for (lp = 0; lp < SIZE; lp++) Membrane_exclude (nuc[lp].position, nuc[lp].force);
+    Membrane_fix (spb->position, spb->force);
     
     for (lp = 0; lp < SIZE; lp++) {
         
