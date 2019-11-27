@@ -684,31 +684,31 @@ void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const doubl
     spb->position[Z] += INV_MYU * DELTA * spb->force[Z];
 }
 
-//void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no, const double k_sn) {
-//
-//    unsigned int lp;
-//    char filename[128];
-//    Nuc *ncl;
-//
-//    FILE *fpw;
-//
-//    sprintf (filename, "%2.1f/%d/result_%d.txt", k_sn, sample_no, step);
-//
-//    if ( (fpw = fopen (filename, "w")) == NULL) {
-//
-//        printf ("\t Cannot open result file.\n");
-//        exit(1);
-//    }
-//
-//    for (lp = 0; lp < SIZE; lp++) {
-//
-//        ncl = &nuc [lp];
-//        fprintf (fpw, "%d %lf %lf %lf\n", lp, ncl->position[X], ncl->position[Y], ncl->position[Z]);
-//    }
-//    fprintf (fpw, "spb %lf %lf %lf\n", spb->position[X], spb->position[Y], spb->position[Z]);
-//
-//    fclose (fpw);
-//}
+void Write_coordinate (Nuc *nuc, Spb *spb, const unsigned int step, const unsigned int sample_no, const char *directory) {
+
+    unsigned int lp;
+    char filename[128];
+    Nuc *ncl;
+
+    FILE *fpw;
+
+    sprintf (filename, "%s/%d/result_%d.txt", directory, sample_no, step);
+
+    if ( (fpw = fopen (filename, "w")) == NULL) {
+
+        printf ("\t Cannot open result file.\n");
+        exit(1);
+    }
+
+    for (lp = 0; lp < SIZE; lp++) {
+
+        ncl = &nuc [lp];
+        fprintf (fpw, "%d %lf %lf %lf\n", lp, ncl->position[X], ncl->position[Y], ncl->position[Z]);
+    }
+    fprintf (fpw, "spb %lf %lf %lf\n", spb->position[X], spb->position[Y], spb->position[Z]);
+
+    fclose (fpw);
+}
 
 void Write_row_data (char *filename, Nuc *nuc, Spb *spb, const unsigned int sample_no) {
     
@@ -745,9 +745,10 @@ int main ( int argc, char **argv ){
     const int k_sn = atoi (argv[4]);
     const int k_sm = atoi (argv[5]);
     
-    char init_file[128], result_file[128];
+    char init_file[128], result_file[128], directory[128];
     sprintf (init_file, "%d_%d_%d/init.txt", k_mn, k_sn, k_sm);
     sprintf (result_file, "%d_%d_%d/result.txt", k_mn, k_sn, k_sm);
+    sprintf (directory, "%d_%d_%d", k_mn, k_sn, k_sm);
     
     Secure_main_memory (&nuc, &spb);    // 構造体のメモリ確保
     
@@ -759,7 +760,7 @@ int main ( int argc, char **argv ){
     StructInitilization (nuc, spb, &dsfmt);
     
     Write_row_data (init_file, nuc, spb, sample_no);
-//    Write_coordinate (nuc, spb, 0, sample_no, k_sn);
+    Write_coordinate (nuc, spb, 0, sample_no, directory);
 //    printf ("\t DELTA = %2.1e, WRITE_INTERVAL = %2.1e \r", DELTA, WRITE_INTERVAL);
     
     // 混合ガウスポテンシャルのパラメータ読み込み
@@ -776,7 +777,7 @@ int main ( int argc, char **argv ){
 
             Calculation (mitigation, nuc, spb, k_mn, k_sn, k_sm);
         }
-//        Write_coordinate (nuc, spb, step, sample_no, k_mn, k_sn, k_sm);
+        Write_coordinate (nuc, spb, step, sample_no, directory);
         
 //        if (Sum_force (nuc, spb) < 1.0e-5) break;
     }
