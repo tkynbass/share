@@ -692,7 +692,7 @@ void Fix_nucleolus_gravity (Nuc *nuc, const double nuc_gravity[DIMENSION]) {
 
 }
 
-void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const double k_mn, const double k_sn, const double k_sm) {
+void Calculation (const unsigned int mitigation, Nuc *nuc, Spb *spb, const double k_mn, const double k_sn, const double k_sm, double nuc_gravity[DIMENSION]) {
     
     unsigned int lp, dim;
     Nuc *ncl;
@@ -832,7 +832,7 @@ int main ( int argc, char **argv ){
         
         for ( mitigation = 0; mitigation < WRITE_INTERVAL; mitigation++) {
 
-            Calculation (mitigation, nuc, spb, k_mn, k_sn, k_sm);
+            Calculation (mitigation, nuc, spb, k_mn, k_sn, k_sm, nuc_gravity);
         }
         Write_coordinate (nuc, spb, step, sample_no, stable_no);
         
