@@ -60,17 +60,33 @@
 
 // Ellipsoid axes parameter of nucleus & nucleolus //
 
-#define MEMBRANE_AXIS_1 ( 1.889011e-6 / LENGTH )    // ~= 27
-#define MEMBRANE_AXIS_2 ( 0.85 * MEMBRANE_AXIS_1 )
-#define MEMBRANE_AXIS_3 ( 0.75 * MEMBRANE_AXIS_1 )
+#define MEMBRANE_AXIS_1 ( 1.981780e-6 / LENGTH )
+#define MEMBRANE_AXIS_2 ( 0.849 * MEMBRANE_AXIS_1 )  // ~1.6um
+#define MEMBRANE_AXIS_3 ( 0.737 * MEMBRANE_AXIS_1 )  // ~1.46057186 um
 
-#define INV2_MAL1 ( 1.0 / MEMBRANE_AXIS_1 / MEMBRANE_AXIS_1)
-#define INV2_MAL2 ( 1.0 / MEMBRANE_AXIS_2 / MEMBRANE_AXIS_2)
-#define INV2_MAL3 ( 1.0 / MEMBRANE_AXIS_3 / MEMBRANE_AXIS_3)
+#define NUCLEOLUS_AXIS_1 ( 1.147035e-6 / LENGTH )
+#define NUCLEOLUS_AXIS_2 ( 0.895 * NUCLEOLUS_AXIS_1 )
+#define NUCLEOLUS_AXIS_3 ( 0.783 * NUCLEOLUS_AXIS_1 )
 
-#define NUCLEOLUS_AXIS_1 ( 1.1426593e-6 / LENGTH ) // ~=16.3
-#define NUCLEOLUS_AXIS_2 ( 0.9 * NUCLEOLUS_AXIS_1 )
-#define NUCLEOLUS_AXIS_3 ( 0.8 * NUCLEOLUS_AXIS_1 )
+// 核膜 排除体積計算用 (粒子が核外に出ないように半径分短く)
+#define MEM_ELLIP1_EXCLUDE ( 1.0 / (MEMBRANE_AXIS_1 - 1) / (MEMBRANE_AXIS_1 - 1))
+#define MEM_ELLIP2_EXCLUDE ( 1.0 / (MEMBRANE_AXIS_2 - 1) / (MEMBRANE_AXIS_2 - 1))
+#define MEM_ELLIP3_EXCLUDE ( 1.0 / (MEMBRANE_AXIS_3 - 1) / (MEMBRANE_AXIS_3 - 1))
+
+// 核小体 排除体積計算用 (粒子が核小体に入らないように半径分長く)
+#define NUC_ELLIP1_EXCLUDE ( 1.0 / (NUCLEOLUS_AXIS_1 + 1) / (NUCLEOLUS_AXIS_1 + 1))
+#define NUC_ELLIP2_EXCLUDE ( 1.0 / (NUCLEOLUS_AXIS_2 + 1) / (NUCLEOLUS_AXIS_2 + 1))
+#define NUC_ELLIP3_EXCLUDE ( 1.0 / (NUCLEOLUS_AXIS_3 + 1) / (NUCLEOLUS_AXIS_3 + 1))
+
+// SPBを核膜に止める際の楕円体係数
+#define MEM_ELLIP1_FIX ( 1.0 / MEMBRANE_AXIS_1 / MEMBRANE_AXIS_1)
+#define MEM_ELLIP2_FIX ( 1.0 / MEMBRANE_AXIS_2 / MEMBRANE_AXIS_2)
+#define MEM_ELLIP3_FIX ( 1.0 / MEMBRANE_AXIS_3 / MEMBRANE_AXIS_3)
+
+// 第３染色体末端(rDNA)を核小体境界上に止める際の楕円体係数
+#define NUC_ELLIP1_FIX ( 1.0 / NUCLEOLUS_AXIS_1 / NUCLEOLUS_AXIS_1)
+#define NUC_ELLIP2_FIX ( 1.0 / NUCLEOLUS_AXIS_2 / NUCLEOLUS_AXIS_2)
+#define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
 #define RADIUS_MITI_STEP (5.0e+3)
 
@@ -525,20 +541,18 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     }
 }
 
-void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E: exclude */) {
+void Membrane_interaction_exclude ( Particle *part_1) {
     
-    double dist = Euclid_norm (part_1->position, ORIGIN);
-    
-    double ellipsoid_dist = part_1->position[X] * part_1->position[X] * INV2_MAL1
-    + part_1->position[Y] * part_1->position[Y] * INV2_MAL2
-    + part_1->position[Z] * part_1->position[Z] * INV2_MAL3;
+    double ellipsoid_dist = part_1->position[X] * part_1->position[X] * MEM_ELLIP1_EXCLUDE
+    + part_1->position[Y] * part_1->position[Y] * MEM_ELLIP2_EXCLUDE
+    + part_1->position[Z] * part_1->position[Z] * MEM_ELLIP3_EXCLUDE;
     
     if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
         
         // 法線ベクトル
-        double normal_vector[] = { 2.0 * part_1->position[X] * INV2_MAL1,
-            2.0 * part_1->position[Y] * INV2_MAL2,
-            2.0 * part_1->position[Z] * INV2_MAL3 };
+        double normal_vector[] = { 2.0 * part_1->position[X] * MEM_ELLIP1_EXCLUDE,
+            2.0 * part_1->position[Y] * MEM_ELLIP2_EXCLUDE,
+            2.0 * part_1->position[Z] * MEM_ELLIP3_EXCLUDE };
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
         
@@ -552,8 +566,30 @@ void membrane_interaction ( Particle *part_1, char interaction_type /* F: fix, E
     }
 }
 
+void Membrane_interaction_fix ( Particle *part_1) {
+    
+    double ellipsoid_dist = part_1->position[X] * part_1->position[X] * MEM_ELLIP1_FIX
+    + part_1->position[Y] * part_1->position[Y] * MEM_ELLIP2_FIX
+    + part_1->position[Z] * part_1->position[Z] * MEM_ELLIP3_FIX;
+
+    // 法線ベクトル
+    double normal_vector[] = { 2.0 * part_1->position[X] * MEM_ELLIP1_FIX,
+        2.0 * part_1->position[Y] * MEM_ELLIP2_FIX,
+        2.0 * part_1->position[Z] * MEM_ELLIP3_FIX };
+    
+    double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
+    
+    double f = - ( ellipsoid_dist - 1 ) * MEMBRANE_EXCLUDE * ( part_1->position[X] * normal_vector[X]
+                                                              + part_1->position[Y] * normal_vector[Y]
+                                                              + part_1->position[Z] * normal_vector[Z]) / normal_vector_norm;
+    
+    part_1->force[X] += f * normal_vector[X];
+    part_1->force[Y] += f * normal_vector[Y];
+    part_1->force[Z] += f * normal_vector[Z];
+}
+
 // nucleolus interaction //
-void nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_type ) {
+void Nucleolus_interaction_exclude ( Particle *part_1, Nuc *nuc) {
     
     //核小体中心から粒子へのベクトル
     double nuc_to_pos[DIMENSION] = { part_1->position[X] - nuc->position[X],
@@ -568,16 +604,16 @@ void nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_
     // y-z平面
     rotate_about_x (nuc_to_pos, -nuc->eta);
     
-    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( nuc->al1 * nuc->al1 )
-    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( nuc->al2 * nuc->al2 )
-    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( nuc->al3 * nuc->al3 );
+    double ellipsoid_dist =  nuc_to_pos[X] * nuc_to_pos[X] / ( (nuc->al1 + 1) * (nuc->al1 + 1) )
+    + nuc_to_pos[Y] * nuc_to_pos[Y] / ( (nuc->al2 + 1) * (nuc->al2 + 1) )
+    + nuc_to_pos[Z] * nuc_to_pos[Z] / ( (nuc->al3 + 1) * (nuc->al3 + 1) );
     
     if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
         
         // 法線ベクトル @核小体座標系
-        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( nuc->al1 * nuc->al1 ),
-            2.0 * nuc_to_pos[Y] / ( nuc->al2 * nuc->al2 ),
-            2.0 * nuc_to_pos[Z] / ( nuc->al3 * nuc->al3 ) };
+        double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( (nuc->al1 + 1) * (nuc->al1 + 1) ),
+            2.0 * nuc_to_pos[Y] / ( (nuc->al2 + 1) * (nuc->al2 + 1) ),
+            2.0 * nuc_to_pos[Z] / ( (nuc->al3 + 1) * (nuc->al3 + 1) ) };
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
         
@@ -595,7 +631,7 @@ void nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_
 }
 
 // nucleolus interaction //
-void nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc, const char interaction_type ) {
+void Nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc, const char interaction_type ) {
     
     //核小体中心から粒子へのベクトル
     double nuc_to_pos[DIMENSION] = { part_1->position[X] - nuc->position[X],
@@ -822,8 +858,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
 
                 spb_exclusion (part_1, spb);
-                nucleolus_interaction (part_1, nuc, 'E');
-                membrane_interaction (part_1, 'E');
+                Nucleolus_interaction (part_1, nuc, 'E');
+                Membrane_interaction (part_1, 'E');
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -843,8 +879,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     spring (part_1, &part[loop + 3], 3);
                     spring (part_1, &part[loop - 3], 3);
 
-                    nucleolus_interaction (part_1, nuc, 'E');
-                    membrane_interaction (part_1, 'E');
+                    Nucleolus_interaction (part_1, nuc, 'E');
+                    Membrane_interaction (part_1, 'E');
                     spring (part_1, spb, 0);
 
                     if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
@@ -888,8 +924,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
                 
                 spb_exclusion (part_1, spb);
-                membrane_interaction (part_1, 'F');
-                nucleolus_interaction (part_1, nuc, 'E');
+                Membrane_interaction (part_1, 'F');
+                Nucleolus_interaction (part_1, nuc, 'E');
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -921,8 +957,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
 
                 spb_exclusion (part_1, spb);
-                membrane_interaction (part_1, 'E');
-                nucleolus_interaction (part_1, nuc, 'F');
+                Membrane_interaction (part_1, 'E');
+                Nucleolus_interaction (part_1, nuc, 'F');
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -1091,7 +1127,7 @@ int main ( int argc, char **argv ) {
     for (loop = 1; loop <= hmm_list[0]; loop++) {
         Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
     }
-    Save_settings (directory, total_time, calc_phase);
+    Save_settings (directory, __time, calc_phase);
     
     if (calc_phase == 0) {  // 粒子径 増加
         
