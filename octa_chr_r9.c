@@ -547,7 +547,7 @@ void Membrane_interaction_exclude ( Particle *part_1) {
     + part_1->position[Y] * part_1->position[Y] * MEM_ELLIP2_EXCLUDE
     + part_1->position[Z] * part_1->position[Z] * MEM_ELLIP3_EXCLUDE;
     
-    if ( interaction_type == 'F' || ellipsoid_dist - 1 > 0 ) {
+    if ( ellipsoid_dist - 1 > 0 ) {
         
         // 法線ベクトル
         double normal_vector[] = { 2.0 * part_1->position[X] * MEM_ELLIP1_EXCLUDE,
@@ -588,7 +588,7 @@ void Membrane_interaction_fix ( Particle *part_1) {
     part_1->force[Z] += f * normal_vector[Z];
 }
 
-// nucleolus interaction //
+// 核小体との排除体積効果　//
 void Nucleolus_interaction_exclude ( Particle *part_1, Nuc *nuc) {
     
     //核小体中心から粒子へのベクトル
@@ -608,7 +608,7 @@ void Nucleolus_interaction_exclude ( Particle *part_1, Nuc *nuc) {
     + nuc_to_pos[Y] * nuc_to_pos[Y] / ( (nuc->al2 + 1) * (nuc->al2 + 1) )
     + nuc_to_pos[Z] * nuc_to_pos[Z] / ( (nuc->al3 + 1) * (nuc->al3 + 1) );
     
-    if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
+    if ( ellipsoid_dist < 1.0 ) {
         
         // 法線ベクトル @核小体座標系
         double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( (nuc->al1 + 1) * (nuc->al1 + 1) ),
@@ -630,7 +630,7 @@ void Nucleolus_interaction_exclude ( Particle *part_1, Nuc *nuc) {
     }
 }
 
-// nucleolus interaction //
+// 第３染色体末端を核小体膜上に固定 //
 void Nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc, const char interaction_type ) {
     
     //核小体中心から粒子へのベクトル
@@ -858,8 +858,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
 
                 spb_exclusion (part_1, spb);
-                Nucleolus_interaction (part_1, nuc, 'E');
-                Membrane_interaction (part_1, 'E');
+                Nucleolus_interaction_exclude (part_1, nuc, 'E');
+                Membrane_interaction_exclude (part_1, 'E');
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -879,8 +879,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     spring (part_1, &part[loop + 3], 3);
                     spring (part_1, &part[loop - 3], 3);
 
-                    Nucleolus_interaction (part_1, nuc, 'E');
-                    Membrane_interaction (part_1, 'E');
+                    Nucleolus_interaction_exclude (part_1, nuc, 'E');
+                    Membrane_interaction_exclude (part_1, 'E');
                     spring (part_1, spb, 0);
 
                     if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
@@ -924,8 +924,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
                 
                 spb_exclusion (part_1, spb);
-                Membrane_interaction (part_1, 'F');
-                Nucleolus_interaction (part_1, nuc, 'E');
+                Membrane_interaction_fix (part_1, 'F');
+                Nucleolus_interaction_exclude (part_1, nuc, 'E');
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -957,8 +957,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
 
                 spb_exclusion (part_1, spb);
-                Membrane_interaction (part_1, 'E');
-                Nucleolus_interaction (part_1, nuc, 'F');
+                Membrane_interaction_exclude (part_1, 'E');
+                Nucleolus_interaction_fix (part_1, nuc, 'F');
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -1127,7 +1127,7 @@ int main ( int argc, char **argv ) {
     for (loop = 1; loop <= hmm_list[0]; loop++) {
         Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, 's'); // 確率的にlocus対応粒子のhmm_statusを決定
     }
-    Save_settings (directory, __time, calc_phase);
+    Save_settings (directory, total_time, calc_phase);
     
     if (calc_phase == 0) {  // 粒子径 増加
         
