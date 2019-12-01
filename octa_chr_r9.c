@@ -25,7 +25,6 @@
 
 #define M_A ( 1.85131596e+6 )   // g/mol/particle
 #define N_A ( 6.022140857e+23 )
-#define PASTIS_SCALING ( 1.8e-6 / 75 / LENGTH)
 
 #define NUMBER_MAX ( 2516 )    //粒子数
 #define PARTICLE_MASS ( 1.0)    //染色体粒子の質量 Kg
@@ -263,7 +262,7 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     char filename[128], dummy[256];
     unsigned int loop, i_dummy;
     
-    sprintf (filename, "../subdata/stable_status.txt");
+    sprintf (filename, "stable_status.txt");
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -278,7 +277,7 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     
     fclose (fpr);
     
-    sprintf (filename, "../subdata/stable_spb.txt");
+    sprintf (filename, "stable_spb.txt");
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
