@@ -650,7 +650,7 @@ void Nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc) {
     + nuc_to_pos[Y] * nuc_to_pos[Y] / ( NUCLEOLUS_AXIS_2 * NUCLEOLUS_AXIS_2 )
     + nuc_to_pos[Z] * nuc_to_pos[Z] / ( NUCLEOLUS_AXIS_3 * NUCLEOLUS_AXIS_3 );
     
-    if ( interaction_type == 'F' || ellipsoid_dist < 1.0 ) {
+    if ( ellipsoid_dist < 1.0 ) {
         
         // 法線ベクトル @核小体座標系
         double normal_vector[] = { 2.0 * nuc_to_pos[X] / ( NUCLEOLUS_AXIS_1 * NUCLEOLUS_AXIS_1),
