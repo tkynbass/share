@@ -631,7 +631,7 @@ void Nucleolus_interaction_exclude ( Particle *part_1, Nuc *nuc) {
 }
 
 // 第３染色体末端を核小体膜上に固定 //
-void Nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc, const char interaction_type ) {
+void Nucleolus_interaction_fix ( Particle *part_1, Nuc *nuc) {
     
     //核小体中心から粒子へのベクトル
     double nuc_to_pos[DIMENSION] = { part_1->position[X] - nuc->position[X],
