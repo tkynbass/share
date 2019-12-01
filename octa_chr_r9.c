@@ -858,8 +858,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
 
                 spb_exclusion (part_1, spb);
-                Nucleolus_interaction_exclude (part_1, nuc, 'E');
-                Membrane_interaction_exclude (part_1, 'E');
+                Nucleolus_interaction_exclude (part_1, nuc);
+                Membrane_interaction_exclude (part_1);
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -879,8 +879,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     spring (part_1, &part[loop + 3], 3);
                     spring (part_1, &part[loop - 3], 3);
 
-                    Nucleolus_interaction_exclude (part_1, nuc, 'E');
-                    Membrane_interaction_exclude (part_1, 'E');
+                    Nucleolus_interaction_exclude (part_1, nuc);
+                    Membrane_interaction_exclude (part_1);
                     spring (part_1, spb, 0);
 
                     if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
@@ -924,8 +924,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
                 
                 spb_exclusion (part_1, spb);
-                Membrane_interaction_fix (part_1, 'F');
-                Nucleolus_interaction_exclude (part_1, nuc, 'E');
+                Membrane_interaction_fix (part_1);
+                Nucleolus_interaction_exclude (part_1, nuc);
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
@@ -957,8 +957,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                 }
 
                 spb_exclusion (part_1, spb);
-                Membrane_interaction_exclude (part_1, 'E');
-                Nucleolus_interaction_fix (part_1, nuc, 'F');
+                Membrane_interaction_exclude (part_1);
+                Nucleolus_interaction_fix (part_1, nuc);
 
                 if ( mitigation % LIST_INTERVAL[calc_phase] == 0 ) make_ve_list (part, part_1, loop);
                 particle_exclusion (part, part_1);
