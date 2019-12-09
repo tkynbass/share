@@ -58,6 +58,7 @@ def main ():
     
     argvs = sys.argv
     dir = argvs[1]
+    status = int (argvs[2])
     
     low_gene = pd.read_csv ('low_gene_5k_center.txt', sep='\s+')
     high_gene = pd.read_csv ('high_gene_5k_center.txt', sep='\s+')
@@ -69,10 +70,10 @@ def main ():
     df_list = [ pd.read_csv (file, header=None, usecols=[1,3,4,5], sep='\s+') for file in file_list ]
     
     stable_df = pd.read_csv (f'{dir}/stable_status.txt', index_col=0, sep='\s+')
-    nuc_pos = stable_df.iloc[0, 0:3]
+    nuc_pos = stable_df.iloc[status, 0:3]
 
     stable_spb = pd.read_csv (f'{dir}/stable_spb.txt', index_col=0, sep='\s+')
-    spb_pos = stable_spb.iloc[0, 0:3]
+    spb_pos = stable_spb.iloc[status, 0:3]
 
     NS = spb_pos - nuc_pos
 
