@@ -23,7 +23,7 @@ def Plot_hist2d (array, filename, color):
     
     plt.close()
 
-def subprocess (idx, send_rev, df, high_part, low_part, spb_pos, nuc_pos):
+def subprocess (idx, send_rev, df, high_part, low_part, NS, nuc_pos):
 
     df.columns = ['chr', 'X', 'Y', 'Z']
     
@@ -87,7 +87,7 @@ def main ():
     for idx in range (len (file_list)):
     
         get_rev, send_rev = mp.Pipe (False)
-        p = mp.Process (target=subprocess, args=(idx, send_rev, df_list[idx], high_part, low_part, spb_pos, nuc_pos) )
+        p = mp.Process (target=subprocess, args=(idx, send_rev, df_list[idx], high_part, low_part, NS, nuc_pos) )
         process_list.append (p)
         pipe_list.append (get_rev)
         p.start ()
