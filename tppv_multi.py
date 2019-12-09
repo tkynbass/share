@@ -53,18 +53,23 @@ def ppv_func (x):
 
     return - np.log ( (x - 0.1713) / 1.0965) / 0.6865
 
-def subprocess (idx, send_rev, df, high_loop_list, low_loop_list, control_loop_list):
+def subprocess (idx, num_proc, send_rev, df_list, high_loop_list, low_loop_list, control_loop_list):
 
+    high_tppv_list = []
+    low_tppv_list = []
+    control_tppv_list = []
 
-    high_pd = pd.Series ([ np.linalg.norm (df.iloc [X, :] - df.iloc [Y, :] ) * 0.0966 for X, Y in high_loop_list ])
-    low_pd = pd.Series ([ np.linalg.norm (df.iloc [X, :] - df.iloc [Y, :] ) * 0.0966 for X, Y in low_loop_list ])
-    control_pd =  pd.Series ([ np.linalg.norm (df.iloc [X, :] - df.iloc [Y, :] ) * 0.0966 for X, Y in control_loop_list ])
-    
-    high_tppv = sum (ppv_func ( high_pd [ (high_pd > 0.1713) & (high_pd < 1.2678 )]) )
-    low_tppv = sum (ppv_func ( low_pd [ (low_pd > 0.1713) & (low_pd < 1.2678 )]) )
-    control_tppv = sum (ppv_func ( control_pd [ (control_pd > 0.1713) & (control_pd < 1.2678 )]) )
+    for df in df_list [idx::num_proc]:
 
-    send_rev.send ([high_tppv, low_tppv, control_tppv])
+        high_pd = pd.Series ([ np.linalg.norm (df.iloc [X, :] - df.iloc [Y, :] ) * 0.0966 for X, Y in high_loop_list ])
+        low_pd = pd.Series ([ np.linalg.norm (df.iloc [X, :] - df.iloc [Y, :] ) * 0.0966 for X, Y in low_loop_list ])
+        control_pd =  pd.Series ([ np.linalg.norm (df.iloc [X, :] - df.iloc [Y, :] ) * 0.0966 for X, Y in control_loop_list ])
+        
+        high_tppv_list.append (sum (ppv_func ( high_pd [ (high_pd > 0.1713) & (high_pd < 1.2678 )]) ))
+        low_tppv_list.append (sum (ppv_func ( low_pd [ (low_pd > 0.1713) & (low_pd < 1.2678 )]) ))
+        control_tppv_list.append (sum (ppv_func ( control_pd [ (control_pd > 0.1713) & (control_pd < 1.2678 )]) ))
+
+    send_rev.send ([high_tppv_list, low_tppv_list, control_tppv_list])
 
 #### main ####
 
@@ -74,13 +79,15 @@ def main ():
     
     dir = argvs[1]
     
+    num_proc = 6 #purosesusuu
+    
     low_gene = pd.read_csv ('low_gene_5k_center.txt', sep='\s+')
     high_gene = pd.read_csv ('high_gene_5k_center.txt', sep='\s+')
 
     high_part = high_gene.loc [:, 'Center'].values
     low_part = low_gene.loc [:, 'Center'].values
 
-file_list = getoutput (f'ls {dir}/sample_*.txt').split()
+    file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     df_list = [ pd.read_csv (file, header=None, usecols=[3,4,5], sep='\s+') for file in file_list ]
 
     high_rand = random.sample (set (high_part), k=80)
@@ -98,10 +105,10 @@ file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     process_list = []
     pipe_list = []
 
-    for idx in range (len (file_list)):
+    for idx in range (num_proc):
     
         get_rev, send_rev = mp.Pipe (False)
-        p = mp.Process (target=subprocess, args=(idx, send_rev, df_list[idx], high_loop_list, low_loop_list, control_loop_list) )
+        p = mp.Process (target=subprocess, args=(idx, num_proc, send_rev, df_list, high_loop_list, low_loop_list, control_loop_list) )
         process_list.append (p)
         pipe_list.append (get_rev)
         p.start ()
@@ -109,7 +116,7 @@ file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     for proc in process_list:
         proc.join ()
     
-    result_list = [ x.recv() for x in pipe_list ]
+    result_list = [ np.ravel ([ x.recv()[type] for x in pipe_list ]) for type in range (3) ]
     tppv_array = np.array (result_list).reshape (3, len (result_list))
 
     bin_class,  h_array, l_array, r_array = Plot_hist (tppv_array[0], tppv_array[1], tppv_array[2])

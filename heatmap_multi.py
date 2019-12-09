@@ -23,10 +23,8 @@ def Plot_hist2d (array, filename, color):
     
     plt.close()
 
-def subprocess (idx, send_rev, df, high_part, low_part, NS, nuc_pos):
+def subprocess (idx, num_proc, send_rev, df_list, high_part, low_part, NS, nuc_pos):
 
-    df.columns = ['chr', 'X', 'Y', 'Z']
-    
     sub_high_pos = []
     sub_low_pos = []
     sub_chr_pos = [ [] for chr in range (3) ]
@@ -35,20 +33,23 @@ def subprocess (idx, send_rev, df, high_part, low_part, NS, nuc_pos):
     
     LENGTH= 0.0966
     
-    for index, row in df.iterrows ():
+    for df in df_list [idx::num_proc]:
         
-        NG = row['X':'Z'] - nuc_pos
-        NG_norm = np.linalg.norm (NG)
-        theta = np.arccos (np.dot (NS, NG) / ( np.linalg.norm (NS) * NG_norm ) )
-        pos_list.append  ([NG_norm * np.cos(theta), NG_norm * np.sin (theta)])
-    
-    df = pd.concat ( [df, pd.DataFrame (pos_list, columns=['Proj_X', 'Proj_Y'])], axis=1)
+        df.columns = ['chr', 'X', 'Y', 'Z']
+        for index, row in df.iterrows ():
+            
+            NG = row['X':'Z'] - nuc_pos
+            NG_norm = np.linalg.norm (NG)
+            theta = np.arccos (np.dot (NS, NG) / ( np.linalg.norm (NS) * NG_norm ) )
+            pos_list.append  ([NG_norm * np.cos(theta), NG_norm * np.sin (theta)])
+        
+        df = pd.concat ( [df, pd.DataFrame (pos_list, columns=['Proj_X', 'Proj_Y'])], axis=1)
 
-    sub_high_pos.extend (df.iloc [high_part, 4:6].values * LENGTH)
-    sub_low_pos.extend (df.iloc [low_part, 4:6].values * LENGTH)
-    
-    for chr_no in range (3):
-        sub_chr_pos [chr_no].extend (df.loc [df.loc[:, 'chr']==chr_no, 'Proj_X':'Proj_Y'].values * LENGTH)
+        sub_high_pos.extend (df.iloc [high_part, 4:6].values * LENGTH)
+        sub_low_pos.extend (df.iloc [low_part, 4:6].values * LENGTH)
+        
+        for chr_no in range (3):
+            sub_chr_pos [chr_no].extend (df.loc [df.loc[:, 'chr']==chr_no, 'Proj_X':'Proj_Y'].values * LENGTH)
 
     send_rev.send ([sub_high_pos, sub_low_pos, sub_chr_pos])
 
@@ -59,6 +60,8 @@ def main ():
     argvs = sys.argv
     dir = argvs[1]
     status = int (argvs[2])
+    
+    num_proc = 6
     
     low_gene = pd.read_csv ('low_gene_5k_center.txt', sep='\s+')
     high_gene = pd.read_csv ('high_gene_5k_center.txt', sep='\s+')
@@ -84,10 +87,10 @@ def main ():
     process_list = []
     pipe_list = []
 
-    for idx in range (len (file_list)):
+    for idx in range (num_proc):
     
         get_rev, send_rev = mp.Pipe (False)
-        p = mp.Process (target=subprocess, args=(idx, send_rev, df_list[idx], high_part, low_part, NS, nuc_pos) )
+        p = mp.Process (target=subprocess, args=(idx, num_proc, send_rev, df_list, high_part, low_part, NS, nuc_pos) )
         process_list.append (p)
         pipe_list.append (get_rev)
         p.start ()
@@ -115,6 +118,11 @@ def main ():
 
     for chr_no in range (3):
         Plot_hist2d (chr_arrays [chr_no], f'{dir}/chr{chr_no + 1}_map.png', cmap_list[chr_no])
+
+    for idx in range (len (file_list)):
+
+        p.close ()
+        p.p.terminate ()
 
     return 0
 
