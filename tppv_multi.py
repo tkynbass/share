@@ -6,8 +6,9 @@ from subprocess import getoutput
 import itertools as itr
 import random
 import multiprocessing as mp
+import sys
 
-def Plot_ppv (x, high, low, random):
+def Plot_ppv (x, dir, high, low, random):
     
     fig, ax1 = plt.subplots ()
     
@@ -29,10 +30,7 @@ def Plot_ppv (x, high, low, random):
     ax1.plot (x, high, color='black')
     ax1.fill_between (x, high, 0, alpha=a, color='orange' )
     
-    #     plt.savefig ('phy_dist.png', transparent=True)
-    
-#    plt.show()
-    plt.savefig ('tppv.png', transparent=True, bbox_inches="tight")
+    plt.savefig (f'{dir}/tppv.png', transparent=True, bbox_inches="tight")
 
     plt.close()
 
@@ -72,13 +70,17 @@ def subprocess (idx, send_rev, df, high_loop_list, low_loop_list, control_loop_l
 
 def main ():
     
+    argvs = sys.argv
+    
+    dir = argvs[1]
+    
     low_gene = pd.read_csv ('low_gene_5k_center.txt', sep='\s+')
     high_gene = pd.read_csv ('high_gene_5k_center.txt', sep='\s+')
 
     high_part = high_gene.loc [:, 'Center'].values
     low_part = low_gene.loc [:, 'Center'].values
 
-    file_list = getoutput ('ls 0/sample_*.txt').split()
+file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     df_list = [ pd.read_csv (file, header=None, usecols=[3,4,5], sep='\s+') for file in file_list ]
 
     high_rand = random.sample (set (high_part), k=80)
@@ -114,7 +116,7 @@ def main ():
     delta = bin_class[1] - bin_class[0]
     x = [ bin_class[num] + delta  for num in range (len (bin_class) -1) ]
 
-    Plot_ppv (x, h_array, l_array, r_array)
+    Plot_ppv (x, dir, h_array, l_array, r_array)
 
     return 0
 

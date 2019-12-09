@@ -6,6 +6,7 @@ from subprocess import getoutput
 import itertools as itr
 import random
 import multiprocessing as mp
+import sys
 
 def Plot_hist2d (array, filename, color):
     
@@ -53,15 +54,17 @@ def subprocess (idx, send_rev, df, high_loop_list, low_loop_list, control_loop_l
 
 def main ():
     
-    low_gene = pd.read_csv ('/Volumes/HDCL-U/tkym/support_text/noma_transcription/low_gene_5k_center.txt', sep='\s+')
-    high_gene = pd.read_csv ('/Volumes/HDCL-U/tkym/support_text/noma_transcription/high_gene_5k_center.txt', sep='\s+')
+    argvs = sys.argv ()
+    
+    dir = argvs[1]
+    
+    low_gene = pd.read_csv ('low_gene_5k_center.txt', sep='\s+')
+    high_gene = pd.read_csv ('high_gene_5k_center.txt', sep='\s+')
 
     high_part = high_gene.loc [:, 'Center'].values
     low_part = low_gene.loc [:, 'Center'].values
 
-    dir = '../chromo_exp'
-
-    file_list = getoutput ('ls 0/sample_*.txt').split()
+    file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     df_list = [ pd.read_csv (file, header=None, usecols=[1,3,4,5], sep='\s+') for file in file_list ]
     df.columns = ['chr', 'X', 'Y', 'Z']
     
