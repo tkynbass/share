@@ -69,10 +69,10 @@ def main ():
     file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     df_list = [ pd.read_csv (file, header=None, usecols=[1,3,4,5], sep='\s+') for file in file_list ]
     
-    stable_df = pd.read_csv (f'{dir}/stable_status.txt', index_col=0, sep='\s+')
+    stable_df = pd.read_csv (f'stable_status.txt', index_col=0, sep='\s+')
     nuc_pos = stable_df.iloc[status, 0:3]
 
-    stable_spb = pd.read_csv (f'{dir}/stable_spb.txt', index_col=0, sep='\s+')
+    stable_spb = pd.read_csv (f'stable_spb.txt', index_col=0, sep='\s+')
     spb_pos = stable_spb.iloc[status, 0:3]
 
     NS = spb_pos - nuc_pos
