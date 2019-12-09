@@ -23,8 +23,10 @@ def Plot_hist2d (array, filename, color):
     
     plt.close()
 
-def subprocess (idx, send_rev, df, high_loop_list, low_loop_list, control_loop_list):
+def subprocess (idx, send_rev, df, high_part, low_part):
 
+    df.columns = ['chr', 'X', 'Y', 'Z']
+    
     sub_high_pos = []
     sub_low_pos = []
     sub_chr_pos = [ [] for chr in range (3) ]
@@ -54,8 +56,7 @@ def subprocess (idx, send_rev, df, high_loop_list, low_loop_list, control_loop_l
 
 def main ():
     
-    argvs = sys.argv ()
-    
+    argvs = sys.argv
     dir = argvs[1]
     
     low_gene = pd.read_csv ('low_gene_5k_center.txt', sep='\s+')
@@ -66,7 +67,6 @@ def main ():
 
     file_list = getoutput (f'ls {dir}/sample_*.txt').split()
     df_list = [ pd.read_csv (file, header=None, usecols=[1,3,4,5], sep='\s+') for file in file_list ]
-    df.columns = ['chr', 'X', 'Y', 'Z']
     
     stable_df = pd.read_csv (f'{dir}/stable_status.txt', index_col=0, sep='\s+')
     nuc_pos = stable_df.iloc[0, 0:3]
@@ -86,7 +86,7 @@ def main ():
     for idx in range (len (file_list)):
     
         get_rev, send_rev = mp.Pipe (False)
-        p = mp.Process (target=subprocess, args=(idx, send_rev, df_list[idx], high_loop_list, low_loop_list, control_loop_list) )
+        p = mp.Process (target=subprocess, args=(idx, send_rev, df_list[idx], high_part, low_part) )
         process_list.append (p)
         pipe_list.append (get_rev)
         p.start ()
