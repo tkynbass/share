@@ -964,7 +964,7 @@ void write_coordinate (Particle *part, const unsigned int sample_no, const char 
     
     char result[128], str[128];
     
-    sprintf (result, "%s/sample_%d.txt", dir, sample_no);
+    sprintf (result, "%s/result_%d.txt", dir, sample_no);
     
     if ((fpw = fopen (result, "w")) == NULL) {
         
@@ -1029,7 +1029,7 @@ int main ( int argc, char **argv ) {
         sample_no = atoi (argv[2]);
         total_time = atoi (argv[3]);
         calc_phase = atoi (argv[4]);
-        hmm_select = argv[5];
+        hmm_select = argv[5][0];
     }
     else {
         
@@ -1069,7 +1069,7 @@ int main ( int argc, char **argv ) {
         for ( unsigned int time = 1; time <= RADIUS_MITI_STEP; time++) {
             
             total_time++;
-//            printf ("\t Now calculating... phase 0 / time = %d \r", time);
+            printf ("\t Now calculating... phase 0 / time = %d \r", time);
             fflush (stdout);
             
             for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
@@ -1077,7 +1077,7 @@ int main ( int argc, char **argv ) {
                 calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
             }
             
-//            write_coordinate (part, total_time, directory);
+            write_coordinate (part, total_time, directory);
             
             update_radius (part, 'c');
         }
@@ -1089,15 +1089,15 @@ int main ( int argc, char **argv ) {
         for ( unsigned int time = 1; time <= 10000; time++) {
             
             total_time++;
-//            printf ("\t Now calculating... phase 1 / time = %d \r", time);
-//            fflush (stdout);
+            printf ("\t Now calculating... phase 1 / time = %d \r", time);
+            fflush (stdout);
             
             for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
                 
                 calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
             }
             
-//            write_coordinate (part, total_time, directory);
+            write_coordinate (part, total_time, directory);
         }
         calc_phase++;
     }
@@ -1107,14 +1107,14 @@ int main ( int argc, char **argv ) {
         for ( unsigned int time = 1; time <= 10000; time++) {
             
             total_time++;
-//            printf ("\t Now calculating... phase 2 / time = %d \r", time);
+            printf ("\t Now calculating... phase 2 / time = %d \r", time);
             fflush (stdout);
             
             for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
                 
                 calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
             }
-//            write_coordinate (part,total_time, directory);
+            write_coordinate (part, total_time, directory);
             
             if ( time % 10 == 0 && nuc->al1 < NUCLEOLUS_AXIS_1 ) {
                 
@@ -1133,7 +1133,7 @@ int main ( int argc, char **argv ) {
 //        calc_phase++;
     }
     
-    write_coordinate (part, sample_no, directory);
+//    write_coordinate (part, sample_no, directory);
     
     // メモリ解放 //
     for ( loop = 0 ; loop < NUMBER_MAX; loop++) {
