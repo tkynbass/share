@@ -1084,7 +1084,7 @@ int main ( int argc, char **argv ) {
     }
     
     dsfmt_init_gen_rand (&dsfmt, sample_no);
-    sprintf (directory, "%d", stable_no);
+    sprintf (directory, "%d_%d", stable_no, sample_no);
     
     Read_structure (nuc, spb, stable_no);
 
@@ -1153,7 +1153,7 @@ int main ( int argc, char **argv ) {
         
         
         
-        calc_phase++;
+//        calc_phase++;
     }
     
     if (calc_phase == 2) {  // 核小体 増大
