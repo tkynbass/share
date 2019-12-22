@@ -1133,7 +1133,7 @@ int main ( int argc, char **argv ) {
         }
         calc_phase++;
     }
-    cp
+    
     mean_dist = 0.0;
     if (calc_phase == 1) {  // セントロメア:free → 緩和
     
