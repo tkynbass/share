@@ -372,7 +372,7 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
 
 }
 
-void Change_hmm_status (Particle *part, const int *hmm_list, dsfmt_t *dsfmt) {
+double Change_hmm_status (Particle *part, const int *hmm_list, dsfmt_t *dsfmt) {
     
     unsigned int loop;
     double mean_dist, strain [hmm_list[0]][2];
@@ -404,6 +404,8 @@ void Change_hmm_status (Particle *part, const int *hmm_list, dsfmt_t *dsfmt) {
             Set_hmm_status (part_1, dsfmt, CHANGE);
         }
     }
+    
+    return mean_dist;
 }
 
 // ひも粒子の初期座標決定
@@ -1058,7 +1060,7 @@ int main ( int argc, char **argv ) {
     
     unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option;
     char output_file[256], directory[256], hmm_select;
-    double mem_al[3];
+    double mem_al[3], mean_dist;
     
     Particle *part, *part_1, *spb;
     Nuc *nuc;
@@ -1131,10 +1133,11 @@ int main ( int argc, char **argv ) {
         }
         calc_phase++;
     }
-    
+    cp 
+    mean_dist = 0.0;cp
     if (calc_phase == 1) {  // セントロメア:free → 緩和
     
-        for (unsigned int try_count = 0; try_count < 5; try_count++) {
+        whilw (mean_dist > 0.10)  {
             
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL; time++) {
                 
@@ -1149,7 +1152,7 @@ int main ( int argc, char **argv ) {
                 write_coordinate (part, total_time, directory);
             }
             
-            Change_hmm_status (part, hmm_list, &dsfmt);
+            mean_dist = Change_hmm_status (part, hmm_list, &dsfmt);
         }
         
         
