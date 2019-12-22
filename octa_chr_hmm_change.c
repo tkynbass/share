@@ -363,6 +363,7 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
         
         case FIRST:
             part_1->hmm_status = 0;
+            break;
             
         default:
             printf ("\t Cannot set hmm_status\n");
@@ -1069,13 +1070,12 @@ int main ( int argc, char **argv ) {
     
     dsfmt_t dsfmt;
     
-    if (argc == 6 ) {
+    if (argc == 5 ) {
         
         stable_no = atoi (argv[1]);
         sample_no = atoi (argv[2]);
         total_time = atoi (argv[3]);
         calc_phase = atoi (argv[4]);
-        hmm_select = argv[5][0];
     }
     else {
         
@@ -1103,13 +1103,12 @@ int main ( int argc, char **argv ) {
         Read_coordinate (part, total_time, directory);
     }
     
-    if (hmm_select == 'o') hmm_set_option = FIRST;
-    else hmm_set_option = RANDOM;
+    hmm_set_option = FIRST;
     
     Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_status = -1;
     for (loop = 1; loop <= hmm_list[0]; loop++) {
-        Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option); // 確率的にlocus対応粒子のhmm_statusを決定
+        Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
     }
 //    Save_settings (directory, total_time, calc_phase);
     
@@ -1149,6 +1148,8 @@ int main ( int argc, char **argv ) {
                 }
                 write_coordinate (part, total_time, directory);
             }
+            
+            Change_hmm_status (part, hmm_list, &dsfmt);
         }
         
         
