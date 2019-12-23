@@ -777,7 +777,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
         for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_potential (&part [hmm_list [loop]], nuc, spb);
     }
 
-//    #pragma omp parallel for private (part_1) num_threads (8)
+    #pragma omp parallel for private (part_1) num_threads (8)
     for ( loop = 0; loop < NUMBER_MAX; loop++ ){
 
         part_1 = &part [loop];
@@ -1155,7 +1155,7 @@ int main ( int argc, char **argv ) {
             }
             
             mean_dist = Change_hmm_status (part, hmm_list, &dsfmt);
-            try_count = ;
+            try_count++;
             
         }
         
