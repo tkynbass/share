@@ -1134,10 +1134,10 @@ int main ( int argc, char **argv ) {
         calc_phase++;
     }
     
-    mean_dist = 0.0;
+    mean_dist = 1.0;
     if (calc_phase == 1) {  // セントロメア:free → 緩和
     
-        whilw (mean_dist > 0.10)  {
+        while (mean_dist > 0.10)  {
             
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL; time++) {
                 
