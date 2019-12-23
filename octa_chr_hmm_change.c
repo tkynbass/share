@@ -1058,7 +1058,7 @@ void Save_settings (const char *dir, const int start, const int phase) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option;
+    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option, try_count;
     char output_file[256], directory[256], hmm_select;
     double mem_al[3], mean_dist;
     
