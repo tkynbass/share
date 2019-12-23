@@ -1135,9 +1135,11 @@ int main ( int argc, char **argv ) {
     }
     
     mean_dist = 1.0;
+    try_count = 0;
     if (calc_phase == 1) {  // セントロメア:free → 緩和
     
         while (mean_dist > 0.10)  {
+            
             
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL; time++) {
                 
@@ -1153,6 +1155,8 @@ int main ( int argc, char **argv ) {
             }
             
             mean_dist = Change_hmm_status (part, hmm_list, &dsfmt);
+            try_count = ;
+            
         }
         
         
