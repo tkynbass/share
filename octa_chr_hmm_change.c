@@ -1088,10 +1088,7 @@ int main ( int argc, char **argv ) {
     hmm_set_option = FIRST;
     
     Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
-    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_status = -1;
-    for (loop = 1; loop <= hmm_list[0]; loop++) {
-        Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
-    }
+    
 //    Save_settings (directory, total_time, calc_phase);
     
     if (calc_phase == 0) {  // 粒子径 増加
@@ -1112,6 +1109,11 @@ int main ( int argc, char **argv ) {
             update_radius (part, 'c');
         }
         calc_phase++;
+        
+        for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_status = -1;
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
+        }
     }
     
     // 隠れマルコフ状態セットの最適化
