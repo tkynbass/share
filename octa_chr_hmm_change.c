@@ -1114,34 +1114,6 @@ int main ( int argc, char **argv ) {
         calc_phase++;
     }
     
-//    double mean_dist = 1.0;
-    unsigned int try_count = 0;
-    
-    if (calc_phase == 1) {  // セントロメア:free → 緩和
-    
-        while (mean_dist > 0.10)  {
-            
-            for ( unsigned int time = 1; time <= HMM_SET_INTERVAL; time++) {
-                
-                total_time++;
-                printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
-                fflush (stdout);
-                
-                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-                    
-                    calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
-                }
-                write_coordinate (part, total_time, directory);
-            }
-            
-            mean_dist = Change_hmm_status (part, hmm_list, &dsfmt);
-            try_count++;
-            
-        }
-//        calc_phase++;
-    }
-    
-    
     // 隠れマルコフ状態セットの最適化
     // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
     // 1回の緩和時間5000step 最後の1000stepでずれ平均・最大値を計算　→評価
@@ -1201,7 +1173,7 @@ int main ( int argc, char **argv ) {
                     
                     // 自然長とのずれの総和を求める
 //                    mean_new += strain [loop][0] + strain [loop][1];
-                    strain_max = Max ( strain_max, Max (strain [loop][0], strain [1]));
+                    strain_max = Max ( strain_max, Max (strain [loop][0], strain [loop][1]));
                     
                     if (Max (strain [loop][0], strain [loop][1]) > 0.5) {
                         
@@ -1236,7 +1208,7 @@ int main ( int argc, char **argv ) {
                 Set_hmm_status (part_1, &dsfmt, CHANGE);
             }
             
-        } (strain_max > 0.5);
+        } while (strain_max > 0.5);
         
     }
     
