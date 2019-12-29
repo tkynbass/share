@@ -129,7 +129,6 @@ typedef struct particle {           //構造体の型宣言
     unsigned int chr_no;
     unsigned int particle_type;
     double position[DIMENSION];
-    double velocity[DIMENSION];
     double force[DIMENSION];
     double radius;
     unsigned int list_no;
@@ -138,6 +137,7 @@ typedef struct particle {           //構造体の型宣言
     double *spb_mean;
     double *hmm_prob;
     int hmm_status;
+    int hmm_status_old;
     
 } Particle;
 
@@ -348,21 +348,36 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
 void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
     
     unsigned int status = 0;
-    double prob_value = dsfmt_genrand_close_open (dsfmt);
+    double prob_value;
     
     switch (option) {
         case RANDOM:
+            
+            prob_value = dsfmt_genrand_close_open (dsfmt);
             while (prob_value > part_1->hmm_prob [status]) status++;
             part_1->hmm_status = status;
+            part_1->hmm_status_old = status;
             break;
             
         case CHANGE:
-            while (prob_value > part_1->hmm_prob [status]) status++;
-            if (part_1->hmm_status != status) part_1->hmm_status = status;
+            
+            // oldにstatusを保存して今とは違う状態に変更
+            part_1->hmm_status_old = part_1->hmm_status;
+            
+            do {
+                prob_value = dsfmt_genrand_close_open (dsfmt);
+                while (prob_value > part_1->hmm_prob [status]) status++;
+
+            } while (part_1->hmm_status == status);
+            
+            part_1->hmm_status = status;
+            
             break;
         
         case FIRST:
+            
             part_1->hmm_status = 0;
+            part_1->hmm_status_old = 0;
             break;
             
         default:
@@ -392,7 +407,6 @@ double Change_hmm_status (Particle *part, const int *hmm_list, dsfmt_t *dsfmt) {
         // 自然長とのずれの総和を求める
         mean_dist += strain [loop][0] + strain [loop][1];
     }
-    
     mean_dist /= 2.0 * hmm_list [0];    // ずれの平均
     
     for (loop = 1; loop <= hmm_list[0]; loop++) {
@@ -797,7 +811,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     case rDNA_UP + 1:
 
                         spring (part_1, &part[loop + 2], 2);
-                        spring (part_1, &part[loop + 3], 3);
+                        
                         break;
 
                     case TELO1_UP + 2:
@@ -807,7 +821,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
 
-                        spring (part_1, &part[loop + 3], 3);
+                        
                         break;
 
                     case TELO1_DOWN - 1:
@@ -816,7 +830,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                         spring (part_1, &part[loop - 2], 2);
 
-                        spring (part_1, &part[loop - 3], 3);
+                        
                         break;
 
                     case TELO1_DOWN - 2:
@@ -826,7 +840,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
 
-                        spring (part_1, &part[loop - 3], 3);
+                        
                         break;
 
                     default:
@@ -834,8 +848,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
 
-                        spring (part_1, &part[loop + 3], 3);
-                        spring (part_1, &part[loop - 3], 3);
+                        
+                        
                         break;
                 }
 
@@ -858,8 +872,8 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     spring (part_1, &part[loop + 2], 2);
                     spring (part_1, &part[loop - 2], 2);
 
-                    spring (part_1, &part[loop + 3], 3);
-                    spring (part_1, &part[loop - 3], 3);
+                    
+                    
 
                     Nucleolus_interaction (part_1, nuc, 'E');
                     Membrane_interaction (part_1, 'E');
@@ -889,8 +903,6 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                         spring (part_1, &part[loop + 2], 2);
 
-                        spring (part_1, &part[loop + 3], 3);
-
                         break;
 
                     case TELO1_DOWN:
@@ -899,9 +911,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         spring (part_1, &part[loop - 1], 1);
 
                         spring (part_1, &part[loop - 2], 2);
-
-                        spring (part_1, &part[loop - 3], 3);
-
+                        
                         break;
                 }
                 
@@ -923,7 +933,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                         spring (part_1, &part[loop + 2], 2);
 
-                        spring (part_1, &part[loop + 3], 3);
+                        
 
                         break;
 
@@ -933,7 +943,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
 
                         spring (part_1, &part[loop - 2], 2);
 
-                        spring (part_1, &part[loop - 3], 3);
+                        
 
                         break;
                 }
@@ -1058,11 +1068,11 @@ void Save_settings (const char *dir, const int start, const int phase) {
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option, try_count;
+    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option;
     char output_file[256], directory[256], hmm_select;
-    double mem_al[3], mean_dist;
+    double mem_al[3];
     
-    Particle *part, *part_1, *spb;
+    Particle *part, *part_1, *spb, *part_cp;
     Nuc *nuc;
     
     int hmm_list [LOCUS_MAX + 1];
@@ -1097,7 +1107,7 @@ int main ( int argc, char **argv ) {
     if (total_time == 0) {
         
         Particle_initialization (part, nuc, spb, &dsfmt);
-//        write_coordinate (part, 0, directory);
+        write_coordinate (part, 0, directory);
         update_radius (part, 's');
     }
     else {
@@ -1134,12 +1144,12 @@ int main ( int argc, char **argv ) {
         calc_phase++;
     }
     
-    mean_dist = 1.0;
-    try_count = 0;
+//    double mean_dist = 1.0;
+    unsigned int try_count = 0;
+    
     if (calc_phase == 1) {  // セントロメア:free → 緩和
     
         while (mean_dist > 0.10)  {
-            
             
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL; time++) {
                 
@@ -1158,10 +1168,51 @@ int main ( int argc, char **argv ) {
             try_count++;
             
         }
-        
-        
-        
 //        calc_phase++;
+    }
+    
+    
+    // 隠れマルコフ状態セットの最適化
+    // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
+    // 1回の緩和時間5000step 最後の1000stepでずれ平均・最大値を計算　→評価
+    unsigned int change_list [138];
+    double mean_old = 10.0, mean_new, strain [hmm_list[0]][2];
+    
+    strain [0][0] = hmm_list[0];
+    strain [0][1] = hmm_list[0];
+    
+    if (calc_phase == 1) {
+        
+        mean_new = 0.0;
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            
+            part_1 = &part [ hmm_list [loop]];
+            
+            // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
+            strain [loop][0] = Euclid_norm (part_1->position, part [loop - 1].position) - part_1->radius * 1.8;
+            strain [loop][1] = Euclid_norm (part_1->position, part [loop + 1].position) - part_1->radius * 1.8;
+            
+            // 自然長とのずれの総和を求める
+            mean_new += strain [loop][0] + strain [loop][1];
+        }
+        mean_new /= 2.0 * hmm_list [0];    // ずれの平均
+        
+        if (mean_old < mean_new) {  // 状態セットを変えて,歪み平均が大きくなってしまったときにリセット
+            
+            total_time -= HMM_SET_INTERVAL;
+            
+            Read_coordinate (part)
+        }
+        
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            
+            part_1 = &part [ hmm_list [loop]];
+            
+            if ( strain[loop][0] > mean_dist && strain [loop][1] > mean_dist) {
+                
+                Set_hmm_status (part_1, dsfmt, CHANGE);
+            }
+        }
     }
     
     if (calc_phase == 2) {  // 核小体 増大
