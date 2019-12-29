@@ -1119,7 +1119,6 @@ int main ( int argc, char **argv ) {
     // 隠れマルコフ状態セットの最適化
     // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
     // 1回の緩和時間5000step 最後の1000stepでずれ平均・最大値を計算　→評価
-    unsigned int change_list [138];
     double strain_max_old = 10.0, strain_max, mean_new, strain [hmm_list[0]][2];
     
     strain [0][0] = hmm_list[0];
@@ -1130,13 +1129,15 @@ int main ( int argc, char **argv ) {
         ///////////////
         
         unsigned int try_count = 0, change_list [138];
-        double strain_mean, strain_max, strain_max_old = 10.0, total_straiin_mean;
+        double strain_mean, strain_max, strain_max_old = 10.0, total_straiin_mean, strain_max_list [138];
+        strain_max_list [0] = 137;
+        
         do {
             
             try_count++;
             strain_mean = 0.0;
             strain_max = 0.0;
-            for (loop = 0; loop < 138; loop++) change_list [loop] = 0;
+            for (loop = 1; loop <= 137; loop++) strain_max_list [loop] = 0.0;
             
             // 緩和
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
@@ -1176,12 +1177,7 @@ int main ( int argc, char **argv ) {
                     // 自然長とのずれの総和を求める
 //                    mean_new += strain [loop][0] + strain [loop][1];
                     strain_max = Max ( strain_max, Max (strain [loop][0], strain [loop][1]));
-                    
-                    if (Max (strain [loop][0], strain [loop][1]) > 0.5) {
-                        
-                        change_list [0]++;
-                        change_list [change_list[0]] = hmm_list [loop];
-                    }
+                    strain_max_list [loop] = Max (strain_max_list [loop], Max (strain [loop][0], strain [loop][1]));
                 }
             }
             
@@ -1204,10 +1200,12 @@ int main ( int argc, char **argv ) {
 //                strain_max_old = strain_max;
 //            }
             
-            for (loop = 0; loop < change_list [0]; loop++) {
+            for (loop = 1; loop <= hmm_list [0]; loop++) {
                 
-                part_1 = &part [ change_list [loop]];
-                Set_hmm_status (part_1, &dsfmt, CHANGE);
+                if (strain_max_list [loop] > 0.5) {
+                    
+                    Set_hmm_status (&part [hmm_list[loop]], &dsfmt, CHANGE);
+                }
             }
             
         } while (strain_max > 0.5);
