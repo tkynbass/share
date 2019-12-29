@@ -258,8 +258,8 @@ void Read_coordinate (Particle *part, const unsigned int start, const char *dir)
         
         part_1 = &part[loop];
         
-        fscanf (fpr, "%d %d %d %lf %lf %lf %lf\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->radius);
+        fscanf (fpr, "%d %d %d %lf %lf %lf %lf %d\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->radius, &part_1->hmm_status);
     }
     
     fclose (fpr);
