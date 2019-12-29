@@ -92,6 +92,7 @@
 #define RADIUS_MITI_STEP (5.0e+3)
 #define STATE_MAX (10)
 #define HMM_SET_INTERVAL (5000)
+#define MEAN_PHASE (1000)
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
@@ -385,41 +386,6 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             break;
     }
 
-}
-
-double Change_hmm_status (Particle *part, const int *hmm_list, dsfmt_t *dsfmt) {
-    
-    unsigned int loop;
-    double mean_dist, strain [hmm_list[0]][2];
-    Particle *part_1;
-    
-    strain [0][0] = hmm_list[0];
-    strain [0][1] = hmm_list[0];
-    
-    for (loop = 1; loop <= hmm_list[0]; loop++) {
-        
-        part_1 = &part [ hmm_list [loop]];
-        
-        // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
-        strain [loop][0] = Euclid_norm (part_1->position, part [loop - 1].position) - part_1->radius * 1.8;
-        strain [loop][1] = Euclid_norm (part_1->position, part [loop + 1].position) - part_1->radius * 1.8;
-        
-        // 自然長とのずれの総和を求める
-        mean_dist += strain [loop][0] + strain [loop][1];
-    }
-    mean_dist /= 2.0 * hmm_list [0];    // ずれの平均
-    
-    for (loop = 1; loop <= hmm_list[0]; loop++) {
-        
-        part_1 = &part [ hmm_list [loop]];
-        
-        if ( strain[loop][0] > mean_dist && strain [loop][1] > mean_dist) {
-            
-            Set_hmm_status (part_1, dsfmt, CHANGE);
-        }
-    }
-    
-    return mean_dist;
 }
 
 // ひも粒子の初期座標決定
@@ -1066,6 +1032,10 @@ void Save_settings (const char *dir, const int start, const int phase) {
     fclose (fpw);
 }
 
+double Max (double a, double b) {
+    return a > b ? a:b;
+}
+
 int main ( int argc, char **argv ) {
     
     unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option;
@@ -1176,43 +1146,98 @@ int main ( int argc, char **argv ) {
     // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
     // 1回の緩和時間5000step 最後の1000stepでずれ平均・最大値を計算　→評価
     unsigned int change_list [138];
-    double mean_old = 10.0, mean_new, strain [hmm_list[0]][2];
+    double strain_max_old = 10.0, strain_max, mean_new, strain [hmm_list[0]][2];
     
     strain [0][0] = hmm_list[0];
     strain [0][1] = hmm_list[0];
     
     if (calc_phase == 1) {
         
-        mean_new = 0.0;
-        for (loop = 1; loop <= hmm_list[0]; loop++) {
-            
-            part_1 = &part [ hmm_list [loop]];
-            
-            // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
-            strain [loop][0] = Euclid_norm (part_1->position, part [loop - 1].position) - part_1->radius * 1.8;
-            strain [loop][1] = Euclid_norm (part_1->position, part [loop + 1].position) - part_1->radius * 1.8;
-            
-            // 自然長とのずれの総和を求める
-            mean_new += strain [loop][0] + strain [loop][1];
-        }
-        mean_new /= 2.0 * hmm_list [0];    // ずれの平均
+        ///////////////
         
-        if (mean_old < mean_new) {  // 状態セットを変えて,歪み平均が大きくなってしまったときにリセット
+        unsigned int try_count = 0, change_list [138];
+        double strain_mean, strain_max, strain_max_old = 10.0, total_straiin_mean;
+        do {
             
-            total_time -= HMM_SET_INTERVAL;
+            try_count++;
+            strain_mean = 0.0;
+            strain_max = 0.0;
+            for (loop = 0; loop < 138; loop++) change_list [loop] = 0;
             
-            Read_coordinate (part)
-        }
-        
-        for (loop = 1; loop <= hmm_list[0]; loop++) {
-            
-            part_1 = &part [ hmm_list [loop]];
-            
-            if ( strain[loop][0] > mean_dist && strain [loop][1] > mean_dist) {
+            // 緩和
+            for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
                 
-                Set_hmm_status (part_1, dsfmt, CHANGE);
+                total_time++;
+                printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
+                fflush (stdout);
+                
+                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                    
+                    calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
+                }
+                write_coordinate (part, total_time, directory);
             }
-        }
+            
+            // 緩和 + 歪みの平均・最大値計算
+            for ( unsigned int time = HMM_SET_INTERVAL - MEAN_PHASE + 1; time <= HMM_SET_INTERVAL; time++) {
+                
+                total_time++;
+                printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
+                fflush (stdout);
+                
+                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                    
+                    calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
+                }
+                write_coordinate (part, total_time, directory);
+                
+                for (loop = 1; loop <= hmm_list[0]; loop++) {
+                    
+                    part_1 = &part [ hmm_list [loop]];
+                    
+                    // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
+                    strain [loop][0] = Euclid_norm (part_1->position, part [loop - 1].position) - part_1->radius * 1.8;
+                    strain [loop][1] = Euclid_norm (part_1->position, part [loop + 1].position) - part_1->radius * 1.8;
+                    
+                    // 自然長とのずれの総和を求める
+//                    mean_new += strain [loop][0] + strain [loop][1];
+                    strain_max = Max ( strain_max, Max (strain [loop][0], strain [1]));
+                    
+                    if (Max (strain [loop][0], strain [loop][1]) > 0.5) {
+                        
+                        change_list [0]++;
+                        change_list [change_list[0]] = hmm_list [loop];
+                    }
+                }
+            }
+            
+//            if (strain_max_old < strain_max) {
+//
+//                // 全状態を前のセットに戻す
+//                for (loop = 0; loop < NUMBER_MAX; loop++) {
+//
+//                    part_1 = &part [loop];
+//                    part_1->hmm_status = part_1->hmm_status_old;
+//                }
+//
+//            } else{
+//
+//                for (loop = 0; loop > change_list [0]; loop++) {
+//
+//                    Set_hmm_status (part_1, &dsfmt, CHANGE);
+//                }
+//
+//                strain_max_old = strain_max;
+//            }
+            
+            for (loop = 0; loop < change_list [0]; loop++) {
+                
+                part_1 = &part [ change_list [loop]];
+                Set_hmm_status (part_1, &dsfmt, CHANGE);
+            }
+            
+        } (strain_max > 0.5);
+        
     }
     
     if (calc_phase == 2) {  // 核小体 増大
