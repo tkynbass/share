@@ -1130,7 +1130,7 @@ int main ( int argc, char **argv ) {
         ///////////////
         
         unsigned int try_count = 0, change_list [138];
-        double strain_mean, strain_max, strain_max_old = 10.0, total_straiin_mean, strain_max_list [138];
+        double strain_mean, strain_max, strain_max_old = 10.0, total_strain_mean, strain_max_list [138];
         strain_max_list [0] = 137;
         
         do {
