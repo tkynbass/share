@@ -1120,7 +1120,7 @@ int main ( int argc, char **argv ) {
     // 隠れマルコフ状態セットの最適化
     // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
     // 1回の緩和時間5000step 最後の1000stepでずれ平均・最大値を計算　→評価
-    double strain_max_old = 10.0, strain_max, mean_new, strain [hmm_list[0]][2];
+    double strain_max_old = 10.0, strain_max, strain [hmm_list[0]][2];
     
     strain [0][0] = hmm_list[0];
     strain [0][1] = hmm_list[0];
@@ -1136,7 +1136,7 @@ int main ( int argc, char **argv ) {
         do {
             
             try_count++;
-            strain_mean = 0.0;
+            total_strain_mean = 0.0;
             strain_max = 0.0;
             for (loop = 1; loop <= 137; loop++) strain_max_list [loop] = 0.0;
             
@@ -1161,6 +1161,8 @@ int main ( int argc, char **argv ) {
                 printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
                 fflush (stdout);
                 
+                strain_mean = 0.0;
+                
                 for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
                     
                     calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
@@ -1176,11 +1178,15 @@ int main ( int argc, char **argv ) {
                     strain [loop][1] = Euclid_norm (part_1->position, part [ hmm_list [loop] + 1].position) - part_1->radius * 1.8;
                     
                     // 自然長とのずれの総和を求める
-//                    mean_new += strain [loop][0] + strain [loop][1];
+                    strain_mean += ( strain [loop][0] + strain [loop][1] ) * 0.5;
                     strain_max = Max ( strain_max, Max (strain [loop][0], strain [loop][1]));
                     strain_max_list [loop] = Max (strain_max_list [loop], Max (strain [loop][0], strain [loop][1]));
                 }
+                
+                total_straiin_mean += strain_mean / hmm_list[0];
             }
+            
+            total_straiin_mean /= MEAN_PHASE;
             
 //            if (strain_max_old < strain_max) {
 //
@@ -1209,7 +1215,7 @@ int main ( int argc, char **argv ) {
                 }
             }
             
-        } while (strain_max > 0.5);
+        } while ( total_straiin_mean > 0.1 /*strain_max > 0.5*/);
         
     }
     
