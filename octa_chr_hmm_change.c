@@ -366,10 +366,11 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             part_1->hmm_status_old = part_1->hmm_status;
             
             do {
+                status = 0;
                 prob_value = dsfmt_genrand_close_open (dsfmt);
                 while (prob_value > part_1->hmm_prob [status]) status++;
 
-            } while (part_1->hmm_status == status);
+            } while (part_1->hmm_status_old == status);
             
             part_1->hmm_status = status;
             
@@ -1171,8 +1172,8 @@ int main ( int argc, char **argv ) {
                     part_1 = &part [ hmm_list [loop]];
                     
                     // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
-                    strain [loop][0] = Euclid_norm (part_1->position, part [loop - 1].position) - part_1->radius * 1.8;
-                    strain [loop][1] = Euclid_norm (part_1->position, part [loop + 1].position) - part_1->radius * 1.8;
+                    strain [loop][0] = Euclid_norm (part_1->position, part [ hmm_list [loop] - 1].position) - part_1->radius * 1.8;
+                    strain [loop][1] = Euclid_norm (part_1->position, part [ hmm_list [loop] + 1].position) - part_1->radius * 1.8;
                     
                     // 自然長とのずれの総和を求める
 //                    mean_new += strain [loop][0] + strain [loop][1];
