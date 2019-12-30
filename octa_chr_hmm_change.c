@@ -1215,6 +1215,7 @@ int main ( int argc, char **argv ) {
                 }
             }
             
+            printf ("\t try_count = %d, strain_mean = %lf   \n", try_count, total_strain_mean);
         } while ( total_strain_mean > 0.1 /*strain_max > 0.5*/);
         
     }
