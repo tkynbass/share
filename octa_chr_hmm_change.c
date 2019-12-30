@@ -1183,10 +1183,10 @@ int main ( int argc, char **argv ) {
                     strain_max_list [loop] = Max (strain_max_list [loop], Max (strain [loop][0], strain [loop][1]));
                 }
                 
-                total_straiin_mean += strain_mean / hmm_list[0];
+                total_strain_mean += strain_mean / hmm_list[0];
             }
             
-            total_straiin_mean /= MEAN_PHASE;
+            total_strain_mean /= MEAN_PHASE;
             
 //            if (strain_max_old < strain_max) {
 //
@@ -1215,7 +1215,7 @@ int main ( int argc, char **argv ) {
                 }
             }
             
-        } while ( total_straiin_mean > 0.1 /*strain_max > 0.5*/);
+        } while ( total_strain_mean > 0.1 /*strain_max > 0.5*/);
         
     }
     
