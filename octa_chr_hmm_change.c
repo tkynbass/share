@@ -17,7 +17,7 @@
 #include <math.h>
 #include <string.h>
 #include "../dSFMT/dSFMT.h"
-//#include <omp.h>
+#include <omp.h>
 
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 9.66e-8 )   //長さの単位 (粒子径)
@@ -137,6 +137,7 @@ typedef struct particle {           //構造体の型宣言
     double *nuc_mean;
     double *spb_mean;
     double *hmm_prob;
+    int hmm_count;
     int hmm_status;
     int hmm_status_old;
     
@@ -330,15 +331,15 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
         
         if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
             || (part_1->nuc_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
-            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL ) {
+//            /*|| (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL */) {
             
             printf ("\t Cannot secure memories related to hmm_status.\n");
         }
+        part_1->hmm_count = 0;
         
-        for (loop = 0; loop < STATE_MAX; loop++) {
-            
-            fscanf (fpr, "\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob[loop]);
-            
+        while ( fscanf (fpr, "\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob) != EOF);
+        
+            part_1->hmm_count++;
             part_1->spb_mean[loop] *= 1.0e-6 / LENGTH;   // シミュレーションの長さ単位に合わせる
             part_1->nuc_mean[loop] *= 1.0e-6 / LENGTH;
         }
@@ -364,12 +365,19 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             
             // oldにstatusを保存して今とは違う状態に変更
             part_1->hmm_status_old = part_1->hmm_status;
-            
-            do {
-                status = 0;
-                prob_value = dsfmt_genrand_close_open (dsfmt);
-                while (prob_value > part_1->hmm_prob [status]) status++;
 
+            // 存在比率による重み付きありの状態決定
+//            do {
+//                status = 0;
+//                prob_value = dsfmt_genrand_close_open (dsfmt);
+//                while (prob_value > part_1->hmm_prob [status]) status++;
+//
+//            } while (part_1->hmm_status_old == status);
+            
+            // 重みなし
+            do {
+                // status (1~8を乱数で振る)
+                status = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count + 1 ;
             } while (part_1->hmm_status_old == status);
             
             part_1->hmm_status = status;
@@ -1188,24 +1196,6 @@ int main ( int argc, char **argv ) {
             
             total_strain_mean /= MEAN_PHASE;
             
-//            if (strain_max_old < strain_max) {
-//
-//                // 全状態を前のセットに戻す
-//                for (loop = 0; loop < NUMBER_MAX; loop++) {
-//
-//                    part_1 = &part [loop];
-//                    part_1->hmm_status = part_1->hmm_status_old;
-//                }
-//
-//            } else{
-//
-//                for (loop = 0; loop > change_list [0]; loop++) {
-//
-//                    Set_hmm_status (part_1, &dsfmt, CHANGE);
-//                }
-//
-//                strain_max_old = strain_max;
-//            }
             
             for (loop = 1; loop <= hmm_list [0]; loop++) {
                 
@@ -1218,6 +1208,7 @@ int main ( int argc, char **argv ) {
             printf ("\t try_count = %d, strain_mean = %lf   \n", try_count, total_strain_mean);
         } while ( total_strain_mean > 0.1 /*strain_max > 0.5*/);
         
+        calc_phase++;
     }
     
     if (calc_phase == 2) {  // 核小体 増大
