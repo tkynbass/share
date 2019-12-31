@@ -331,7 +331,7 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
         
         if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
             || (part_1->nuc_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
-//            /*|| (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL */) {
+            /*|| (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL */) {
             
             printf ("\t Cannot secure memories related to hmm_status.\n");
         }
