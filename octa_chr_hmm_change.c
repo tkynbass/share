@@ -337,7 +337,7 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
         }
         part_1->hmm_count = 0;
         
-        while ( fscanf (fpr, "\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob) != EOF);
+        while ( fscanf (fpr, "\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->hmm_prob) != EOF) {
         
             part_1->hmm_count++;
             part_1->spb_mean[loop] *= 1.0e-6 / LENGTH;   // シミュレーションの長さ単位に合わせる
