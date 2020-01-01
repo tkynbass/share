@@ -45,7 +45,7 @@
 #define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
-#define NUCLEOLUS_EXCLUDE ( 1.0e+1 ) //核小体との衝突
+#define NUCLEOLUS_EXCLUDE ( 1.0e+0 ) //核小体との衝突
 
 #define BOND_DISTANCE ( 2.0 * PARTICLE_RADIUS * 0.8 )   // １個隣ばねの自然長
 
@@ -1211,7 +1211,7 @@ int main ( int argc, char **argv ) {
             }
             
             printf ("\t try_count = %d, strain_mean = %lf   \n", try_count, total_strain_mean);
-        } while ( total_strain_mean > 0.1 /*strain_max > 0.5*/);
+        } while ( total_strain_mean > 0.11 /*strain_max > 0.5*/);
         
         calc_phase++;
     }
