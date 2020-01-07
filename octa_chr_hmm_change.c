@@ -21,6 +21,7 @@
 
 #define DIMENSION ( 3 ) //次元
 #define LENGTH ( 9.66e-8 )   //長さの単位 (粒子径)
+#define TRANS_LENGTH (1.0e-6 / LENGTH)
 
 #define KBT ( 1.38064852e-23 / LENGTH / LENGTH ) //ボルツマン
 #define TEMPARTURE ( 300 )
@@ -90,7 +91,7 @@
 #define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
 #define RADIUS_MITI_STEP (5.0e+3)
-#define STATE_MAX (10)
+#define STATE_MAX (8)
 #define HMM_SET_INTERVAL (5000)
 #define MEAN_PHASE (1000)
 
@@ -137,6 +138,7 @@ typedef struct particle {           //構造体の型宣言
     double *nuc_mean;
     double *spb_mean;
     double *hmm_prob;
+    double **coefficient
     int hmm_count;
     int hmm_status;
     int hmm_status_old;
@@ -349,6 +351,83 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
             part_1->nuc_mean[loop] *= 1.0e-6 / LENGTH;
         }
         fgets (dummy, 256, fpr);
+    }
+}
+
+void Read_hmm_status_all (Particle *part, int *hmm_list) {
+    
+    FILE *fpr;
+    char filename[128], dummy[512];
+    unsigned int loop, number;
+    double spb_var [STATE_MAX], nuc_var [STATE_MAX], covar [STATE_MAX];
+    Particle *part_1;
+    
+    sprintf (filename, "../subdata/G2_status_5k_all_80per.txt");
+    
+    if ( (fpr = fopen (filename, "r")) == NULL) {
+        
+        printf ("\t Cannot open %s \n", filename);
+        exit (1);
+    }
+    
+    fgets (dummy, 512, fpr);
+    
+    hmm_list [0] = 0; // hmm_statusを持つ粒子 (locus)の個数
+    
+    while (fscanf (fpr, "%d", &number) != EOF) {
+        
+        part_1 = &part[number];
+        
+        hmm_list[0]++; // locus数の更新
+        hmm_list [hmm_list [0]] = number;
+        
+        // 平均,分散,共分散を格納するリストのメモリ確保
+        if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
+            || (part_1->nuc_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
+            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL) {
+            
+            printf ("\t Cannot secure memories related to hmm_status.\n");
+        }
+        
+        part_1->hmm_count = 0;
+        
+        for (loop = 0; loop < STATE_MAX; loop++) {
+            
+            fscanf (fpr, "\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &spb_var[loop], &nuc_var[loop], &covar[loop], &part_1->hmm_prob[loop]);
+            
+            if (part_1->spb_mean [loop] != 0.0) {
+                
+                part_1->hmm_count++;
+                
+                part_1->spb_mean[loop] *= TRANS_LENGTH;   // シミュレーションの長さ単位に合わせる
+                part_1->nuc_mean[loop] *= TRANS_LENGTH;
+                spb_var[loop] *= TRANS_LENGTH * TRANS_LENGTH;
+                nuc_var[loop] *= TRANS_LENGTH * TRANS_LENGTH;
+                covar[loop] *= TRANS_LENGTH * TRANS_LENGTH;
+            }
+        }
+        fgets (dummy, 256, fpr);
+        
+        // ガウスポテンシャル計算時に使う係数のメモリ確保
+        if ( (part_1->coefficient = (double **)malloc (sizeof (double *) * part_1->hmm_count)) == NULL) {
+            
+            printf ("\t Cannot secure memories related to hmm coefficient.\n");
+        }
+        
+        for (loop = 0; loop < part_1->hmm_count; loop++) {
+            
+            if ( (part_1->coefficient [loop] = (double *)malloc (sizeof (double) * 5)) == NULL) {
+                
+                printf ("\t Cannot secure memories related to hmm coefficient.\n");
+            }
+            
+            part_1->coefficient [loop][0] = 1.0 / nuc_var [loop];
+            part_1->coefficient [loop][1] = 1.0 / spb_var [loop];
+            part_1->coefficient [loop][2] = covar [loop];
+            part_1->coefficient [loop][3] = part_1->coefficient[0] * part_1->coefficient[1] * part_1->coefficient[2];
+            part_1->coefficient [loop][4] = 1.0 / ( 4.0 * PI * sqrt ( nuc_var [loop] * spb_var [loop] - covar [loop] * covar [loop]));
+        }
+        
     }
 }
 
@@ -711,7 +790,7 @@ void particle_exclusion (Particle *part, Particle *part_1) {
     }
 }
 
-void Hmm_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
+void Hmm_spring_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
     unsigned int loop;
     double spb_f, nuc_f, dist;
@@ -724,9 +803,31 @@ void Hmm_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
     for (loop = 0; loop < DIMENSION; loop++) {
      
-        part_1->force[loop] = spb_f * (part_1->position[loop] - spb->position[loop]) + nuc_f * (part_1->position[loop] - nuc->position[loop]);
+        part_1->force[loop] += spb_f * (part_1->position[loop] - spb->position[loop]) + nuc_f * (part_1->position[loop] - nuc->position[loop]);
     }
+}
+
+void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
+    unsigned int loop, status;
+    double spb_dist, nuc_dist, dist, *coef;
+    
+    nuc_dist = Euclid_norm (part_1->position, nuc->position);
+    spb_dist = Euclid_norm (part_1->position, spb->position);
+    
+    status = part_1->hmm_status;
+    coef = &part_1->coefficient [status];
+    
+    for (loop = 0; loop < DIMENSION; loop++) {
+        
+        part_1->force[loop] += - coef[4] * exp (-0.5 (coef[0] * pow (nuc_dist - part_1->nuc_mean[status], 2.0)
+                                           - 2.0 * coef[3] * (nuc_dist - part_1->nuc_mean[status]) * (spb_dist - part_1->spb_mean[status])
+                                           + coef [2] * pow (spb_dist - part_1->spb_mean[status], 2.0)))
+        * 2.0 * ((coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[3] * (spb_dist - part_1->spb_mean[status])
+                   * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist )
+                 + (coef[1] * (spb_dist - part_1->spb_mean[status]) - coef[3] * (nuc_dist - part_1->nuc_mean[status])
+                    * ( part_1->position[loop] - spb->position[loop]) / spb_dist ));
+    }
 }
 
 void Noise (double *force, dsfmt_t *dsfmt) {
@@ -768,7 +869,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
     if (calc_phase > 0) {
         
         for (loop = 0; loop < NUMBER_MAX; loop++) Noise (part[loop].force, dsfmt);
-        for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_potential (&part [hmm_list [loop]], nuc, spb);
+        for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_gauss_potential (&part [hmm_list [loop]], nuc, spb);
     }
 
     #pragma omp parallel for private (part_1) num_threads (8)
@@ -1101,7 +1202,7 @@ int main ( int argc, char **argv ) {
     
     hmm_set_option = FIRST;
     
-    Read_hmm_status (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
+    Read_hmm_status_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     
 //    Save_settings (directory, total_time, calc_phase);
     
