@@ -138,7 +138,7 @@ typedef struct particle {           //構造体の型宣言
     double *nuc_mean;
     double *spb_mean;
     double *hmm_prob;
-    double **coefficient
+    double **coefficient;
     int hmm_count;
     int hmm_status;
     int hmm_status_old;
@@ -416,16 +416,14 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         
         for (loop = 0; loop < part_1->hmm_count; loop++) {
             
-            if ( (part_1->coefficient [loop] = (double *)malloc (sizeof (double) * 5)) == NULL) {
+            if ( (part_1->coefficient [loop] = (double *)malloc (sizeof (double) * 3)) == NULL) {
                 
                 printf ("\t Cannot secure memories related to hmm coefficient.\n");
             }
             
             part_1->coefficient [loop][0] = 1.0 / nuc_var [loop];
             part_1->coefficient [loop][1] = 1.0 / spb_var [loop];
-            part_1->coefficient [loop][2] = covar [loop];
-            part_1->coefficient [loop][3] = part_1->coefficient[0] * part_1->coefficient[1] * part_1->coefficient[2];
-            part_1->coefficient [loop][4] = 1.0 / ( 4.0 * PI * sqrt ( nuc_var [loop] * spb_var [loop] - covar [loop] * covar [loop]));
+            part_1->coefficient [loop][2] = part_1->coefficient[loop][0] * part_1->coefficient [loop][1] * covar [loop];
         }
         
     }
@@ -816,17 +814,15 @@ void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     spb_dist = Euclid_norm (part_1->position, spb->position);
     
     status = part_1->hmm_status;
-    coef = &part_1->coefficient [status];
+    coef = part_1->coefficient [status];
     
     for (loop = 0; loop < DIMENSION; loop++) {
         
-        part_1->force[loop] += - coef[4] * exp (-0.5 (coef[0] * pow (nuc_dist - part_1->nuc_mean[status], 2.0)
-                                           - 2.0 * coef[3] * (nuc_dist - part_1->nuc_mean[status]) * (spb_dist - part_1->spb_mean[status])
-                                           + coef [2] * pow (spb_dist - part_1->spb_mean[status], 2.0)))
-        * 2.0 * ((coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[3] * (spb_dist - part_1->spb_mean[status])
-                   * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist )
-                 + (coef[1] * (spb_dist - part_1->spb_mean[status]) - coef[3] * (nuc_dist - part_1->nuc_mean[status])
-                    * ( part_1->position[loop] - spb->position[loop]) / spb_dist ));
+        part_1->force[loop] += (coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[2] * (spb_dist - part_1->spb_mean[status]))
+                            * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist
+                            + (coef[1] * (spb_dist - part_1->spb_mean[status]) - coef[2] * (nuc_dist - part_1->nuc_mean[status]))
+                               * ( part_1->position[loop] - spb->position[loop]) / spb_dist;
+
     }
 }
 
