@@ -623,7 +623,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
 void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
     // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
-    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2, K_BOND_3 };
+    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2};
     double dist, f, dist_0;
     
     switch (interval) {
