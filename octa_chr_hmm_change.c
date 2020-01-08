@@ -36,14 +36,13 @@
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-2 )     //2つ隣
-#define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 0.7 )   // 粒子間, 粒子-SPB間の排除体積効果
 #define K_HMM (1.0e+0) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+2)
 //#define LIST_INTERVAL ( 200 )   // リスト化の間隔
-#define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
+#define LIST_RADIUS ( 7.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
 #define NUCLEOLUS_EXCLUDE ( 1.0e+0 ) //核小体との衝突
@@ -818,7 +817,7 @@ void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
     for (loop = 0; loop < DIMENSION; loop++) {
         
-        part_1->force[loop] += (coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[2] * (spb_dist - part_1->spb_mean[status]))
+        part_1->force[loop] += K_HMM * (coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[2] * (spb_dist - part_1->spb_mean[status]))
                             * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist
                             + (coef[1] * (spb_dist - part_1->spb_mean[status]) - coef[2] * (nuc_dist - part_1->nuc_mean[status]))
                                * ( part_1->position[loop] - spb->position[loop]) / spb_dist;
