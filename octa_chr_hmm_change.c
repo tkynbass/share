@@ -458,8 +458,8 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             
             // 重みなし
             do {
-                // status (1~8を乱数で振る)
-                status = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count + 1 ;
+                // status (0~hmm_countを乱数で振る)
+                status = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count ;
             } while (part_1->hmm_status_old == status);
             
             part_1->hmm_status = status;
