@@ -36,13 +36,14 @@
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-2 )     //2つ隣
+#define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 0.7 )   // 粒子間, 粒子-SPB間の排除体積効果
 #define K_HMM (1.0e+0) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+2)
 //#define LIST_INTERVAL ( 200 )   // リスト化の間隔
-#define LIST_RADIUS ( 7.0 * PARTICLE_RADIUS)
+#define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
 #define NUCLEOLUS_EXCLUDE ( 1.0e+0 ) //核小体との衝突
@@ -61,7 +62,7 @@
 
 // Ellipsoid axes parameter of nucleus & nucleolus //
 
-#define MEMBRANE_AXIS_1 ( 1.981780e-6 / LENGTH )
+#define MEMBRANE_AXIS_1 ( 1.981780e-6 / LENGTH )     // ~2.0um
 #define MEMBRANE_AXIS_2 ( 0.849 * MEMBRANE_AXIS_1 )  // ~1.6um
 #define MEMBRANE_AXIS_3 ( 0.737 * MEMBRANE_AXIS_1 )  // ~1.46057186 um
 
@@ -141,6 +142,7 @@ typedef struct particle {           //構造体の型宣言
     int hmm_count;
     int hmm_status;
     int hmm_status_old;
+    unsigned int **state_candidate;
     
 } Particle;
 
@@ -311,7 +313,7 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
     unsigned int loop, number;
     Particle *part_1;
     
-    sprintf (filename, "../subdata/G2_status_5k.txt");
+    sprintf (filename, "../subdata/G2_status_5k_all_80per.txt");
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -357,7 +359,7 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
     
     FILE *fpr;
     char filename[128], dummy[512];
-    unsigned int loop, number;
+    unsigned int loop, number, state;
     double spb_var [STATE_MAX], nuc_var [STATE_MAX], covar [STATE_MAX];
     Particle *part_1;
     
@@ -383,7 +385,7 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         // 平均,分散,共分散を格納するリストのメモリ確保
         if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
             || (part_1->nuc_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
-            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL) {
+            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL ) {
             
             printf ("\t Cannot secure memories related to hmm_status.\n");
         }
@@ -408,14 +410,16 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         fgets (dummy, 256, fpr);
         
         // ガウスポテンシャル計算時に使う係数のメモリ確保
-        if ( (part_1->coefficient = (double **)malloc (sizeof (double *) * part_1->hmm_count)) == NULL) {
+        if ( (part_1->coefficient = (double **)malloc (sizeof (double *) * part_1->hmm_count)) == NULL ||
+            (part_1->state_candidate = (unsigned int **)malloc (sizeof (unsigned *) * part_1->hmm_count)) ) {
             
             printf ("\t Cannot secure memories related to hmm coefficient.\n");
         }
         
         for (loop = 0; loop < part_1->hmm_count; loop++) {
             
-            if ( (part_1->coefficient [loop] = (double *)malloc (sizeof (double) * 3)) == NULL) {
+            if ( (part_1->coefficient [loop] = (double *)malloc (sizeof (double) * 3)) == NULL ||
+                (part_1->state_candidate [loop] = (unsigned int *)malloc (sizeof (unsigned) * part_1->hmm_count)) ) {
                 
                 printf ("\t Cannot secure memories related to hmm coefficient.\n");
             }
@@ -426,11 +430,34 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         }
         
     }
+    
+    sprintf (filename, "../subdata/trans_candidate.txt");
+    
+    if ( (fpr = fopen (filename, "r")) == NULL) {
+        
+        printf ("\t Cannot open %s \n", filename);
+        exit (1);
+    }
+    
+    fgets (dummy, 256, fpr);
+    
+    while ( fscanf (fpr, "%d,%d", &number, &state) != EOF) {
+        
+        part_1 = &part [number];
+        fscanf (fpr, ",%d", &part_1->state_candidate [state][0]);
+        
+        for ( loop = 1; loop <= part_1->state_candidate [state][0]; loop++ ) {
+            
+            fscanf (fpr, ",%d", &part_1->state_candidate [state][loop]);
+        }
+        fgets (dummy, 256, fpr); // 改行読み込み
+    }
+    
 }
 
 void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
     
-    unsigned int status = 0;
+    unsigned int status = 0, candidate_idx;
     double prob_value;
     
     switch (option) {
@@ -456,12 +483,14 @@ void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
 //            } while (part_1->hmm_status_old == status);
             
             // 重みなし
-            do {
-                // status (0~hmm_countを乱数で振る)
-                status = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count ;
-            } while (part_1->hmm_status_old == status);
-            
-            part_1->hmm_status = status;
+//            do {
+//                // status (0~hmm_countを乱数で振る)
+//                status = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count ;
+//            } while (part_1->hmm_status_old == status);
+//
+//            part_1->hmm_status = status;
+            candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [part_1->hmm_status][0] + 1
+            part1->hmm_status = part_1->state_candidate [part_1->hmm_status][candidate_idx];
             
             break;
         
@@ -535,7 +564,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         part_1->particle_type = rDNA;
     }
     
-    
+
     double init_radius, arm_dist, unit_vector[DIMENSION];
     const unsigned int chr_term[3][2] = {{TELO1_UP, TELO1_DOWN}, {TELO2_UP, TELO2_DOWN}, {rDNA_UP, rDNA_DOWN}};
     for (loop = 0; loop < 3; loop++) {
@@ -623,7 +652,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
 void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
     // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
-    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2};
+    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2, K_BOND_3 };
     double dist, f, dist_0;
     
     switch (interval) {
@@ -817,7 +846,7 @@ void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
     for (loop = 0; loop < DIMENSION; loop++) {
         
-        part_1->force[loop] += K_HMM * (coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[2] * (spb_dist - part_1->spb_mean[status]))
+        part_1->force[loop] += (coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[2] * (spb_dist - part_1->spb_mean[status]))
                             * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist
                             + (coef[1] * (spb_dist - part_1->spb_mean[status]) - coef[2] * (nuc_dist - part_1->nuc_mean[status]))
                                * ( part_1->position[loop] - spb->position[loop]) / spb_dist;
