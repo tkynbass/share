@@ -36,7 +36,6 @@
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
 #define K_BOND_2 ( 1.0e-2 )     //2つ隣
-#define K_BOND_3 ( 1.0e+0 )     //3つ隣
 #define K_EXCLUDE ( 0.7 )   // 粒子間, 粒子-SPB間の排除体積効果
 #define K_HMM (1.0e+0) // 隠れマルコフ状態を用いたポテンシャルの強度
 
@@ -652,7 +651,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
 void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
     
     // 線形バネの強さ　0:spb-centromere, 1,2,3: n個隣 //
-    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2, K_BOND_3 };
+    const double bonding_power[] = { K_BOND, K_BOND, K_BOND_2};
     double dist, f, dist_0;
     
     switch (interval) {
@@ -1248,11 +1247,12 @@ int main ( int argc, char **argv ) {
             update_radius (part, 'c');
         }
         calc_phase++;
-        
-        for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_status = -1;
-        for (loop = 1; loop <= hmm_list[0]; loop++) {
-            Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
-        }
+    }
+    
+    // 隠れマルコフ状態の設定
+    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_status = -1;
+    for (loop = 1; loop <= hmm_list[0]; loop++) {
+        Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
     }
     
     // 隠れマルコフ状態セットの最適化
