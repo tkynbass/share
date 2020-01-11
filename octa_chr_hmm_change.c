@@ -90,7 +90,7 @@
 #define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
 #define RADIUS_MITI_STEP (5.0e+3)
-#define STATE_MAX (9)
+#define STATE_MAX (8)
 #define HMM_SET_INTERVAL (5000)
 #define MEAN_PHASE (1000)
 
@@ -854,9 +854,9 @@ void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
     for (loop = 0; loop < DIMENSION; loop++) {
         
-        part_1->force[loop] += (coef [0] * (nuc_dist - part_1->nuc_mean[state]) - coef[2] * (spb_dist - part_1->spb_mean[state]))
+        part_1->force[loop] += K_HMM * (coef [0] * (nuc_dist - part_1->nuc_mean[state]) - coef[2] * (spb_dist - part_1->spb_mean[state]))
                             * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist
-                            + (coef[1] * (spb_dist - part_1->spb_mean[state]) - coef[2] * (nuc_dist - part_1->nuc_mean[state]))
+                            + K_HMM * (coef[1] * (spb_dist - part_1->spb_mean[state]) - coef[2] * (nuc_dist - part_1->nuc_mean[state]))
                                * ( part_1->position[loop] - spb->position[loop]) / spb_dist;
 
     }
@@ -1183,7 +1183,7 @@ double Max (double a, double b) {
     return a > b ? a:b;
 }
 
-void Calculate_strain (Particle *part, int *hmm_list, unsigned int *total_strain_mean, unsigned int *strain_max_list) {
+void Calculate_strain (Particle *part, int *hmm_list, double *total_strain_mean, double *strain_max_list) {
     
     unsigned int loop;
     double strain [2], strain_max, strain_mean;
@@ -1199,11 +1199,11 @@ void Calculate_strain (Particle *part, int *hmm_list, unsigned int *total_strain
         
         // 自然長とのずれの総和を求める
         strain_mean += ( strain [0] + strain [1] ) * 0.5;
-        strain_max = Max ( strain_max, Max (strain [0], strain [1]));
-        strain_max_list [loop] = Max (strain_max_list [loop], strain_max);
+        strain_max = Max (strain [0], strain [1]);  // 上流側下流側の歪みの最大値
+        strain_max_list [loop] = Max (strain_max_list [loop], strain_max);  // 最大値の更新
     }
     
-    total_strain_mean += strain_mean / hmm_list[0]; // アンサンブル平均
+    *total_strain_mean += strain_mean / hmm_list[0]; // アンサンブル平均
 }
 
 void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
@@ -1221,7 +1221,33 @@ void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, uns
         nuc_diff = Euclid_norm (part_1->position, nuc->position) - part_1->nuc_mean [state];
         spb_diff = Euclid_norm (part_1->position, spb->position) - part_1->spb_mean [state];
         
-        if ( nuc_diff * nuc_diff / part_1->nuc_var [state] + spb_diff * spb_diff / part_1->spb_var < 1.0 ) {
+        if ( nuc_diff * nuc_diff / part_1->nuc_var [state] + spb_diff * spb_diff / part_1->spb_var [state] < 1.0 ) {
+            
+            eval_list [loop] = 1;
+        }
+        else {
+            
+            eval_list [loop] = 0;
+        }
+    }
+}
+
+void Evaluate_springn (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
+    
+    unsigned int loop, state;
+    double nuc_diff, spb_diff, ellipsoid_dist;
+    Particle *part_1;
+    
+    
+    for (loop = 1; loop <=hmm_list [0]; loop++) {
+        
+        part_1 = &part [ hmm_list [loop] ];
+        state = part_1->hmm_state;
+        
+        nuc_diff = Euclid_norm (part_1->position, nuc->position) - part_1->nuc_mean [state];
+        spb_diff = Euclid_norm (part_1->position, spb->position) - part_1->spb_mean [state];
+        
+        if ( nuc_diff * nuc_diff / part_1->nuc_var [state] + spb_diff * spb_diff / part_1->spb_var [state] < 1.0 ) {
             
             eval_list [loop] = 1;
         }
@@ -1316,17 +1342,13 @@ int main ( int argc, char **argv ) {
     // 隠れマルコフ状態セットの最適化
     // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
     // 1回の緩和時間5000step 最後の1000stepでずれ平均・最大値を計算　→評価
-    double strain_max_old = 10.0, strain_max, strain [hmm_list[0]][2];
-    
-    strain [0][0] = hmm_list[0];
-    strain [0][1] = hmm_list[0];
-    
+
     if (calc_phase == 1) {
         
         ///////////////
         
         unsigned int try_count = 0, eval_list [138], change_count;
-        double strain_mean, strain_max, strain_max_old = 10.0, total_strain_mean, strain_max_list [138];
+        double total_strain_mean, strain_max_list [138];
         strain_max_list [0] = 137;
         eval_list [0] = 137;
         
@@ -1335,7 +1357,6 @@ int main ( int argc, char **argv ) {
             try_count++;
             change_count = 0;
             total_strain_mean = 0.0;
-            strain_max = 0.0;
             for (loop = 1; loop <= 137; loop++) strain_max_list [loop] = 0.0;
             
             // 緩和
