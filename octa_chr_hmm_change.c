@@ -1186,7 +1186,7 @@ double Max (double a, double b) {
 void Calculate_strain (Particle *part, int *hmm_list, double *total_strain_mean, double *strain_max_list) {
     
     unsigned int loop;
-    double strain [2], strain_max, strain_mean;
+    double strain [2], strain_max, strain_mean = 0.0;
     Particle *part_1;
     
     for (loop = 1; loop <= hmm_list[0]; loop++) {
@@ -1203,7 +1203,7 @@ void Calculate_strain (Particle *part, int *hmm_list, double *total_strain_mean,
         strain_max_list [loop] = Max (strain_max_list [loop], strain_max);  // 最大値の更新
     }
     
-    *total_strain_mean += strain_mean / hmm_list[0]; // アンサンブル平均
+    *total_strain_mean += strain_mean / hmm_list[0]; // 歪みの粒子平均
 }
 
 void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
@@ -1379,9 +1379,7 @@ int main ( int argc, char **argv ) {
                 total_time++;
                 printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
                 fflush (stdout);
-                
-                strain_mean = 0.0;
-                
+
                 for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
                     
                     calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
