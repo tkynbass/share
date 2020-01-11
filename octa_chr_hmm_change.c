@@ -90,7 +90,7 @@
 #define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
 #define RADIUS_MITI_STEP (5.0e+3)
-#define STATE_MAX (8)
+#define STATE_MAX (9)
 #define HMM_SET_INTERVAL (5000)
 #define MEAN_PHASE (1000)
 
@@ -134,13 +134,17 @@ typedef struct particle {           //構造体の型宣言
     double radius;
     unsigned int list_no;
     unsigned int *list;
+    
+    // Locus 対応粒子 (137個)のみ
     double *nuc_mean;
     double *spb_mean;
     double *hmm_prob;
+    double *nuc_var;
+    double *spb_var;
     double **coefficient;
     int hmm_count;
-    int hmm_status;
-    int hmm_status_old;
+    int hmm_state;
+    int hmm_state_old;
     unsigned int **state_candidate;
     
 } Particle;
@@ -262,7 +266,7 @@ void Read_coordinate (Particle *part, const unsigned int start, const char *dir)
         part_1 = &part[loop];
         
         fscanf (fpr, "%d %d %d %lf %lf %lf %lf %d\n", &i_dummy, &part_1->chr_no, &part_1->particle_type,
-                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->radius, &part_1->hmm_status);
+                &part_1->position[X], &part_1->position[Y], &part_1->position[Z], &part_1->radius, &part_1->hmm_state);
     }
     
     fclose (fpr);
@@ -305,7 +309,7 @@ void Read_structure (Nuc *nuc, Particle *spb, const unsigned int stable_no) {
     
 }
 
-void Read_hmm_status (Particle *part, int *hmm_list) {
+void Read_hmm_state (Particle *part, int *hmm_list) {
     
     FILE *fpr;
     char filename[128], dummy[512];
@@ -322,7 +326,7 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
     
     fgets (dummy, 512, fpr);
     
-    hmm_list [0] = 0; // hmm_statusを持つ粒子 (locus)の個数
+    hmm_list [0] = 0; // hmm_stateを持つ粒子 (locus)の個数
     
     while (fscanf (fpr, "%d", &number) != EOF) {
         
@@ -335,7 +339,7 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
             || (part_1->nuc_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
             || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL) {
             
-            printf ("\t Cannot secure memories related to hmm_status.\n");
+            printf ("\t Cannot secure memories related to hmm_state.\n");
         }
         part_1->hmm_count = 0;
         
@@ -354,12 +358,12 @@ void Read_hmm_status (Particle *part, int *hmm_list) {
     }
 }
 
-void Read_hmm_status_all (Particle *part, int *hmm_list) {
+void Read_hmm_state_all (Particle *part, int *hmm_list) {
     
     FILE *fpr;
-    char filename[128], dummy[512];
+    char filename[128], dummy[1024];
     unsigned int loop, number, state;
-    double spb_var [STATE_MAX], nuc_var [STATE_MAX], covar [STATE_MAX];
+    double /*spb_var [STATE_MAX], nuc_var [STATE_MAX],*/ covar [STATE_MAX];
     Particle *part_1;
     
     sprintf (filename, "../subdata/G2_status_5k_all_80per.txt");
@@ -370,9 +374,9 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         exit (1);
     }
     
-    fgets (dummy, 512, fpr);
+    fgets (dummy, 1024, fpr);
     
-    hmm_list [0] = 0; // hmm_statusを持つ粒子 (locus)の個数
+    hmm_list [0] = 0; // hmm_stateを持つ粒子 (locus)の個数
     
     while (fscanf (fpr, "%d", &number) != EOF) {
         
@@ -384,16 +388,19 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         // 平均,分散,共分散を格納するリストのメモリ確保
         if ( (part_1->spb_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
             || (part_1->nuc_mean = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
-            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL ) {
+            || (part_1->hmm_prob = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
+            || (part_1->spb_var = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL
+            || (part_1->nuc_var = (double *)malloc (sizeof (double) * STATE_MAX)) == NULL) {
             
-            printf ("\t Cannot secure memories related to hmm_status.\n");
+            printf ("\t Cannot secure memories related to hmm_state.\n");
         }
         
         part_1->hmm_count = 0;
         
         for (loop = 0; loop < STATE_MAX; loop++) {
             
-            fscanf (fpr, "\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &spb_var[loop], &nuc_var[loop], &covar[loop], &part_1->hmm_prob[loop]);
+            fscanf (fpr, "\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &part_1->spb_mean[loop], &part_1->nuc_mean[loop], &part_1->spb_var[loop],
+                    &part_1->nuc_var[loop], &covar[loop], &part_1->hmm_prob[loop]);
             
             if (part_1->spb_mean [loop] != 0.0) {
                 
@@ -401,16 +408,16 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
                 
                 part_1->spb_mean[loop] *= TRANS_LENGTH;   // シミュレーションの長さ単位に合わせる
                 part_1->nuc_mean[loop] *= TRANS_LENGTH;
-                spb_var[loop] *= TRANS_LENGTH * TRANS_LENGTH;
-                nuc_var[loop] *= TRANS_LENGTH * TRANS_LENGTH;
+                part_1->spb_var[loop] *= TRANS_LENGTH * TRANS_LENGTH;
+                part_1->nuc_var[loop] *= TRANS_LENGTH * TRANS_LENGTH;
                 covar[loop] *= TRANS_LENGTH * TRANS_LENGTH;
             }
         }
-        fgets (dummy, 256, fpr);
+//        fgets (dummy, 512, fpr);
         
         // ガウスポテンシャル計算時に使う係数のメモリ確保
         if ( (part_1->coefficient = (double **)malloc (sizeof (double *) * part_1->hmm_count)) == NULL ||
-            (part_1->state_candidate = (unsigned int **)malloc (sizeof (unsigned *) * part_1->hmm_count)) ) {
+            (part_1->state_candidate = (unsigned int **)malloc (sizeof (unsigned *) * part_1->hmm_count)) == NULL ) {
             
             printf ("\t Cannot secure memories related to hmm coefficient.\n");
         }
@@ -418,13 +425,13 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
         for (loop = 0; loop < part_1->hmm_count; loop++) {
             
             if ( (part_1->coefficient [loop] = (double *)malloc (sizeof (double) * 3)) == NULL ||
-                (part_1->state_candidate [loop] = (unsigned int *)malloc (sizeof (unsigned) * part_1->hmm_count)) ) {
+                (part_1->state_candidate [loop] = (unsigned int *)malloc (sizeof (unsigned) * part_1->hmm_count)) == NULL ) {
                 
                 printf ("\t Cannot secure memories related to hmm coefficient.\n");
             }
             
-            part_1->coefficient [loop][0] = 1.0 / nuc_var [loop];
-            part_1->coefficient [loop][1] = 1.0 / spb_var [loop];
+            part_1->coefficient [loop][0] = 1.0 / part_1->nuc_var [loop];
+            part_1->coefficient [loop][1] = 1.0 / part_1->spb_var [loop];
             part_1->coefficient [loop][2] = part_1->coefficient[loop][0] * part_1->coefficient [loop][1] * covar [loop];
         }
         
@@ -454,53 +461,55 @@ void Read_hmm_status_all (Particle *part, int *hmm_list) {
     
 }
 
-void Set_hmm_status (Particle *part_1, dsfmt_t *dsfmt, const int option) {
+void Set_hmm_state (Particle *part_1, dsfmt_t *dsfmt, const int option) {
     
-    unsigned int status = 0, candidate_idx;
+    unsigned int state = 0, candidate_idx;
     double prob_value;
     
     switch (option) {
         case RANDOM:
             
             prob_value = dsfmt_genrand_close_open (dsfmt);
-            while (prob_value > part_1->hmm_prob [status]) status++;
-            part_1->hmm_status = status;
-            part_1->hmm_status_old = status;
+            while (prob_value > part_1->hmm_prob [state]) state++;
+            part_1->hmm_state = state;
+            part_1->hmm_state_old = state;
             break;
             
         case CHANGE:
             
-            // oldにstatusを保存して今とは違う状態に変更
-            part_1->hmm_status_old = part_1->hmm_status;
+            // oldにstateを保存して今とは違う状態に変更
+            part_1->hmm_state_old = part_1->hmm_state;
 
             // 存在比率による重み付きありの状態決定
 //            do {
-//                status = 0;
+//                state = 0;
 //                prob_value = dsfmt_genrand_close_open (dsfmt);
-//                while (prob_value > part_1->hmm_prob [status]) status++;
+//                while (prob_value > part_1->hmm_prob [state]) state++;
 //
-//            } while (part_1->hmm_status_old == status);
+//            } while (part_1->hmm_state_old == state);
             
             // 重みなし
 //            do {
-//                // status (0~hmm_countを乱数で振る)
-//                status = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count ;
-//            } while (part_1->hmm_status_old == status);
+//                // state (0~hmm_countを乱数で振る)
+//                state = dsfmt_genrand_uint32( dsfmt ) % part_1->hmm_count ;
+//            } while (part_1->hmm_state_old == state);
 //
-//            part_1->hmm_status = status;
-            candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [part_1->hmm_status][0] + 1
-            part1->hmm_status = part_1->state_candidate [part_1->hmm_status][candidate_idx];
+//            part_1->hmm_state = state;
+            
+            // 遷移確率を元に抽出した候補の中から次の状態を決める
+            candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [part_1->hmm_state][0] + 1;
+            part_1->hmm_state = part_1->state_candidate [part_1->hmm_state][candidate_idx];
             
             break;
         
         case FIRST:
             
-            part_1->hmm_status = 0;
-            part_1->hmm_status_old = 0;
+            part_1->hmm_state = 0;
+            part_1->hmm_state_old = 0;
             break;
             
         default:
-            printf ("\t Cannot set hmm_status\n");
+            printf ("\t Cannot set hmm_state\n");
             break;
     }
 
@@ -821,10 +830,10 @@ void Hmm_spring_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     double spb_f, nuc_f, dist;
     
     dist = Euclid_norm (part_1->position, spb->position);
-    spb_f = K_HMM * (part_1->spb_mean[ part_1->hmm_status ] - dist) / dist;
+    spb_f = K_HMM * (part_1->spb_mean[ part_1->hmm_state ] - dist) / dist;
     
     dist = Euclid_norm (part_1->position, nuc->position);
-    nuc_f = K_HMM * (part_1->nuc_mean[ part_1->hmm_status ] - dist) / dist;
+    nuc_f = K_HMM * (part_1->nuc_mean[ part_1->hmm_state ] - dist) / dist;
     
     for (loop = 0; loop < DIMENSION; loop++) {
      
@@ -834,20 +843,20 @@ void Hmm_spring_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
 
 void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
-    unsigned int loop, status;
+    unsigned int loop, state;
     double spb_dist, nuc_dist, dist, *coef;
     
     nuc_dist = Euclid_norm (part_1->position, nuc->position);
     spb_dist = Euclid_norm (part_1->position, spb->position);
     
-    status = part_1->hmm_status;
-    coef = part_1->coefficient [status];
+    state = part_1->hmm_state;
+    coef = part_1->coefficient [state];
     
     for (loop = 0; loop < DIMENSION; loop++) {
         
-        part_1->force[loop] += (coef [0] * (nuc_dist - part_1->nuc_mean[status]) - coef[2] * (spb_dist - part_1->spb_mean[status]))
+        part_1->force[loop] += (coef [0] * (nuc_dist - part_1->nuc_mean[state]) - coef[2] * (spb_dist - part_1->spb_mean[state]))
                             * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist
-                            + (coef[1] * (spb_dist - part_1->spb_mean[status]) - coef[2] * (nuc_dist - part_1->nuc_mean[status]))
+                            + (coef[1] * (spb_dist - part_1->spb_mean[state]) - coef[2] * (nuc_dist - part_1->nuc_mean[state]))
                                * ( part_1->position[loop] - spb->position[loop]) / spb_dist;
 
     }
@@ -892,7 +901,7 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
     if (calc_phase > 0) {
         
         for (loop = 0; loop < NUMBER_MAX; loop++) Noise (part[loop].force, dsfmt);
-        for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_gauss_potential (&part [hmm_list [loop]], nuc, spb);
+        for (loop = 1; loop <= hmm_list[0]; loop++) Hmm_spring_potential (&part [hmm_list [loop]], nuc, spb);
     }
 
     #pragma omp parallel for private (part_1) num_threads (8)
@@ -1140,7 +1149,7 @@ void write_coordinate (Particle *part, const unsigned int sample_no, const char 
         
         part_1 = &part[loop];
         fprintf (fpw, "%d %d %d %lf %lf %lf %lf %d\n", loop, part_1->chr_no, part_1->particle_type, part_1->position[X],
-                 part_1->position[Y], part_1->position[Z], part_1->radius, part_1->hmm_status);
+                 part_1->position[Y], part_1->position[Z], part_1->radius, part_1->hmm_state);
     }
     
 //    fprintf (fpw, "Radius %1.1e\n", LENGTH);
@@ -1172,6 +1181,55 @@ void Save_settings (const char *dir, const int start, const int phase) {
 
 double Max (double a, double b) {
     return a > b ? a:b;
+}
+
+void Calculate_strain (Particle *part, int *hmm_list, unsigned int *total_strain_mean, unsigned int *strain_max_list) {
+    
+    unsigned int loop;
+    double strain [2], strain_max, strain_mean;
+    Particle *part_1;
+    
+    for (loop = 1; loop <= hmm_list[0]; loop++) {
+        
+        part_1 = &part [ hmm_list [loop]];
+        
+        // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
+        strain [0] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] - 1].position) - part_1->radius * 1.8);
+        strain [1] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] + 1].position) - part_1->radius * 1.8);
+        
+        // 自然長とのずれの総和を求める
+        strain_mean += ( strain [0] + strain [1] ) * 0.5;
+        strain_max = Max ( strain_max, Max (strain [0], strain [1]));
+        strain_max_list [loop] = Max (strain_max_list [loop], strain_max);
+    }
+    
+    total_strain_mean += strain_mean / hmm_list[0]; // アンサンブル平均
+}
+
+void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
+    
+    unsigned int loop, state;
+    double nuc_diff, spb_diff, ellipsoid_dist;
+    Particle *part_1;
+    
+    
+    for (loop = 1; loop <=hmm_list [0]; loop++) {
+        
+        part_1 = &part [ hmm_list [loop] ];
+        state = part_1->hmm_state;
+        
+        nuc_diff = Euclid_norm (part_1->position, nuc->position) - part_1->nuc_mean [state];
+        spb_diff = Euclid_norm (part_1->position, spb->position) - part_1->spb_mean [state];
+        
+        if ( nuc_diff * nuc_diff / part_1->nuc_var [state] + spb_diff * spb_diff / part_1->spb_var < 1.0 ) {
+            
+            eval_list [loop] = 1;
+        }
+        else {
+            
+            eval_list [loop] = 0;
+        }
+    }
 }
 
 int main ( int argc, char **argv ) {
@@ -1225,7 +1283,7 @@ int main ( int argc, char **argv ) {
     
     hmm_set_option = FIRST;
     
-    Read_hmm_status_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
+    Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     
 //    Save_settings (directory, total_time, calc_phase);
     
@@ -1250,9 +1308,9 @@ int main ( int argc, char **argv ) {
     }
     
     // 隠れマルコフ状態の設定
-    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_status = -1;
+    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
     for (loop = 1; loop <= hmm_list[0]; loop++) {
-        Set_hmm_status (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
+        Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
     }
     
     // 隠れマルコフ状態セットの最適化
@@ -1267,13 +1325,15 @@ int main ( int argc, char **argv ) {
         
         ///////////////
         
-        unsigned int try_count = 0, change_list [138];
+        unsigned int try_count = 0, eval_list [138], change_count;
         double strain_mean, strain_max, strain_max_old = 10.0, total_strain_mean, strain_max_list [138];
         strain_max_list [0] = 137;
+        eval_list [0] = 137;
         
         do {
             
             try_count++;
+            change_count = 0;
             total_strain_mean = 0.0;
             strain_max = 0.0;
             for (loop = 1; loop <= 137; loop++) strain_max_list [loop] = 0.0;
@@ -1307,35 +1367,23 @@ int main ( int argc, char **argv ) {
                 }
                 write_coordinate (part, total_time, directory);
                 
-                for (loop = 1; loop <= hmm_list[0]; loop++) {
-                    
-                    part_1 = &part [ hmm_list [loop]];
-                    
-                    // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
-                    strain [loop][0] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] - 1].position) - part_1->radius * 1.8);
-                    strain [loop][1] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] + 1].position) - part_1->radius * 1.8);
-                    
-                    // 自然長とのずれの総和を求める
-                    strain_mean += ( strain [loop][0] + strain [loop][1] ) * 0.5;
-                    strain_max = Max ( strain_max, Max (strain [loop][0], strain [loop][1]));
-                    strain_max_list [loop] = Max (strain_max_list [loop], Max (strain [loop][0], strain [loop][1]));
-                }
-                
-                total_strain_mean += strain_mean / hmm_list[0];
+                Calculate_strain (part, hmm_list, &total_strain_mean, strain_max_list);
             }
             
-            total_strain_mean /= MEAN_PHASE;
+            total_strain_mean /= MEAN_PHASE; // 時間方向の平均
             
+            Evaluate_gauss (part, nuc, spb, hmm_list, eval_list);
             
             for (loop = 1; loop <= hmm_list [0]; loop++) {
                 
-                if (strain_max_list [loop] > 0.5) {
+                if ( eval_list [loop] == 0 || strain_max_list [loop] > 0.5 ) {
                     
-                    Set_hmm_status (&part [hmm_list[loop]], &dsfmt, CHANGE);
+                    change_count++;
+                    Set_hmm_state (&part [hmm_list[loop]], &dsfmt, CHANGE);
                 }
             }
             
-            printf ("\t try_count = %d, strain_mean = %lf   \n", try_count, total_strain_mean);
+            printf ("\t try_count = %d, strain_mean = %lf change_count = %d   \n", try_count, total_strain_mean, change_count);
         } while ( total_strain_mean > 0.11 /*strain_max > 0.5*/);
         
         calc_phase++;
