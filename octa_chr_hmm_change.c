@@ -42,7 +42,7 @@
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+2)
 //#define LIST_INTERVAL ( 200 )   // リスト化の間隔
-#define LIST_RADIUS ( 10.0 * PARTICLE_RADIUS)
+#define LIST_RADIUS ( 7.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
 #define NUCLEOLUS_EXCLUDE ( 1.0e+0 ) //核小体との衝突
