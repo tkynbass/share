@@ -1256,7 +1256,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             // 緩和
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
                 
-                *total_time++;
+                ++ *total_time;
                 printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
                 fflush (stdout);
                 
@@ -1271,7 +1271,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             // 緩和 + 歪みの平均・最大値計算
             for ( unsigned int time = HMM_SET_INTERVAL - MEAN_PHASE + 1; time <= HMM_SET_INTERVAL; time++) {
                 
-                *total_time++;
+                ++ *total_time;
                 printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
                 fflush (stdout);
                 
@@ -1288,7 +1288,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             // 緩和
             for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
                 
-                *total_time++;
+                ++ *total_time;
                 printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
                 fflush (stdout);
                 
@@ -1309,7 +1309,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             // 緩和 + 歪みの平均・最大値計算
             for ( unsigned int time = HMM_SET_INTERVAL - MEAN_PHASE + 1; time <= HMM_SET_INTERVAL; time++) {
                 
-                *total_time++;
+                ++ *total_time;
                 printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
                 fflush (stdout);
                 
@@ -1339,17 +1339,19 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             if ( eval_list [loop] == 0 || strain_max_list [loop] > 0.5 ) {
                 
                 change_count++;
-                Set_hmm_state (&part [hmm_list[loop]], &dsfmt, CHANGE);
+                Set_hmm_state (&part [hmm_list[loop]], dsfmt, CHANGE);
             }
         }
         
         printf ("\t try_count = %d, strain_mean = %lf change_count = %d   \n", try_count, total_strain_mean, change_count);
         
-        if (calc_phase == 2 || nuc->al1 >= 1.0 ) {
+        if (calc_phase == 2 && nuc->al1 >= 1.0 ) {
             
             nuc->al1 = NUCLEOLUS_AXIS_1;
             nuc->al2 = NUCLEOLUS_AXIS_2;
             nuc->al3 = NUCLEOLUS_AXIS_3;
+            
+            break;
         }
         
     } while ( total_strain_mean > 0.11 || change_count > 30);
