@@ -35,9 +35,9 @@
 #define PI ( M_PI )
 
 #define K_BOND ( 1.0e+0 )       //1つ隣　ばね定数
-#define K_BOND_2 ( 1.0e-2 )     //2つ隣
+#define K_BOND_2 ( 1.0e-1 )     //2つ隣
 #define K_EXCLUDE ( 0.7 )   // 粒子間, 粒子-SPB間の排除体積効果
-#define K_HMM (1.0e+0) // 隠れマルコフ状態を用いたポテンシャルの強度
+#define K_HMM (1.0e-1) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
 #define MITIGATION_INTERVAL (1.0e+2)
@@ -90,6 +90,8 @@
 #define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
 #define RADIUS_MITI_STEP (5.0e+3)
+#define NUCLEOLUS_MITI_STEP (1.0e+4)
+#define NUCLEOLUS_MITI_DELTA (1.0 / 1.0e+4)
 #define STATE_MAX (8)
 #define HMM_SET_INTERVAL (5000)
 #define MEAN_PHASE (1000)
@@ -854,9 +856,9 @@ void Hmm_gauss_potential (Particle *part_1, Nuc *nuc, Particle *spb) {
     
     for (loop = 0; loop < DIMENSION; loop++) {
         
-        part_1->force[loop] += K_HMM * (coef [0] * (nuc_dist - part_1->nuc_mean[state]) - coef[2] * (spb_dist - part_1->spb_mean[state]))
+        part_1->force[loop] += - K_HMM * (coef [0] * (nuc_dist - part_1->nuc_mean[state]) - coef[2] * (spb_dist - part_1->spb_mean[state]))
                             * ( part_1->position[loop] - nuc->position[loop]) / nuc_dist
-                            + K_HMM * (coef[1] * (spb_dist - part_1->spb_mean[state]) - coef[2] * (nuc_dist - part_1->nuc_mean[state]))
+                            - K_HMM * (coef[1] * (spb_dist - part_1->spb_mean[state]) - coef[2] * (nuc_dist - part_1->nuc_mean[state]))
                                * ( part_1->position[loop] - spb->position[loop]) / spb_dist;
 
     }
@@ -1224,6 +1226,7 @@ void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, uns
         if ( nuc_diff * nuc_diff / part_1->nuc_var [state] + spb_diff * spb_diff / part_1->spb_var [state] < 1.0 ) {
             
             eval_list [loop] = 1;
+            
         }
         else {
             
@@ -1232,30 +1235,125 @@ void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, uns
     }
 }
 
-void Evaluate_springn (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
+void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *hmm_list, dsfmt_t *dsfmt,
+                         unsigned int calc_phase, unsigned int *total_time, const char *directory) {
     
-    unsigned int loop, state;
-    double nuc_diff, spb_diff, ellipsoid_dist;
-    Particle *part_1;
+    unsigned int loop, time, mitigation;
+    unsigned int try_count = 0, eval_list [138], change_count;
+    double total_strain_mean, strain_max_list [138];
+    strain_max_list [0] = 137;
+    eval_list [0] = 137;
     
-    
-    for (loop = 1; loop <=hmm_list [0]; loop++) {
+    do {
         
-        part_1 = &part [ hmm_list [loop] ];
-        state = part_1->hmm_state;
+        try_count++;
+        change_count = 0;
+        total_strain_mean = 0.0;
+        for (loop = 1; loop <= 137; loop++) strain_max_list [loop] = 0.0;
         
-        nuc_diff = Euclid_norm (part_1->position, nuc->position) - part_1->nuc_mean [state];
-        spb_diff = Euclid_norm (part_1->position, spb->position) - part_1->spb_mean [state];
-        
-        if ( nuc_diff * nuc_diff / part_1->nuc_var [state] + spb_diff * spb_diff / part_1->spb_var [state] < 1.0 ) {
+        if (calc_phase != 2) {
             
-            eval_list [loop] = 1;
-        }
-        else {
+            // 緩和
+            for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
+                
+                *total_time++;
+                printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
+                fflush (stdout);
+                
+                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                    
+                    calculation (part, nuc, spb, mitigation, dsfmt, hmm_list, calc_phase);
+                }
+                write_coordinate (part, *total_time, directory);
+                
+            }
             
-            eval_list [loop] = 0;
+            // 緩和 + 歪みの平均・最大値計算
+            for ( unsigned int time = HMM_SET_INTERVAL - MEAN_PHASE + 1; time <= HMM_SET_INTERVAL; time++) {
+                
+                *total_time++;
+                printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
+                fflush (stdout);
+                
+                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                    
+                    calculation (part, nuc, spb, mitigation, dsfmt, hmm_list, calc_phase);
+                }
+                write_coordinate (part, *total_time, directory);
+                
+                Calculate_strain (part, hmm_list, &total_strain_mean, strain_max_list);
+            }
+        }else {     // 核小体領域　増大時
+            
+            // 緩和
+            for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
+                
+                *total_time++;
+                printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
+                fflush (stdout);
+                
+                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                    
+                    calculation (part, nuc, spb, mitigation, dsfmt, hmm_list, calc_phase);
+                }
+                write_coordinate (part, *total_time, directory);
+                
+                if ( time % 10 == 0 || nuc->al1 < 1.0) {        // 核小体領域増大
+                    
+                    nuc->al1 += NUCLEOLUS_AXIS_1 * NUCLEOLUS_MITI_DELTA * 10;
+                    nuc->al2 += NUCLEOLUS_AXIS_2 * NUCLEOLUS_MITI_DELTA * 10;
+                    nuc->al3 += NUCLEOLUS_AXIS_3 * NUCLEOLUS_MITI_DELTA * 10;
+                }
+            }
+            
+            // 緩和 + 歪みの平均・最大値計算
+            for ( unsigned int time = HMM_SET_INTERVAL - MEAN_PHASE + 1; time <= HMM_SET_INTERVAL; time++) {
+                
+                *total_time++;
+                printf ("\t Now calculating... phase %d / try_count = %d, time = %d \r", calc_phase, try_count, time);
+                fflush (stdout);
+                
+                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
+                    
+                    calculation (part, nuc, spb, mitigation, dsfmt, hmm_list, calc_phase);
+                }
+                write_coordinate (part, *total_time, directory);
+                
+                if ( time % 10 == 0 || nuc->al1 < NUCLEOLUS_AXIS_1) {      // 核小体領域増大
+                    
+                    nuc->al1 += NUCLEOLUS_AXIS_1 * NUCLEOLUS_MITI_DELTA * 10;
+                    nuc->al2 += NUCLEOLUS_AXIS_2 * NUCLEOLUS_MITI_DELTA * 10;
+                    nuc->al3 += NUCLEOLUS_AXIS_3 * NUCLEOLUS_MITI_DELTA * 10;
+                }
+                
+                Calculate_strain (part, hmm_list, &total_strain_mean, strain_max_list);
+            }
         }
-    }
+    
+        total_strain_mean /= MEAN_PHASE; // 時間方向の平均
+        
+        Evaluate_gauss (part, nuc, spb, hmm_list, eval_list);
+        
+        for (loop = 1; loop <= hmm_list [0]; loop++) {
+            
+            if ( eval_list [loop] == 0 || strain_max_list [loop] > 0.5 ) {
+                
+                change_count++;
+                Set_hmm_state (&part [hmm_list[loop]], &dsfmt, CHANGE);
+            }
+        }
+        
+        printf ("\t try_count = %d, strain_mean = %lf change_count = %d   \n", try_count, total_strain_mean, change_count);
+        
+        if (calc_phase == 2 || nuc->al1 >= 1.0 ) {
+            
+            nuc->al1 = NUCLEOLUS_AXIS_1;
+            nuc->al2 = NUCLEOLUS_AXIS_2;
+            nuc->al3 = NUCLEOLUS_AXIS_3;
+        }
+        
+    } while ( total_strain_mean > 0.11 || change_count > 30);
+    
 }
 
 int main ( int argc, char **argv ) {
@@ -1345,99 +1443,17 @@ int main ( int argc, char **argv ) {
 
     if (calc_phase == 1) {
         
-        ///////////////
-        
-        unsigned int try_count = 0, eval_list [138], change_count;
-        double total_strain_mean, strain_max_list [138];
-        strain_max_list [0] = 137;
-        eval_list [0] = 137;
-        
-        do {
-            
-            try_count++;
-            change_count = 0;
-            total_strain_mean = 0.0;
-            for (loop = 1; loop <= 137; loop++) strain_max_list [loop] = 0.0;
-            
-            // 緩和
-            for ( unsigned int time = 1; time <= HMM_SET_INTERVAL - MEAN_PHASE; time++) {
-                
-                total_time++;
-                printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
-                fflush (stdout);
-                
-                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-                    
-                    calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
-                }
-                write_coordinate (part, total_time, directory);
-            }
-            
-            // 緩和 + 歪みの平均・最大値計算
-            for ( unsigned int time = HMM_SET_INTERVAL - MEAN_PHASE + 1; time <= HMM_SET_INTERVAL; time++) {
-                
-                total_time++;
-                printf ("\t Now calculating... phase 1 / try_count = %d, time = %d \r",  try_count, time);
-                fflush (stdout);
-
-                for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-                    
-                    calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
-                }
-                write_coordinate (part, total_time, directory);
-                
-                Calculate_strain (part, hmm_list, &total_strain_mean, strain_max_list);
-            }
-            
-            total_strain_mean /= MEAN_PHASE; // 時間方向の平均
-            
-            Evaluate_gauss (part, nuc, spb, hmm_list, eval_list);
-            
-            for (loop = 1; loop <= hmm_list [0]; loop++) {
-                
-                if ( eval_list [loop] == 0 || strain_max_list [loop] > 0.5 ) {
-                    
-                    change_count++;
-                    Set_hmm_state (&part [hmm_list[loop]], &dsfmt, CHANGE);
-                }
-            }
-            
-            printf ("\t try_count = %d, strain_mean = %lf change_count = %d   \n", try_count, total_strain_mean, change_count);
-        } while ( total_strain_mean > 0.11 /*strain_max > 0.5*/);
-        
-        calc_phase++;
+        Hmm_set_mitigation (part, nuc, spb, hmm_list, &dsfmt, 1, &total_time, directory);
     }
-    
     if (calc_phase == 2) {  // 核小体 増大
         
-        for ( unsigned int time = 1; time <= 10000; time++) {
-            
-            total_time++;
-            printf ("\t Now calculating... phase 2 / time = %d \r", time);
-            fflush (stdout);
-            
-            for ( mitigation = 0; mitigation < MITIGATION_INTERVAL; mitigation++ ){
-                
-                calculation (part, nuc, spb, mitigation, &dsfmt, hmm_list, calc_phase);
-            }
-            write_coordinate (part, total_time, directory);
-            
-            if ( time % 10 == 0 && nuc->al1 < NUCLEOLUS_AXIS_1 ) {
-                
-                nuc->al1 += NUCLEOLUS_AXIS_1 * 0.01;
-                nuc->al2 += NUCLEOLUS_AXIS_2 * 0.01;
-                nuc->al3 += NUCLEOLUS_AXIS_3 * 0.01;
-                
-                if (nuc->al1 > NUCLEOLUS_AXIS_1) {
-                    
-                    nuc->al1 = NUCLEOLUS_AXIS_1;
-                    nuc->al2 = NUCLEOLUS_AXIS_2;
-                    nuc->al3 = NUCLEOLUS_AXIS_3;
-                }
-            }
-        }
-//        calc_phase++;
+        Hmm_set_mitigation (part, nuc, spb, hmm_list, &dsfmt, 2, &total_time, directory);
     }
+    if (calc_phase == 3) {
+        
+        Hmm_set_mitigation (part, nuc, spb, hmm_list, &dsfmt, 3, &total_time, directory);
+    }
+    
     
 //    write_coordinate (part, sample_no, directory);
     
