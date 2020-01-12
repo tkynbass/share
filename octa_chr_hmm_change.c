@@ -47,7 +47,7 @@
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
 #define NUCLEOLUS_EXCLUDE ( 1.0e+0 ) //核小体との衝突
 
-#define BOND_DISTANCE ( 2.0 * PARTICLE_RADIUS * 0.8 )   // １個隣ばねの自然長
+#define BOND_DISTANCE ( 1.6 * PARTICLE_RADIUS )   // １個隣ばねの自然長
 
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 
@@ -601,7 +601,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         // セントロメア-テロメアの距離
         arm_dist = Euclid_norm (cent->position, part_1->position);
         // 粒子の初期径
-        init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num * 1.8 + 0.9) ;
+        init_radius = (arm_dist - BOND_DISTANCE * 0.5 * CENT_INIT_RADIUS) / (arm_num * BOND_DISTANCE + BOND_DISTANCE * 0.5) ;
 
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
@@ -619,7 +619,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius * 1.8 );
+                part_1->position [dim] = cent->position [dim] + unit_vector[dim] * ( (CENT_INIT_RADIUS + init_radius ) * BOND_DISTANCE * 0.5 + (loop2 - 1) * init_radius * BOND_DISTANCE );
             }
             
             part_1->chr_no = loop;
@@ -630,7 +630,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
         part_1 = &part[ chr_term [loop][1] ];
         arm_num = abs (chr_term[loop][1] - CENT_LIST[loop]) - 1;
         arm_dist = Euclid_norm (cent->position, part_1->position);
-        init_radius = (arm_dist - 0.9 * CENT_INIT_RADIUS) / (arm_num * 1.8 + 0.9);
+        init_radius = (arm_dist - BOND_DISTANCE * 0.5 * CENT_INIT_RADIUS) / (arm_num * BOND_DISTANCE + BOND_DISTANCE * 0.5);
 
         // セントロメア→テロメア方向への単位ベクトル
         for (dim = 0; dim < DIMENSION; dim++){
@@ -648,7 +648,7 @@ void Particle_initialization (Particle *part, Nuc *nuc, Particle *spb, dsfmt_t *
             
             for (dim = 0; dim < DIMENSION; dim++) {
                 
-                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * 0.9 + (loop2 - 1) * init_radius * 1.8);
+                part_1->position [dim] = cent->position [dim] + unit_vector [dim] * ( (CENT_INIT_RADIUS + init_radius ) * BOND_DISTANCE * 0.8 + (loop2 - 1) * init_radius * BOND_DISTANCE);
             }
             part_1->chr_no = loop;
             part_1->particle_type = Normal;
@@ -682,7 +682,7 @@ void spring (Particle *part_1, const Particle *part_2, unsigned int interval) {
         case 1:
         case 2:
             
-            dist_0 = part_1->radius * 1.8 * interval;
+            dist_0 = part_1->radius * BOND_DISTANCE * interval;
             dist = Euclid_norm (part_1->position, part_2->position);
             
             f = bonding_power[interval] * (dist_0 - dist) / dist;
@@ -1196,8 +1196,8 @@ void Calculate_strain (Particle *part, int *hmm_list, double *total_strain_mean,
         part_1 = &part [ hmm_list [loop]];
         
         // locus対応粒子の隣接粒子とのばねのずれ　0:上流側 1:下流側
-        strain [0] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] - 1].position) - part_1->radius * 1.8);
-        strain [1] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] + 1].position) - part_1->radius * 1.8);
+        strain [0] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] - 1].position) - part_1->radius * BOND_DISTANCE);
+        strain [1] = fabs (Euclid_norm (part_1->position, part [ hmm_list [loop] + 1].position) - part_1->radius * BOND_DISTANCE);
         
         // 自然長とのずれの総和を求める
         strain_mean += ( strain [0] + strain [1] ) * 0.5;
