@@ -40,7 +40,7 @@
 #define K_HMM (1.0e-1) // 隠れマルコフ状態を用いたポテンシャルの強度
 
 #define DELTA ( 1.0e-3 )  //刻み幅
-#define MITIGATION_INTERVAL (1.0e+2)
+#define MITIGATION_INTERVAL (1.0e+3)
 //#define LIST_INTERVAL ( 200 )   // リスト化の間隔
 #define LIST_RADIUS ( 7.0 * PARTICLE_RADIUS)
 
@@ -52,7 +52,7 @@
 #define PARTICLE_MYU ( 2.0 * DIMENSION * PI * PARTICLE_RADIUS * LENGTH * 0.000890 / 100 ) //粘性抵抗の強さ
 
 #define KINEMATIC_MYU (0.000890)
-#define DIFFUSION (1.0e-2)
+#define DIFFUSION (5.0e-2)
 
 #define SPB_RADIUS (  3.0  )      //SPBの半径
 #define CENT_INIT_RADIUS (1.0)  // セントロメア粒子の初期半径
@@ -478,11 +478,7 @@ void Set_hmm_state (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             break;
             
         case CHANGE:
-            
-            // oldにstateを保存して今とは違う状態に変更
-            part_1->hmm_state_old = part_1->hmm_state;
-
-            // 存在比率による重み付きありの状態決定
+           // 存在比率による重み付きありの状態決定
 //            do {
 //                state = 0;
 //                prob_value = dsfmt_genrand_close_open (dsfmt);
@@ -498,9 +494,19 @@ void Set_hmm_state (Particle *part_1, dsfmt_t *dsfmt, const int option) {
 //
 //            part_1->hmm_state = state;
             
+            state = part_1->hmm_state;
             // 遷移確率を元に抽出した候補の中から次の状態を決める
-            candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [part_1->hmm_state][0] + 1;
-            part_1->hmm_state = part_1->state_candidate [part_1->hmm_state][candidate_idx];
+            if (part_1->state_candidate [state] > 0) {
+            
+                part_1->hmm_state_old = state;　// oldにstateを保存して今とは違う状態に変更
+                candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [state][0] + 1;
+                part_1->hmm_state = part_1->state_candidate [state][candidate_idx];
+            }
+            else {  // 遷移する状態候補がなければ１つ前の状態に戻す
+                
+                part_1->hmm_state = part_1->hmm_state_old;
+                part_1->hmm_state_old = state;
+            }
             
             break;
         
@@ -1298,7 +1304,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
                 }
                 write_coordinate (part, *total_time, directory);
                 
-                if ( time % 10 == 0 || nuc->al1 < 1.0) {        // 核小体領域増大
+                if ( time % 10 == 0 || nuc->al1 < NUCLEOLUS_AXIS_1) {        // 核小体領域増大
                     
                     nuc->al1 += NUCLEOLUS_AXIS_1 * NUCLEOLUS_MITI_DELTA * 10;
                     nuc->al2 += NUCLEOLUS_AXIS_2 * NUCLEOLUS_MITI_DELTA * 10;
@@ -1345,7 +1351,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
         
         printf ("\t try_count = %d, strain_mean = %lf change_count = %d   \n", try_count, total_strain_mean, change_count);
         
-        if (calc_phase == 2 && nuc->al1 >= 1.0 ) {
+        if (calc_phase == 2 && nuc->al1 >= NUCLEOLUS_AXIS_1 ) {
             
             nuc->al1 = NUCLEOLUS_AXIS_1;
             nuc->al2 = NUCLEOLUS_AXIS_2;
