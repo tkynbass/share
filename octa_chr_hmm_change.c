@@ -90,11 +90,11 @@
 #define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
 #define RADIUS_MITI_STEP (5.0e+3)
-#define NUCLEOLUS_MITI_STEP (1.0e+4)
-#define NUCLEOLUS_MITI_DELTA (1.0 / 1.0e+4)
+#define NUCLEOLUS_MITI_STEP (1.0e+3)
+#define NUCLEOLUS_MITI_DELTA (1.0 / 1.0e+3)
 #define STATE_MAX (8)
-#define HMM_SET_INTERVAL (5000)
-#define MEAN_PHASE (1000)
+#define HMM_SET_INTERVAL (2000)
+#define MEAN_PHASE (500)
 
 const unsigned int CENT_LIST[] = { 754, 1440, 2244 };
 const unsigned int TELO_LIST[] = { 0, 1115, 1116, 2023};
@@ -498,7 +498,7 @@ void Set_hmm_state (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             // 遷移確率を元に抽出した候補の中から次の状態を決める
             if (part_1->state_candidate [state] > 0) {
             
-                part_1->hmm_state_old = state;　// oldにstateを保存して今とは違う状態に変更
+                art_1->hmm_state_old = state; // oldにstateを保存して今とは違う状態に変更
                 candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [state][0] + 1;
                 part_1->hmm_state = part_1->state_candidate [state][candidate_idx];
             }
