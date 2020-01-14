@@ -498,7 +498,7 @@ void Set_hmm_state (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             // 遷移確率を元に抽出した候補の中から次の状態を決める
             if (part_1->state_candidate [state] > 0) {
             
-                art_1->hmm_state_old = state; // oldにstateを保存して今とは違う状態に変更
+                part_1->hmm_state_old = state; // oldにstateを保存して今とは違う状態に変更
                 candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [state][0] + 1;
                 part_1->hmm_state = part_1->state_candidate [state][candidate_idx];
             }
@@ -1214,9 +1214,9 @@ void Calculate_strain (Particle *part, int *hmm_list, double *total_strain_mean,
     *total_strain_mean += strain_mean / hmm_list[0]; // 歪みの粒子平均
 }
 
-void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
+int Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, unsigned int *eval_list) {
     
-    unsigned int loop, state;
+    unsigned int loop, state, eval_count = 0;
     double nuc_diff, spb_diff, ellipsoid_dist;
     Particle *part_1;
     
@@ -1236,16 +1236,19 @@ void Evaluate_gauss (Particle *part, Nuc *nuc, Particle *spb, int *hmm_list, uns
         }
         else {
             
+            eval_count++;
             eval_list [loop] = 0;
         }
     }
+    
+    return eval_count;
 }
 
 void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *hmm_list, dsfmt_t *dsfmt,
                          unsigned int calc_phase, unsigned int *total_time, const char *directory) {
     
     unsigned int loop, time, mitigation;
-    unsigned int try_count = 0, eval_list [138], change_count;
+    unsigned int try_count = 0, eval_list [138], change_count, eval_count;
     double total_strain_mean, strain_max_list [138];
     strain_max_list [0] = 137;
     eval_list [0] = 137;
@@ -1338,7 +1341,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
     
         total_strain_mean /= MEAN_PHASE; // 時間方向の平均
         
-        Evaluate_gauss (part, nuc, spb, hmm_list, eval_list);
+        eval_count = Evaluate_gauss (part, nuc, spb, hmm_list, eval_list);
         
         for (loop = 1; loop <= hmm_list [0]; loop++) {
             
@@ -1349,7 +1352,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             }
         }
         
-        printf ("\t try_count = %d, strain_mean = %lf change_count = %d   \n", try_count, total_strain_mean, change_count);
+        printf ("\t try_count = %d, strain_mean = %lf change_count = %d  eval_count = %d \n", try_count, total_strain_mean, change_count, eval_count);
         
         if (calc_phase == 2 && nuc->al1 >= NUCLEOLUS_AXIS_1 ) {
             
