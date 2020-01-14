@@ -496,7 +496,7 @@ void Set_hmm_state (Particle *part_1, dsfmt_t *dsfmt, const int option) {
             
             state = part_1->hmm_state;
             // 遷移確率を元に抽出した候補の中から次の状態を決める
-            if (part_1->state_candidate [state] > 0) {
+            if (part_1->state_candidate [state][0] > 0) {
             
                 part_1->hmm_state_old = state; // oldにstateを保存して今とは違う状態に変更
                 candidate_idx = dsfmt_genrand_uint32 (dsfmt) % part_1->state_candidate [state][0] + 1;
@@ -1182,7 +1182,8 @@ void Save_settings (const char *dir, const int start, const int phase) {
     
     fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = {%d, %d, %d}\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL[0], LIST_INTERVAL[1], LIST_INTERVAL[2], K_EXCLUDE);
-    fprintf (fpw, "DELTA = %2.1e\nMITIGATION_INTERVAL = %2.1e\n\n\n", DELTA, MITIGATION_INTERVAL);
+    fprintf (fpw, "DELTA = %2.1e\nMITIGATION_INTERVAL = %2.1e\n", DELTA, MITIGATION_INTERVAL);
+    fprintf (fpw, "DIFFUSE = %2.1e\n", DIFFUSE);
     
     fclose (fpw);
 }
@@ -1420,7 +1421,9 @@ int main ( int argc, char **argv ) {
     
     Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     
-//    Save_settings (directory, total_time, calc_phase);
+    Save_settings (directory, total_time, calc_phase);
+    
+    printf ("\t K_BOND = %2.1e, K_BOND2 = %2.1e, K_HMM = %2.1e, DIFFUSE = %2.1e\n ", K_BOND, K_BOND_2, K_HMM, DIFFUSE);
     
     if (calc_phase == 0) {  // 粒子径 増加
         
