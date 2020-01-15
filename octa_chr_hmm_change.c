@@ -89,7 +89,7 @@
 #define NUC_ELLIP2_FIX ( 1.0 / NUCLEOLUS_AXIS_2 / NUCLEOLUS_AXIS_2)
 #define NUC_ELLIP3_FIX ( 1.0 / NUCLEOLUS_AXIS_3 / NUCLEOLUS_AXIS_3)
 
-#define RADIUS_MITI_STEP (5.0e+3)
+#define RADIUS_MITI_STEP (5.0e+2)
 #define NUCLEOLUS_MITI_STEP (1.0e+3)
 #define NUCLEOLUS_MITI_DELTA (1.0 / 1.0e+3)
 #define STATE_MAX (8)
@@ -1183,7 +1183,7 @@ void Save_settings (const char *dir, const int start, const int phase) {
     fprintf (fpw, "K_BOND = %2.1e\nK_BOND_2 = %2.1e\nK_BOND_HMM = %2.1e\nLIST_INTERVAL = {%d, %d, %d}\nK_EXCLUDE = %2.1e\n",
              K_BOND, K_BOND_2, K_HMM, LIST_INTERVAL[0], LIST_INTERVAL[1], LIST_INTERVAL[2], K_EXCLUDE);
     fprintf (fpw, "DELTA = %2.1e\nMITIGATION_INTERVAL = %2.1e\n", DELTA, MITIGATION_INTERVAL);
-    fprintf (fpw, "DIFFUSE = %2.1e\n", DIFFUSE);
+    fprintf (fpw, "DIFFUSION = %2.1e\n", DIFFUSION);
     
     fclose (fpw);
 }
@@ -1370,7 +1370,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option;
+    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option, init_time;
     char output_file[256], directory[256], hmm_select;
     double mem_al[3];
     
@@ -1397,6 +1397,7 @@ int main ( int argc, char **argv ) {
         exit (1);
     }
     
+    init_time = total_time;
     dsfmt_init_gen_rand (&dsfmt, sample_no);
     sprintf (directory, "%d_%d", stable_no, sample_no);
     
@@ -1406,24 +1407,39 @@ int main ( int argc, char **argv ) {
     nuc->al2 = 0.1 * NUCLEOLUS_AXIS_2;
     nuc->al3 = 0.1 * NUCLEOLUS_AXIS_3;
     
+    
+    hmm_set_option = FIRST;
+    Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
+    
     if (total_time == 0) {
         
         Particle_initialization (part, nuc, spb, &dsfmt);
         write_coordinate (part, 0, directory);
         update_radius (part, 's');
+        
+        // 隠れマルコフ状態の設定
+        for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
+        }
+    }
+    else if (total_time > RADIUS_MITI_STEP) {
+        
+        Read_coordinate (part, total_time, directory);
     }
     else {
         
         Read_coordinate (part, total_time, directory);
+        // 隠れマルコフ状態の設定
+        for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
+        }
     }
-    
-    hmm_set_option = FIRST;
-    
-    Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     
     Save_settings (directory, total_time, calc_phase);
     
-    printf ("\t K_BOND = %2.1e, K_BOND2 = %2.1e, K_HMM = %2.1e, DIFFUSE = %2.1e\n ", K_BOND, K_BOND_2, K_HMM, DIFFUSE);
+    printf ("\t K_BOND = %2.1e, K_BOND2 = %2.1e, K_HMM = %2.1e, DIFFUSE = %2.1e\n ", K_BOND, K_BOND_2, K_HMM, DIFFUSION);
     
     if (calc_phase == 0) {  // 粒子径 増加
         
@@ -1445,11 +1461,7 @@ int main ( int argc, char **argv ) {
         calc_phase++;
     }
     
-    // 隠れマルコフ状態の設定
-    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
-    for (loop = 1; loop <= hmm_list[0]; loop++) {
-        Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
-    }
+    
     
     // 隠れマルコフ状態セットの最適化
     // 隣接間のバネのずれの最大値 < 0.1 && ずれ平均が隠れマルコフポテンシャル無のときとの同じくらい
@@ -1458,10 +1470,12 @@ int main ( int argc, char **argv ) {
     if (calc_phase == 1) {
         
         Hmm_set_mitigation (part, nuc, spb, hmm_list, &dsfmt, 1, &total_time, directory);
+        calc_phase++;
     }
     if (calc_phase == 2) {  // 核小体 増大
         
         Hmm_set_mitigation (part, nuc, spb, hmm_list, &dsfmt, 2, &total_time, directory);
+        calc_phase++;
     }
     if (calc_phase == 3) {
         
