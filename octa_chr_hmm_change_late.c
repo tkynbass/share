@@ -45,7 +45,7 @@
 #define LIST_RADIUS ( 9.0 * PARTICLE_RADIUS)
 
 #define MEMBRANE_EXCLUDE ( 1.0e+1 )     //膜との衝突
-#define NUCLEOLUS_EXCLUDE ( 1.0e+0 ) //核小体との衝突
+#define NUCLEOLUS_EXCLUDE ( 7.0e-1 ) //核小体との衝突
 
 #define BOND_DISTANCE ( 1.6 * PARTICLE_RADIUS )   // １個隣ばねの自然長
 
@@ -159,6 +159,8 @@ typedef struct nucleolus{
     double al1;
     double al2;
     double al3;
+    double exclude; // 核小体排除体積のばね定数
+    double exclude_delta;
 } Nuc;
 
 enum label{ X, Y, Z};
@@ -758,8 +760,8 @@ void Nucleolus_interaction ( Particle *part_1, Nuc *nuc, const char interaction_
         
         double normal_vector_norm = Euclid_norm (normal_vector, ORIGIN);
         
-        double f = - ( ellipsoid_dist - 1 ) * NUCLEOLUS_EXCLUDE * Inner_product (nuc_to_pos, normal_vector)
-        / normal_vector_norm;
+//        double f = - ( ellipsoid_dist - 1 ) * NUCLEOLUS_EXCLUDE * Inner_product (nuc_to_pos, normal_vector) / normal_vector_norm;
+        double f = - ( ellipsoid_dist - 1 ) * nuc->exclude * Inner_product (nuc_to_pos, normal_vector) / normal_vector_norm;
         
         rotate_about_x (normal_vector, nuc->eta);
         rotate_about_y (normal_vector, nuc->phi);
@@ -942,7 +944,6 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                         spring (part_1, &part[loop + 2], 2);
                         spring (part_1, &part[loop - 2], 2);
 
-                        
                         break;
 
                     case TELO1_DOWN - 1:
@@ -993,9 +994,6 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     spring (part_1, &part[loop + 2], 2);
                     spring (part_1, &part[loop - 2], 2);
 
-                    
-                    
-
                     Nucleolus_interaction (part_1, nuc, 'E');
                     Membrane_interaction (part_1, 'E');
                     spring (part_1, spb, 0);
@@ -1021,7 +1019,6 @@ void calculation (Particle *part, Nuc *nuc, Particle *spb, const unsigned int mi
                     case TELO2_UP:
 
                         spring (part_1, &part[loop + 1], 1);
-
                         spring (part_1, &part[loop + 2], 2);
 
                         break;
@@ -1355,6 +1352,8 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
         
         printf ("\t try_count = %d, strain_mean = %lf change_count = %d  eval_count = %d \n", try_count, total_strain_mean, change_count, eval_count);
         
+        if (eval_count < 30)
+        
         if (calc_phase == 2 && nuc->al1 >= NUCLEOLUS_AXIS_1 ) {
             
             nuc->al1 = NUCLEOLUS_AXIS_1;
@@ -1410,21 +1409,41 @@ int main ( int argc, char **argv ) {
     nuc->al2 = NUCLEOLUS_AXIS_2;
     nuc->al3 = NUCLEOLUS_AXIS_3;
 
+    Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
+    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
     
     if (total_time == 0) {
         
         Particle_initialization (part, nuc, spb, &dsfmt);
-        write_coordinate (part, 0, directory);
+        //        write_coordinate (part, 0, directory);
         update_radius (part, 's');
+        
+        hmm_set_option = FIRST;
+        
+        // 隠れマルコフ状態の設定
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
+        }
+        
+        nuc->exclude = 0.1;
+        nuc->exclude_delta = (NUCLEOLUS_EXCLUDE - nuc->exclude) / RADIUS_MITI_STEP;
+    }
+    else if (total_time > RADIUS_MITI_STEP) {
+        
+        Read_coordinate (part, total_time, directory);
+        nuc->exclude = NUCLEOLUS_EXCLUDE;
     }
     else {
         
         Read_coordinate (part, total_time, directory);
+        
+        hmm_set_option = FIRST;
+        
+        // 隠れマルコフ状態の設定
+        for (loop = 1; loop <= hmm_list[0]; loop++) {
+            Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
+        }
     }
-    
-    hmm_set_option = FIRST;
-    
-    Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
     
     Save_settings (directory, total_time, calc_phase);
     
@@ -1446,14 +1465,10 @@ int main ( int argc, char **argv ) {
             write_coordinate (part, total_time, directory);
             
             update_radius (part, 'c');
+            
+            nuc->exclude += nuc->exclude_delta;
         }
         calc_phase++;
-    }
-    
-    // 隠れマルコフ状態の設定
-    for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
-    for (loop = 1; loop <= hmm_list[0]; loop++) {
-        Set_hmm_state (&part[ hmm_list[loop]], &dsfmt, hmm_set_option);
     }
     
     // 隠れマルコフ状態セットの最適化
