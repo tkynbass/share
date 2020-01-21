@@ -1161,12 +1161,12 @@ void write_coordinate (Particle *part, const unsigned int sample_no, const char 
     fclose (fpw);
 }
 
-void Save_settings (const char *dir, const int start, const int phase) {
+void Save_settings (const char *dir, const int start, const int phase, unsigned int sample_no) {
     
     FILE *fpw;
     char filename[256];
     
-    sprintf (filename, "%s/readme_%s.txt", dir, dir);
+    sprintf (filename, "%s/readme_%d.txt", dir, sample_no);
     
     if ((fpw = fopen (filename, "a")) == NULL) {
         
@@ -1369,7 +1369,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
 
 int main ( int argc, char **argv ) {
     
-    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option, cycle_no;
+    unsigned int loop, mitigation, start, total_time, stable_no, sample_no, calc_phase, hmm_set_option;
     char output_file[256], directory[256], hmm_select, *cycle;
     double mem_al[3];
     
@@ -1389,16 +1389,7 @@ int main ( int argc, char **argv ) {
         sample_no = atoi (argv[2]);
         total_time = atoi (argv[3]);
         calc_phase = atoi (argv[4]);
-        cycle_no = atoi (argv[5]);
-        
-        if (cycle_no == 1) {
-            
-            sprintf (cycle, "G1S");
-        }
-        else {
-            
-            sprintf (cycle, "G2");
-        }
+        sprintf (cycle, "%s", argv[5]);
     }
     else {
         
@@ -1455,7 +1446,7 @@ int main ( int argc, char **argv ) {
         }
     }
     
-    Save_settings (directory, total_time, calc_phase);
+    Save_settings (directory, total_time, calc_phase, sample_no);
     
     printf ("\t K_BOND = %2.1e, K_BOND2 = %2.1e, K_HMM = %2.1e, DIFFUSE = %2.1e\n ", K_BOND, K_BOND_2, K_HMM, DIFFUSION);
     
