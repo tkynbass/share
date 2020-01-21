@@ -362,7 +362,7 @@ void Read_hmm_state (Particle *part, int *hmm_list) {
     }
 }
 
-void Read_hmm_state_all (Particle *part, int *hmm_list) {
+void Read_hmm_state_all (Particle *part, int *hmm_list, char *cycle) {
     
     FILE *fpr;
     char filename[128], dummy[1024];
@@ -370,7 +370,7 @@ void Read_hmm_state_all (Particle *part, int *hmm_list) {
     double /*spb_var [STATE_MAX], nuc_var [STATE_MAX],*/ covar [STATE_MAX];
     Particle *part_1;
     
-    sprintf (filename, "../subdata/G2_status_5k_all_80per.txt");
+    sprintf (filename, "../subdata/%s_status_5k_all_80per.txt", cycle);
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -441,7 +441,7 @@ void Read_hmm_state_all (Particle *part, int *hmm_list) {
         
     }
     
-    sprintf (filename, "../subdata/trans_candidate.txt");
+    sprintf (filename, "../subdata/%s_trans_candidate.txt", cycle);
     
     if ( (fpr = fopen (filename, "r")) == NULL) {
         
@@ -1363,7 +1363,7 @@ void Hmm_set_mitigation (Particle *part, Nuc *nuc, Particle *spb, unsigned int *
             break;
         }
         
-    } while ( total_strain_mean > 0.11 || change_count > 30);
+    } while ( total_strain_mean > 0.15 || change_count > 40);
     
 }
 
@@ -1383,12 +1383,13 @@ int main ( int argc, char **argv ) {
     
     dsfmt_t dsfmt;
     
-    if (argc == 5 ) {
+    if (argc == 6 ) {
         
         stable_no = atoi (argv[1]);
         sample_no = atoi (argv[2]);
         total_time = atoi (argv[3]);
         calc_phase = atoi (argv[4]);
+        cycle = argv [5];
     }
     else {
         
@@ -1409,7 +1410,7 @@ int main ( int argc, char **argv ) {
     nuc->al2 = NUCLEOLUS_AXIS_2;
     nuc->al3 = NUCLEOLUS_AXIS_3;
 
-    Read_hmm_state_all (part, hmm_list);   // 隠れマルコフ状態のデータを読み込み
+    Read_hmm_state_all (part, hmm_list, cycle);   // 隠れマルコフ状態のデータを読み込み
     for (loop = 0; loop < NUMBER_MAX; loop++) part [loop].hmm_state = -1;
     
     if (total_time == 0) {
@@ -1469,6 +1470,7 @@ int main ( int argc, char **argv ) {
             nuc->exclude += nuc->exclude_delta;
         }
         calc_phase++;
+        nuc->exclude = NUCLEOLUS_EXCLUDE;
     }
     
     // 隠れマルコフ状態セットの最適化
