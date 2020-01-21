@@ -1398,7 +1398,7 @@ int main ( int argc, char **argv ) {
     }
     
     dsfmt_init_gen_rand (&dsfmt, sample_no);
-    sprintf (directory, "%d_%d", stable_no, sample_no);
+    sprintf (directory, "%s/%d_%d", cycle, stable_no, sample_no);
     
     Read_structure (nuc, spb, stable_no);
 
